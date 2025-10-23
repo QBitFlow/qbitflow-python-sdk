@@ -85,7 +85,7 @@ from qbitflow import Duration
 response = client.subscriptions.create_session(
     product_id=1,
     frequency=Duration(value=1, unit="months"),
-    trial_period=Duration(value=7, unit="days"),  # Optional 7-day trial (optional)
+    trial_period=Duration(value=7, unit="days"),  # Optional 7-day trial
     customer_uuid="customer-uuid-here",
     webhook_url="https://your-domain.com/webhook"
 )
