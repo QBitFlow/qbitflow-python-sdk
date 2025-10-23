@@ -146,7 +146,7 @@ customer = client.customers.update("customer-uuid", update_data)
 
 # Get all customers
 customers = client.customers.get_all()
-for customer in customers:
+for customer in customers.items:
     print(f"- {customer.name} ({customer.email})")
 
 # Delete customer
@@ -255,12 +255,11 @@ response = client.subscriptions.create_session(
 subscription = client.subscriptions.get("subscription-uuid")
 print(f"Status: {subscription.subscription_status.value}")
 print(f"Next billing: {subscription.next_billing_date}")
-print(f"Allowance: ${subscription.allowance}")
 
 # Get subscription payment history
 history = client.subscriptions.get_payment_history("subscription-uuid")
 for payment in history:
-    print(f"- {payment.created_at}: ${payment.allowance}")
+    print(f"- {payment.created_at}")
 
 # Execute test billing cycle (test mode only)
 status_response = client.subscriptions.execute_test_billing_cycle("subscription-uuid")
@@ -280,7 +279,6 @@ response = client.pay_as_you_go.create_session(
     product_id=1,
     frequency=Duration(value=1, unit="months"),
     free_credits=10.0,
-    min_periods=3,
     customer_uuid="customer-uuid"
 )
 
@@ -291,6 +289,7 @@ print(f"Max spending: ${payg.max_spending_per_period}")
 print(f"Free credits: ${payg.free_credits}")
 
 # Increase usage units
+# The billing price will be calculated based on the product's price per unit, and the number of units increased.
 payg = client.pay_as_you_go.increase_units_current_period(
     subscription_uuid="subscription-uuid",
     increase_amount=5.0
@@ -339,6 +338,7 @@ def handle_webhook(event: SessionWebhookResponse):
         # - Log for review
         # etc.
 
+	# Always respond with 200 OK to acknowledge receipt
     return {"received": True}
 ```
 

@@ -12,7 +12,7 @@ Run with:
 import pydantic
 import pytest
 from qbitflow import QBitFlow, Duration
-from qbitflow.dto.customer import CreateCustomerDto, UpdateCustomerDto
+from qbitflow.dto.customer import UpdateCustomerDto
 from qbitflow.dto.product import CreateProductDto, UpdateProductDto
 from qbitflow.dto.transaction.status import TransactionType
 from qbitflow.exceptions import (
@@ -78,6 +78,8 @@ class TestCustomers:
     def test_get_all_customers(self, client):
         """Test retrieving all customers."""
         customers = client.customers.get_all()
+
+        customers = customers.items  # Extract items from CursorData
         
         assert isinstance(customers, list)
         # Should have at least one customer
@@ -162,6 +164,19 @@ class TestProducts:
         assert updated.name == "Updated Product"
         assert updated.price == 19.99
 
+    def test_delete_product(self, client, test_product_data):
+        """Test deleting a product."""
+        # Create product
+        created = client.products.create(test_product_data)
+        
+        # Delete product
+        response = client.products.delete(created.id)
+        assert response.message is not None
+        
+        # Verify deletion
+        with pytest.raises(NotFoundException):
+            client.products.get(created.id)
+
 
 class TestPayments:
     """Test payment operations."""
@@ -217,6 +232,36 @@ class TestPayments:
         assert len(session.available_currencies) > 0
 
 
+    def test_get_all_payments(self, client):
+        """Test retrieving all payments with pagination."""
+        # Retrieve payments with pagination
+        cursor = None
+        all_payments = []
+        while True:
+            page = client.one_time_payments.get_all(limit=2, cursor=cursor)
+            all_payments.extend(page.items)
+            if not page.has_more():
+                break
+            cursor = page.next_cursor
+        
+        assert len(all_payments) >= 5
+
+
+    def test_get_all_combined_payments(self, client):
+        """Test retrieving all payments (one-time and subscription) with pagination."""
+        # Retrieve combined payments with pagination
+        cursor = None
+        all_payments = []
+        while True:
+            page = client.one_time_payments.get_all_combined(limit=50, cursor=cursor)
+            all_payments.extend(page.items)
+            if not page.has_more():
+                break
+            cursor = page.next_cursor
+        
+        assert len(all_payments) >= 5
+
+
 class TestSubscriptions:
     """Test subscription operations."""
     
@@ -250,6 +295,7 @@ class TestSubscriptions:
         
         assert response.uuid is not None
         assert response.link is not None
+
 
 
 class TestPayAsYouGo:
