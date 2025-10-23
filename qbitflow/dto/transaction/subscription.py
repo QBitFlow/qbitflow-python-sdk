@@ -1,0 +1,113 @@
+"""
+Subscription-related data models.
+
+This module contains data models for subscription management.
+"""
+
+from datetime import datetime
+import enum
+from typing import Optional
+from pydantic import Field
+
+from qbitflow.dto.base_model import BaseModel
+from .currency import Currency
+
+
+class SubscriptionStatus(str, enum.Enum):
+    """
+    Enumeration of subscription status values.
+    
+    Defines the possible states a subscription can be in.
+    
+    Attributes:
+        ACTIVE: Subscription is active and billing normally.
+        CANCELLED: Subscription has been cancelled.
+        PAST_DUE: Last payment attempt failed.
+        LOW_ON_FUNDS: Allowance amount is low, next billing may fail.
+        PENDING: Max amount reached, likely due to price fluctuations.
+        TRIAL: Currently in trial period.
+        TRIAL_EXPIRED: Trial ended, 7 days to upgrade before cancellation.
+    """
+    ACTIVE = "active"
+    CANCELLED = "cancelled"
+    PAST_DUE = "past_due"
+    LOW_ON_FUNDS = "low_on_funds"
+    PENDING = "pending"
+    TRIAL = "trial"
+    TRIAL_EXPIRED = "trial_expired"
+
+
+class Subscription(BaseModel):
+    """
+    Represents a recurring subscription.
+    
+    Subscriptions allow customers to pay automatically at regular intervals.
+    
+    Attributes:
+        uuid: Unique identifier for the subscription.
+        created_at: Timestamp when subscription was created.
+        updated_at: Timestamp when subscription was last updated.
+        from_: Subscriber's cryptocurrency address.
+        to: Recipient's cryptocurrency address.
+        product_id: ID of the subscribed product.
+        subscription_hash: Blockchain subscription hash.
+        currency_id: ID of the cryptocurrency used.
+        currency: Cryptocurrency details.
+        test: Whether this is a test mode subscription.
+        customer_uuid: UUID of the subscribing customer.
+        frequency: Billing frequency in seconds.
+        allowance: Allowed charge amount (periods * price) in USD.
+        subscription_status: Current subscription status.
+        stopped: Whether the subscription has been stopped.
+        last_billing_date: Last successful billing date.
+        next_billing_date: Next scheduled billing date.
+        minimum_cancellation_date: Earliest date subscription can be cancelled.
+    
+    Example:
+        >>> sub = client.subscriptions.get("subscription-uuid")
+        >>> print(f"Status: {sub.subscription_status.value}")
+        >>> print(f"Next billing: {sub.next_billing_date}")
+        >>> print(f"Allowance: ${sub.allowance} USD")
+    """
+    
+    uuid: str = Field(..., description="Subscription UUID")
+    created_at: datetime = Field(..., description="Creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
+    from_: str = Field(..., alias="from", description="Subscriber's address")
+    to: str = Field(..., description="Recipient's address")
+    product_id: int = Field(..., description="Product ID")
+    subscription_hash: str = Field(..., description="Blockchain subscription hash")
+    currency_id: int = Field(..., description="Currency ID")
+    currency: Currency = Field(..., description="Currency details")
+    test: bool = Field(..., description="Test mode flag")
+    customer_uuid: str = Field(..., description="Customer UUID")
+    frequency: int = Field(..., gt=0, description="Billing frequency in seconds")
+    allowance: float = Field(..., ge=0, description="Allowed charge amount in USD")
+    subscription_status: SubscriptionStatus = Field(..., description="Subscription status")
+    stopped: bool = Field(..., description="Whether subscription is stopped")
+    last_billing_date: Optional[datetime] = Field(default=None, description="Last billing date")
+    next_billing_date: datetime = Field(..., description="Next billing date")
+    minimum_cancellation_date: Optional[datetime] = Field(default=None, description="Minimum cancellation date")
+
+
+class PayAsYouGoSubscription(Subscription):
+    """
+    Represents a pay-as-you-go subscription.
+    
+    Pay-as-you-go subscriptions charge based on usage rather than a fixed amount.
+    
+    Attributes:
+        units_current_period: Usage units in current billing period.
+        max_spending_per_period: Maximum spending allowed per period.
+        free_credits: Free credits available to the customer.
+    
+    Example:
+        >>> payg = client.pay_as_you_go.get("payg-uuid")
+        >>> print(f"Usage: {payg.units_current_period} units")
+        >>> print(f"Max spending: ${payg.max_spending_per_period}")
+        >>> print(f"Free credits: ${payg.free_credits}")
+    """
+    
+    units_current_period: float = Field(..., ge=0, description="Usage units in current period")
+    max_spending_per_period: float = Field(..., ge=0, description="Max spending per period")
+    free_credits: float = Field(..., ge=0, description="Free credits available")
