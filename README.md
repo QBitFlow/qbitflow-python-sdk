@@ -110,33 +110,6 @@ elif status.status == TransactionStatusValue.FAILED:
     print(f"Payment failed: {status.message}")
 ```
 
-## Configuration
-
-### Environment Variables
-
-You can configure the SDK using environment variables:
-
-```bash
-# Set custom API base URL (useful for testing)
-export QBITFLOW_BASE_URL="https://api.qbitflow.app"
-```
-
-### Programmatic Configuration
-
-```python
-from qbitflow import config
-
-# Set custom base URL
-config.set_base_url("http://localhost:3001")  # For local testing
-
-# Configure timeout and retries
-client = QBitFlow(
-    api_key="your_api_key",
-    timeout=60,  # Request timeout in seconds
-    max_retries=5  # Maximum retry attempts
-)
-```
-
 ## Usage Examples
 
 ### Customer Management
@@ -498,6 +471,33 @@ except QBitFlowError as e:
 ### Transaction Status Methods
 
 -   `transaction_status.get(transaction_uuid, transaction_type)` - Get status
+
+## Configuration
+
+### Environment Variables
+
+You can configure the SDK using environment variables:
+
+```bash
+# Set custom API base URL (useful for testing)
+export QBITFLOW_BASE_URL="https://api.qbitflow.app"
+```
+
+### Programmatic Configuration
+
+```python
+from qbitflow import config
+
+# Set custom base URL
+config.set_base_url("http://localhost:3001")  # For local testing
+
+# Configure timeout and retries
+client = QBitFlow(
+    api_key="your_api_key",
+    timeout=60,  # Request timeout in seconds
+    max_retries=5  # Maximum retry attempts
+)
+```
 
 ## Testing
 
