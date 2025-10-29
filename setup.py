@@ -26,7 +26,7 @@ setup(
     url="https://github.com/qbitflow/qbitflow-python-sdk",
     project_urls={
         "Bug Tracker": "https://github.com/qbitflow/qbitflow-python-sdk/issues",
-        "Documentation": "https://docs.qbitflow.app",
+        "Documentation": "https://qbitflow.app/docs",
         "Source Code": "https://github.com/qbitflow/qbitflow-python-sdk",
         "Homepage": "https://qbitflow.app",
     },

@@ -24,7 +24,7 @@ Basic Usage
 ... )
 >>> print(response.link)  # Send this link to your customer
 
-For more examples, see the documentation at https://qbitflow.io/docs
+For more examples, see the documentation at https://qbitflow.app/docs
 """
 
 from .client import QBitFlow

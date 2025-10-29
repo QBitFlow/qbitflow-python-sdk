@@ -28,6 +28,9 @@ class SubscriptionOptions(BaseModel):
     frequency: int = Field(..., gt=0, description="Billing frequency in seconds")
     trial_period: Optional[int] = Field(default=None, ge=0, description="Trial period in seconds")
     free_credits: Optional[float] = Field(default=None, ge=0, description="Free credits in USD")
+    subscription_type: Literal["subscription", "payAsYouGo"] = Field(
+        ..., description="Subscription type"
+    )
     min_periods: Optional[int] = Field(default=None, gt=0, description="Minimum billing periods")
 
 

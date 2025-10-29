@@ -68,27 +68,24 @@ class CreateApiKeyDto(BaseModel):
     name: str = Field(..., min_length=1, description="Descriptive name for the API key")
     user_id: int = Field(..., gt=0, description="User ID creating the key")
     expires_at: Optional[datetime] = Field(default=None, description="Expiration timestamp")
-    role: UserRole = Field(..., description="Role for the key")
     test: bool = Field(..., description="Whether this is a test mode key")
 
 
 class CreatedKeyResponse(BaseModel):
     """
-    Response when a new API key is created.
+        Response when a new API key is created.
+        
+        This contains the actual API key value which is only shown once during creation.
+        
+        Attributes:
+            data: The created API key information.
+            key: The actual API key value (only shown once).
+        
+        Example:
+            >>> response = client.api_keys.create(new_key_dto)
+            >>> print(f"Save this key: {response.key}")
+            >>> print(f"Key ID: {response.data.id}")
+        """
     
-    This contains the actual API key value which is only shown once during creation.
-    
-    Attributes:
-        id: Unique identifier for the created API key.
-        key: The actual API key value (only shown once).
-        prefix: The key prefix for identification.
-    
-    Example:
-        >>> response = client.api_keys.create(new_key_dto)
-        >>> print(f"Save this key: {response.key}")
-        >>> print(f"Key ID: {response.id}")
-    """
-    
-    id: int = Field(..., description="API key ID")
-    key: str = Field(..., description="The actual API key value")
-    prefix: str = Field(..., description="Key prefix for identification")
+    data: ApiKey = Field(..., description="Created API key information")
+    key: str = Field(..., description="The actual API key value (only shown once)")

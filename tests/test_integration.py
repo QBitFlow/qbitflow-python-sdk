@@ -9,18 +9,23 @@ Run with:
     pytest tests/test_integration.py -v
 """
 
+import os
+from typing import Optional
 import pydantic
 import pytest
 from qbitflow import QBitFlow, Duration
+from qbitflow.dto.api_key import CreateApiKeyDto
 from qbitflow.dto.customer import UpdateCustomerDto
 from qbitflow.dto.product import CreateProductDto, UpdateProductDto
 from qbitflow.dto.transaction.status import TransactionType
+from qbitflow.dto.user import CreateUserDto, UpdateUserDto, User, UserRole
 from qbitflow.exceptions import (
     NotFoundException,
     ValidationError,
     QBitFlowError
 )
 
+created_user: Optional[User] = None
 
 class TestClient:
     """Test QBitFlow client initialization."""
@@ -117,6 +122,91 @@ class TestCustomers:
             client.customers.get(created.uuid)
 
 
+class TestUsers:
+    """Test user management operations."""
+    
+    
+    def test_create_user(self, client, test_user_data):
+        """Test creating a new user."""
+        user = client.users.create(test_user_data)
+        
+        assert user.id is not None
+        assert user.name == test_user_data.name
+        assert user.email == test_user_data.email
+        assert user.created_at is not None
+
+        global created_user
+        created_user = user
+    
+    def test_get_user(self, client):
+        """Test retrieving the current user (based on API key)."""        
+        # Retrieve user
+        retrieved = client.users.get()
+        
+        assert retrieved.id is not None
+
+    def test_get_user_by_id(self, client):
+        """Test retrieving a user by ID."""
+        global created_user
+        assert created_user is not None, "Create user test must run first"
+        
+        # Retrieve by ID
+        retrieved = client.users.get_by_id(created_user.id)
+        
+        assert retrieved.id == created_user.id
+        assert retrieved.email == created_user.email
+
+    def test_get_all_users(self, client):
+        """Test retrieving all users."""
+        users = client.users.get_all()
+        
+        assert isinstance(users, list)
+        # Should have at least one user
+        assert len(users) >= 1
+
+    def test_update_user(self, client):
+        """Test updating a user."""
+        global created_user
+        assert created_user is not None, "Create user test must run first"
+        
+        # Update user
+        update_data = UpdateUserDto(
+            name="Updated",
+            last_name="User",
+            email="updated@example.com",
+            organization_fee_bps=150
+        )
+        updated = client.users.update(created_user.id, update_data)    
+
+        assert updated.id == created_user.id
+        assert updated.email == "updated@example.com"
+        assert updated.name == "Updated"
+        assert updated.organization_fee_bps == 150
+
+
+    def test_delete_user(self, client):
+        """Test deleting a user."""
+        # Create a new client to be deleted
+        temp_user_data = CreateUserDto(
+            email=f"tempuser+{os.urandom(4).hex()}@example.com",
+            name="Temp",
+            last_name="User",
+            password="TempP@ssw0rd!",
+            role=UserRole.USER,
+        )
+        temp_user = client.users.create(temp_user_data)
+        assert temp_user.id is not None
+        
+        # Delete user
+        response = client.users.delete(temp_user.id)
+        assert response.message is not None
+        
+        # Verify deletion
+        with pytest.raises(NotFoundException):
+            client.users.get_by_id(temp_user.id)
+
+    
+
 class TestProducts:
     """Test product management operations."""
     
@@ -146,6 +236,24 @@ class TestProducts:
         
         assert isinstance(products, list)
         assert len(products) >= 0
+
+    def test_get_by_reference(self, client, test_product_data):
+        """Test retrieving a product by reference code."""
+        # Create product with reference
+        reference_code = f"REF-{os.urandom(4).hex()}"
+        product_data = CreateProductDto(
+            name=test_product_data.name,
+            description=test_product_data.description,
+            price=test_product_data.price,
+            reference=reference_code
+        )
+        created = client.products.create(product_data)
+        
+        # Retrieve by reference
+        retrieved = client.products.get_by_reference(reference_code)
+        
+        assert retrieved.id == created.id
+        assert retrieved.reference == reference_code
     
     def test_update_product(self, client, test_product_data):
         """Test updating a product."""
@@ -176,6 +284,73 @@ class TestProducts:
         # Verify deletion
         with pytest.raises(NotFoundException):
             client.products.get(created.id)
+
+
+class TestApiKeys:
+    """Test API key management operations."""
+    
+    def test_create_api_key(self, client):
+        """Test creating a new API key."""
+        global created_user
+        assert created_user is not None, "Create user test must run first"
+
+        api_key = client.api_keys.create(
+            CreateApiKeyDto(
+                name="Test API Key",
+                user_id=created_user.id,
+                role=UserRole.USER,
+                test=True
+            )
+        )
+
+        data = api_key.data
+        assert data.name == "Test API Key"
+        assert api_key.key is not None
+
+
+    def test_get_all_api_keys(self, client):
+        """Test retrieving all API keys."""
+        api_keys = client.api_keys.get_all()
+        
+        assert isinstance(api_keys, list)
+        assert len(api_keys) >= 0
+
+
+    def test_get_for_user(self, client):
+        """Test retrieving API keys for a specific user."""
+        global created_user
+        assert created_user is not None, "Create user test must run first"
+
+        api_keys = client.api_keys.get_for_user(created_user.id)
+        
+        assert isinstance(api_keys, list)
+        for key in api_keys:
+            assert key.user_id == created_user.id
+
+
+    def test_delete_api_key(self, client):
+        """Test deleting an API key."""
+        global created_user
+        assert created_user is not None, "Create user test must run first"
+
+        # Create API key to delete
+        api_key = client.api_keys.create(
+            CreateApiKeyDto(
+                name="Temp API Key",
+                user_id=created_user.id,
+                role=UserRole.USER,
+                test=True
+            )
+        )
+        
+        # Delete API key
+        response = client.api_keys.delete(api_key.data.id)
+        assert response.message is not None
+        
+        # Verify deletion
+        user_keys = client.api_keys.get_for_user(created_user.id)
+        key_ids = [key.id for key in user_keys]
+        assert api_key.data.id not in key_ids
 
 
 class TestPayments:
@@ -296,6 +471,25 @@ class TestSubscriptions:
         assert response.uuid is not None
         assert response.link is not None
 
+    def test_get_session(self, client, test_customer_data):
+        """Test retrieving a subscription session."""
+        # Create customer
+        customer = client.customers.create(test_customer_data)
+        
+        # Create subscription session
+        created = client.subscriptions.create_session(
+            product_id=1,
+            frequency=Duration(value=1, unit="months"),
+            customer_uuid=customer.uuid
+        )
+        
+        # Retrieve session
+        session = client.subscriptions.get_session(created.uuid)
+        
+        assert session.uuid == created.uuid
+        assert session.price > 0
+        assert len(session.available_currencies) > 0
+
 
 
 class TestPayAsYouGo:
@@ -316,6 +510,41 @@ class TestPayAsYouGo:
         
         assert response.uuid is not None
         assert response.link is not None
+
+
+    def test_create_payg_session_without_credits(self, client, test_customer_data):
+        """Test creating a PAYG subscription session without free credits."""
+        # Create customer
+        customer = client.customers.create(test_customer_data)
+        
+        # Create PAYG session
+        response = client.pay_as_you_go.create_session(
+            product_id=1,
+            frequency=Duration(value=1, unit="months"),
+            customer_uuid=customer.uuid
+        )
+        
+        assert response.uuid is not None
+        assert response.link is not None
+
+    def test_get_session(self, client, test_customer_data):
+        """Test retrieving a PAYG subscription session."""
+        # Create customer
+        customer = client.customers.create(test_customer_data)
+        
+        # Create PAYG session
+        created = client.pay_as_you_go.create_session(
+            product_id=1,
+            frequency=Duration(value=1, unit="months"),
+            customer_uuid=customer.uuid
+        )
+        
+        # Retrieve session
+        session = client.pay_as_you_go.get_session(created.uuid)
+        
+        assert session.uuid == created.uuid
+        assert session.price > 0
+        assert len(session.available_currencies) > 0
 
 
 class TestTransactionStatus:

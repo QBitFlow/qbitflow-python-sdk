@@ -10,9 +10,9 @@ Before publishing, ensure you have:
 2. A TestPyPI account (create one at https://test.pypi.org/account/register/)
 3. API tokens from both PyPI and TestPyPI
 4. Required tools installed:
-   ```bash
-   pip install build twine
-   ```
+    ```bash
+    pip install build twine
+    ```
 
 ## Step 1: Prepare for Release
 
@@ -32,19 +32,22 @@ Document all changes in `CHANGELOG.md`:
 ## [1.0.0] - 2025-01-15
 
 ### Added
-- Initial release
-- One-time payment support
-- Recurring subscriptions
-- Pay-as-you-go subscriptions
-- Customer management
-- Product management
-- Comprehensive documentation
+
+-   Initial release
+-   One-time payment support
+-   Recurring subscriptions
+-   Pay-as-you-go subscriptions
+-   Customer management
+-   Product management
+-   Comprehensive documentation
 
 ### Changed
-- N/A (initial release)
+
+-   N/A (initial release)
 
 ### Fixed
-- N/A (initial release)
+
+-   N/A (initial release)
 ```
 
 ### 1.3 Run Tests
@@ -77,6 +80,7 @@ tree -L 2 -I '__pycache__|*.pyc|.git'
 ```
 
 Expected structure:
+
 ```
 qbitflow-python-sdk/
 ├── qbitflow/           # Main package
@@ -108,8 +112,9 @@ python -m build
 ```
 
 This creates two files in `dist/`:
-- `qbitflow-1.0.0.tar.gz` (source distribution)
-- `qbitflow-1.0.0-py3-none-any.whl` (wheel)
+
+-   `qbitflow-1.0.0.tar.gz` (source distribution)
+-   `qbitflow-1.0.0-py3-none-any.whl` (wheel)
 
 ### 2.3 Verify Build
 
@@ -169,13 +174,15 @@ rm -rf test_env/
 ### 3.4 Verify on TestPyPI
 
 Visit your package page:
-- https://test.pypi.org/project/qbitflow/
+
+-   https://test.pypi.org/project/qbitflow/
 
 Check:
-- Version number is correct
-- Description renders properly
-- Links work
-- Classifiers are correct
+
+-   Version number is correct
+-   Description renders properly
+-   Links work
+-   Classifiers are correct
 
 ## Step 4: Publish to PyPI
 
@@ -199,10 +206,11 @@ python -m twine upload dist/*
 ```
 
 You'll see output like:
+
 ```
 Uploading distributions to https://upload.pypi.org/legacy/
 Uploading qbitflow-1.0.0-py3-none-any.whl
-100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 
+100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Uploading qbitflow-1.0.0.tar.gz
 100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -213,7 +221,8 @@ https://pypi.org/project/qbitflow/1.0.0/
 ### 4.3 Verify on PyPI
 
 Visit your package page:
-- https://pypi.org/project/qbitflow/
+
+-   https://pypi.org/project/qbitflow/
 
 ### 4.4 Test Installation
 
@@ -260,24 +269,26 @@ git push origin v1.0.0
 
 ### 5.3 Update Documentation
 
-- Update documentation site with new version
-- Announce release on:
-  - Blog
-  - Twitter
-  - Discord/Slack community
-  - Email newsletter
+-   Update documentation site with new version
+-   Announce release on:
+    -   Blog
+    -   Twitter
+    -   Discord/Slack community
+    -   Email newsletter
 
 ## Step 6: Troubleshooting
 
 ### Issue: "File already exists"
 
 If you get this error when uploading:
+
 ```
 HTTPError: 400 Bad Request from https://upload.pypi.org/legacy/
 File already exists.
 ```
 
 Solution: You cannot reupload the same version. You must:
+
 1. Increment the version number
 2. Rebuild the package
 3. Upload again
@@ -285,6 +296,7 @@ Solution: You cannot reupload the same version. You must:
 ### Issue: "Invalid distribution file"
 
 If twine reports an invalid distribution:
+
 ```bash
 # Check the package
 twine check dist/*
@@ -297,6 +309,7 @@ python -m build
 ### Issue: "Authentication failed"
 
 If upload fails with authentication error:
+
 1. Verify your API token is correct in `~/.pypirc`
 2. Ensure token has upload permissions
 3. Check token hasn't expired
@@ -304,13 +317,14 @@ If upload fails with authentication error:
 ### Issue: "Metadata is missing required fields"
 
 Ensure these are set in `setup.py`:
-- `name`
-- `version`
-- `author`
-- `author_email`
-- `description`
-- `long_description`
-- `url`
+
+-   `name`
+-   `version`
+-   `author`
+-   `author_email`
+-   `description`
+-   `long_description`
+-   `url`
 
 ## Automated Publishing with GitHub Actions
 
@@ -320,33 +334,33 @@ For automated releases, create `.github/workflows/publish.yml`:
 name: Publish to PyPI
 
 on:
-  release:
-    types: [published]
+    release:
+        types: [published]
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-      
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
-      
-      - name: Build package
-        run: python -m build
-      
-      - name: Publish to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: twine upload dist/*
+    publish:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.9"
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install build twine
+
+            - name: Build package
+              run: python -m build
+
+            - name: Publish to PyPI
+              env:
+                  TWINE_USERNAME: __token__
+                  TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+              run: twine upload dist/*
 ```
 
 Then add `PYPI_API_TOKEN` to your GitHub repository secrets.
@@ -388,15 +402,16 @@ tar -tzf dist/qbitflow-*.tar.gz | head -20
 
 ## Resources
 
-- PyPI: https://pypi.org
-- TestPyPI: https://test.pypi.org
-- Python Packaging Guide: https://packaging.python.org
-- Twine Documentation: https://twine.readthedocs.io
-- Setuptools Documentation: https://setuptools.pypa.io
+-   PyPI: https://pypi.org
+-   TestPyPI: https://test.pypi.org
+-   Python Packaging Guide: https://packaging.python.org
+-   Twine Documentation: https://twine.readthedocs.io
+-   Setuptools Documentation: https://setuptools.pypa.io
 
 ## Support
 
 If you encounter issues during publishing:
-- Check the [Python Packaging Guide](https://packaging.python.org)
-- Ask on the [Python Packaging Discourse](https://discuss.python.org/c/packaging)
-- Contact QBitFlow support: support@qbitflow.io
+
+-   Check the [Python Packaging Guide](https://packaging.python.org)
+-   Ask on the [Python Packaging Discourse](https://discuss.python.org/c/packaging)
+-   Contact QBitFlow support: support@qbitflow.app

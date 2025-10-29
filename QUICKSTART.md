@@ -60,7 +60,7 @@ def handle_webhook(event: SessionWebhookResponse):
     if event.status.status == TransactionStatusValue.COMPLETED:
         print(f"Payment completed: {event.session.product_name}")
         # Grant access to product/service
-    
+
     return {"received": True}
 ```
 
@@ -79,13 +79,13 @@ print(f"Status: {status.status.value}")
 
 ## Next Steps
 
-- Read the [full documentation](README.md)
-- Check out [examples](examples/)
-- Explore the [API reference](README.md#api-reference)
-- Learn about [error handling](README.md#error-handling)
+-   Read the [full documentation](README.md)
+-   Check out [examples](examples/)
+-   Explore the [API reference](README.md#api-reference)
+-   Learn about [error handling](README.md#error-handling)
 
 ## Need Help?
 
-- 📖 [Documentation](https://docs.qbitflow.io)
-- 💬 [Community Forum](https://community.qbitflow.io)
-- 📧 [Email Support](mailto:support@qbitflow.io)
+-   📖 [Documentation](https://qbitflow.app/docs)
+-   💬 [Community Forum](https://community.qbitflow.app)
+-   📧 [Email Support](mailto:support@qbitflow.app)

@@ -31,6 +31,14 @@ class UserRequests(BaseRequest):
         res = self._make_request(f"{self.BASE_ROUTE}/", "GET")
         return dto.User(**res)
     
+    def get_by_id(self, user_id: int) -> dto.User:
+        """Get a user by their ID. Must be an admin to use this method, and the user must be in the same organization."""
+        if user_id <= 0:
+            raise ValidationError("User ID must be positive")
+        
+        res = self._make_request(f"{self.BASE_ROUTE}/id/{user_id}", "GET")
+        return dto.User(**res)
+    
     def update(self, user_id: int, user: dto.UpdateUserDto) -> dto.User:
         """Update an existing user."""
         if user_id <= 0:

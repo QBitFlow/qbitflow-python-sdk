@@ -7,6 +7,7 @@ This module contains data models for user management operations.
 
 from datetime import datetime
 import enum
+from typing import Optional
 from pydantic import Field, EmailStr
 
 from .base_model import BaseModel
@@ -24,6 +25,7 @@ class UserRole(str, enum.Enum):
     """
     ADMIN = "admin"
     USER = "user"
+    OWNER = "owner"
 
 
 class User(BaseModel):
@@ -89,7 +91,7 @@ class CreateUserDto(BaseModel):
     email: EmailStr = Field(..., description="User's email address")
     password: str = Field(..., min_length=8, description="User's password")
     role: UserRole = Field(..., description="User's role")
-    organization_fee_bps: int = Field(..., ge=0, description="Organization fee in basis points")
+    organization_fee_bps: int = Field(default=0, ge=0, le=1000, description="Organization fee in basis points, for example 100 = 1%")
 
 
 class UpdateUserDto(BaseModel):
@@ -117,5 +119,5 @@ class UpdateUserDto(BaseModel):
     name: str = Field(..., min_length=1, description="User's first name")
     last_name: str = Field(..., min_length=1, description="User's last name")
     email: EmailStr = Field(..., description="User's email address")
-    password: str = Field(..., min_length=8, description="User's password")
-    organization_fee_bps: int = Field(..., ge=0, description="Organization fee in basis points")
+    password: Optional[str] = Field(default=None, min_length=8, description="User's password")
+    organization_fee_bps: int = Field(default=0, ge=0, le=1000, description="Organization fee in basis points, for example 100 = 1%")

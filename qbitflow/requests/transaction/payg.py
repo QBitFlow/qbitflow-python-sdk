@@ -6,7 +6,7 @@ from qbitflow.requests.base_request import BaseRequest, SuccessResponse
 from qbitflow.dto.transaction.session import (
     CreateSessionDto, CreateSubscriptionOptions, LinkResponse, Session, StatusResponse
 )
-from qbitflow.dto.transaction.subscription import PayAsYouGoSubscription
+from qbitflow.dto.transaction.subscription import PayAsYouGoSubscription, SubscriptionHistory
 from qbitflow.requests.transaction.session import SessionRequests
 from qbitflow.utils.duration import Duration
 from qbitflow.exceptions import ValidationError
@@ -94,16 +94,16 @@ class PayAsYouGoSubscriptionRequests(BaseRequest):
         res = self._make_request(f"{self.BASE_ROUTE}/{subscription_uuid}", "GET")
         return PayAsYouGoSubscription(**res)
     
-    def get_payment_history(self, subscription_uuid: str) -> List[PayAsYouGoSubscription]:
+    def get_payment_history(self, subscription_uuid: str) -> List[SubscriptionHistory]:
         """Get payment history for a PAYG subscription."""
         if not subscription_uuid:
             raise ValidationError("Subscription UUID cannot be empty")
         
         res = self._make_request(f"{self.BASE_ROUTE}/history/{subscription_uuid}", "GET")
-        return [PayAsYouGoSubscription(**item) for item in res]
+        return [SubscriptionHistory(**item) for item in res]
     
     def force_cancel(self, subscription_uuid: str) -> SuccessResponse:
-        """Force cancel a PAYG subscription immediately."""
+        """Force cancel a PAYG subscription immediately (use with caution)."""
         if not subscription_uuid:
             raise ValidationError("Subscription UUID cannot be empty")
         

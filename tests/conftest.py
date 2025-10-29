@@ -8,6 +8,7 @@ Set the QBITFLOW_API_KEY environment variable to run integration tests:
 import os
 import pytest
 from qbitflow import QBitFlow, config
+from qbitflow.dto.user import UserRole
 
 
 @pytest.fixture(scope="session")
@@ -43,6 +44,18 @@ def test_customer_data():
         address=None
     )
 
+
+@pytest.fixture
+def test_user_data():
+    """Sample user data for testing."""
+    from qbitflow.dto.user import CreateUserDto
+    return CreateUserDto(
+        email=f"user+{os.urandom(4).hex()}@example.com",
+        name="Test User",
+        last_name="SDK",
+        password="SecureP@ssw0rd!",
+        role=UserRole.USER,
+    )
 
 @pytest.fixture
 def test_product_data():
