@@ -5,8 +5,10 @@ Cursor-based pagination utility.
 This module provides a generic CursorData class for handling paginated API responses.
 """
 
-from typing import Generic, TypeVar, List, Optional
+from typing import Any, Dict, Generic, TypeVar, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
+
+from qbitflow.exceptions.exceptions import ValidationError
 
 
 T = TypeVar('T')  # Type of items in the list
@@ -67,3 +69,25 @@ class CursorData(BaseModel, Generic[T, V]):
         """Return the number of items in the current page."""
         return len(self.items)
 
+
+
+def cursor_query_builder(limit: Optional[int] = None, cursor: Optional[V] = None) -> Dict[str, Any]:
+    """
+    Build a query string for cursor-based pagination.
+    
+    Args:
+        limit: Maximum number of results per page.
+        cursor: Pagination cursor from previous response.
+
+    Returns:
+        A dictionary containing the query parameters for the request.
+    """
+    params = {}
+    if limit is not None:
+        if limit <= 0:
+            raise ValidationError("Limit must be positive")
+        params['limit'] = limit
+    if cursor is not None:
+        params['cursor'] = cursor
+
+    return params

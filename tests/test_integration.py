@@ -16,7 +16,7 @@ import pytest
 from qbitflow import QBitFlow, Duration
 from qbitflow.dto.api_key import CreateApiKeyDto
 from qbitflow.dto.customer import UpdateCustomerDto
-from qbitflow.dto.product import CreateProductDto, UpdateProductDto
+from qbitflow.dto.product import CreateProductDto, Product, UpdateProductDto
 from qbitflow.dto.transaction.status import TransactionType
 from qbitflow.dto.user import CreateUserDto, UpdateUserDto, User, UserRole
 from qbitflow.exceptions import (
@@ -26,6 +26,8 @@ from qbitflow.exceptions import (
 )
 
 created_user: Optional[User] = None
+created_product: Optional[Product] = None
+created_customer_uuid: Optional[str] = None
 
 class TestClient:
     """Test QBitFlow client initialization."""
@@ -57,6 +59,9 @@ class TestCustomers:
         assert customer.last_name == test_customer_data.last_name
         assert customer.email == test_customer_data.email
         assert customer.created_at is not None
+
+        global created_customer_uuid
+        created_customer_uuid = customer.uuid
     
     def test_get_customer(self, client, test_customer_data):
         """Test retrieving a customer by UUID."""
@@ -82,13 +87,22 @@ class TestCustomers:
     
     def test_get_all_customers(self, client):
         """Test retrieving all customers."""
-        customers = client.customers.get_all()
+        customers = client.customers.get_all(limit=2)
 
-        customers = customers.items  # Extract items from CursorData
+        customers_items = customers.items  # Extract items from CursorData
         
-        assert isinstance(customers, list)
+        assert isinstance(customers_items, list)
         # Should have at least one customer
-        assert len(customers) >= 0
+        assert len(customers_items) > 0
+
+        assert customers.has_more(), "Expected more pages of customers"
+
+        # Fetch the next page if available
+        next_page = client.customers.get_all(limit=2, cursor=customers.next_cursor)
+        assert isinstance(next_page.items, list)
+        assert len(next_page.items) > 0
+            
+        
     
     def test_update_customer(self, client, test_customer_data):
         """Test updating a customer."""
@@ -168,18 +182,20 @@ class TestUsers:
         """Test updating a user."""
         global created_user
         assert created_user is not None, "Create user test must run first"
+
+        updated_email = f"updated+{os.urandom(4).hex()}@example.com"
         
         # Update user
         update_data = UpdateUserDto(
             name="Updated",
             last_name="User",
-            email="updated@example.com",
+            email=updated_email,
             organization_fee_bps=150
         )
         updated = client.users.update(created_user.id, update_data)    
 
         assert updated.id == created_user.id
-        assert updated.email == "updated@example.com"
+        assert updated.email == updated_email
         assert updated.name == "Updated"
         assert updated.organization_fee_bps == 150
 
@@ -218,24 +234,27 @@ class TestProducts:
         assert product.name == test_product_data.name
         assert product.price == test_product_data.price
         assert product.is_active is True
+
+        global created_product
+        created_product = product
     
     def test_get_product(self, client, test_product_data):
         """Test retrieving a product by ID."""
-        # Create product
-        created = client.products.create(test_product_data)
+
+        assert created_product is not None, "Create product test must run first"
         
         # Retrieve product
-        retrieved = client.products.get(created.id)
+        retrieved = client.products.get(created_product.id)
         
-        assert retrieved.id == created.id
-        assert retrieved.name == created.name
+        assert retrieved.id == created_product.id
+        assert retrieved.name == created_product.name
     
     def test_get_all_products(self, client):
         """Test retrieving all products."""
         products = client.products.get_all()
         
         assert isinstance(products, list)
-        assert len(products) >= 0
+        assert len(products) > 0
 
     def test_get_by_reference(self, client, test_product_data):
         """Test retrieving a product by reference code."""
@@ -298,7 +317,6 @@ class TestApiKeys:
             CreateApiKeyDto(
                 name="Test API Key",
                 user_id=created_user.id,
-                role=UserRole.USER,
                 test=True
             )
         )
@@ -313,7 +331,7 @@ class TestApiKeys:
         api_keys = client.api_keys.get_all()
         
         assert isinstance(api_keys, list)
-        assert len(api_keys) >= 0
+        assert len(api_keys) > 0
 
 
     def test_get_for_user(self, client):
@@ -338,7 +356,6 @@ class TestApiKeys:
             CreateApiKeyDto(
                 name="Temp API Key",
                 user_id=created_user.id,
-                role=UserRole.USER,
                 test=True
             )
         )
@@ -356,15 +373,18 @@ class TestApiKeys:
 class TestPayments:
     """Test payment operations."""
     
-    def test_create_payment_session_with_product_id(self, client, test_customer_data):
+    def test_create_payment_session_with_product_id(self, client):
         """Test creating a payment session with product ID."""
-        # Create customer first
-        customer = client.customers.create(test_customer_data)
-        
+        global created_product
+        assert created_product is not None, "Create product test must run first"
+
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
+
         # Create payment session
         response = client.one_time_payments.create_session(
-            product_id=1,  # Assuming product 1 exists in test environment
-            customer_uuid=customer.uuid,
+            product_id=created_product.id,  # Assuming product 1 exists in test environment
+            customer_uuid=created_customer_uuid,
             webhook_url="https://example.com/webhook"
         )
         
@@ -372,31 +392,34 @@ class TestPayments:
         assert response.link is not None
         assert "http" in response.link
     
-    def test_create_payment_session_with_product_details(self, client, test_customer_data):
+    def test_create_payment_session_with_product_details(self, client):
         """Test creating a payment session with custom product details."""
-        # Create customer first
-        customer = client.customers.create(test_customer_data)
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
         
         # Create payment session
         response = client.one_time_payments.create_session(
             product_name="Custom Product",
             description="Test product",
             price=29.99,
-            customer_uuid=customer.uuid
+            customer_uuid=created_customer_uuid
         )
         
         assert response.uuid is not None
         assert response.link is not None
     
-    def test_get_payment_session(self, client, test_customer_data):
+    def test_get_payment_session(self, client):
         """Test retrieving a payment session."""
-        # Create customer
-        customer = client.customers.create(test_customer_data)
+        global created_product
+        assert created_product is not None, "Create product test must run first"
+
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
         
         # Create payment session
         created = client.one_time_payments.create_session(
-            product_id=1,
-            customer_uuid=customer.uuid
+            product_id=created_product.id,
+            customer_uuid=created_customer_uuid
         )
         
         # Retrieve session
@@ -440,47 +463,56 @@ class TestPayments:
 class TestSubscriptions:
     """Test subscription operations."""
     
-    def test_create_subscription_session(self, client, test_customer_data):
+    def test_create_subscription_session(self, client):
         """Test creating a subscription session."""
-        # Create customer
-        customer = client.customers.create(test_customer_data)
+        global created_product
+        assert created_product is not None, "Create product test must run first"
+
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
         
         # Create subscription session
         response = client.subscriptions.create_session(
-            product_id=1,
+            product_id=created_product.id,
             frequency=Duration(value=1, unit="months"),
             trial_period=Duration(value=7, unit="days"),
-            customer_uuid=customer.uuid
+            customer_uuid=created_customer_uuid
         )
         
         assert response.uuid is not None
         assert response.link is not None
     
-    def test_create_subscription_without_trial(self, client, test_customer_data):
+    def test_create_subscription_without_trial(self, client):
         """Test creating a subscription without trial period."""
-        # Create customer
-        customer = client.customers.create(test_customer_data)
+        global created_product
+        assert created_product is not None, "Create product test must run first"
+
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
         
         # Create subscription session
         response = client.subscriptions.create_session(
-            product_id=1,
+            product_id=created_product.id,
             frequency=Duration(value=1, unit="weeks"),
-            customer_uuid=customer.uuid
+            customer_uuid=created_customer_uuid
         )
         
         assert response.uuid is not None
         assert response.link is not None
 
-    def test_get_session(self, client, test_customer_data):
+    def test_get_session(self, client):
         """Test retrieving a subscription session."""
-        # Create customer
-        customer = client.customers.create(test_customer_data)
+        global created_product
+        assert created_product is not None, "Create product test must run first"
+
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
         
         # Create subscription session
         created = client.subscriptions.create_session(
-            product_id=1,
+            product_id=created_product.id,
             frequency=Duration(value=1, unit="months"),
-            customer_uuid=customer.uuid
+            customer_uuid=created_customer_uuid
         )
         
         # Retrieve session
@@ -495,48 +527,57 @@ class TestSubscriptions:
 class TestPayAsYouGo:
     """Test pay-as-you-go subscription operations."""
     
-    def test_create_payg_session(self, client, test_customer_data):
+    def test_create_payg_session(self, client):
         """Test creating a PAYG subscription session."""
-        # Create customer
-        customer = client.customers.create(test_customer_data)
+        global created_product
+        assert created_product is not None, "Create product test must run first"
+
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
         
         # Create PAYG session
         response = client.pay_as_you_go.create_session(
-            product_id=1,
+            product_id=created_product.id,
             frequency=Duration(value=1, unit="months"),
             free_credits=10.0,
-            customer_uuid=customer.uuid
+            customer_uuid=created_customer_uuid
         )
         
         assert response.uuid is not None
         assert response.link is not None
 
 
-    def test_create_payg_session_without_credits(self, client, test_customer_data):
+    def test_create_payg_session_without_credits(self, client):
         """Test creating a PAYG subscription session without free credits."""
-        # Create customer
-        customer = client.customers.create(test_customer_data)
+        global created_product
+        assert created_product is not None, "Create product test must run first"
+
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
         
         # Create PAYG session
         response = client.pay_as_you_go.create_session(
-            product_id=1,
+            product_id=created_product.id,
             frequency=Duration(value=1, unit="months"),
-            customer_uuid=customer.uuid
+            customer_uuid=created_customer_uuid
         )
         
         assert response.uuid is not None
         assert response.link is not None
 
-    def test_get_session(self, client, test_customer_data):
+    def test_get_session(self, client):
         """Test retrieving a PAYG subscription session."""
-        # Create customer
-        customer = client.customers.create(test_customer_data)
+        global created_product
+        assert created_product is not None, "Create product test must run first"
+
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
         
         # Create PAYG session
         created = client.pay_as_you_go.create_session(
-            product_id=1,
+            product_id=created_product.id,
             frequency=Duration(value=1, unit="months"),
-            customer_uuid=customer.uuid
+            customer_uuid=created_customer_uuid
         )
         
         # Retrieve session
@@ -550,13 +591,17 @@ class TestPayAsYouGo:
 class TestTransactionStatus:
     """Test transaction status operations."""
     
-    def test_get_transaction_status(self, client, test_customer_data):
+    def test_get_transaction_status(self, client):
         """Test retrieving transaction status."""
+        global created_product
+        assert created_product is not None, "Create product test must run first"
+
         # Create a payment session
-        customer = client.customers.create(test_customer_data)
+        global created_customer_uuid
+        assert created_customer_uuid is not None, "Create customer test must run first"
         session = client.one_time_payments.create_session(
-            product_id=1,
-            customer_uuid=customer.uuid
+            product_id=created_product.id,
+            customer_uuid=created_customer_uuid
         )
         
         # Try to get status (may not exist yet if payment not started)

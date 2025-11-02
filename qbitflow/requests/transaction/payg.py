@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from qbitflow.requests.base_request import BaseRequest, SuccessResponse
 from qbitflow.dto.transaction.session import (
-    CreateSessionDto, CreateSubscriptionOptions, LinkResponse, Session, StatusResponse
+    CreateSessionDto, CreateSubscriptionOptions, LinkResponse, Session, StatusLinkResponse
 )
 from qbitflow.dto.transaction.subscription import PayAsYouGoSubscription, SubscriptionHistory
 from qbitflow.requests.transaction.session import SessionRequests
@@ -113,7 +113,7 @@ class PayAsYouGoSubscriptionRequests(BaseRequest):
         )
         return SuccessResponse(**res)
     
-    def execute_test_billing_cycle(self, subscription_uuid: str) -> StatusResponse:
+    def execute_test_billing_cycle(self, subscription_uuid: str) -> StatusLinkResponse:
         """Execute a test billing cycle (test mode only)."""
         if not subscription_uuid:
             raise ValidationError("Subscription UUID cannot be empty")
@@ -122,7 +122,7 @@ class PayAsYouGoSubscriptionRequests(BaseRequest):
             f"{self.BASE_ROUTE}/processing/execute-billing/{subscription_uuid}",
             "GET"
         )
-        return StatusResponse(**res)
+        return StatusLinkResponse(**res)
     
     def increase_units_current_period(
         self,

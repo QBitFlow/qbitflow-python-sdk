@@ -3,7 +3,7 @@
 QBitFlow Python SDK
 ===================
 
-A Python SDK for QBitFlow cryptocurrency payment processing.
+A Python SDK for QBitFlow - Next Generation Crypto Payment Processing.
 
 This SDK provides a simple and intuitive interface for:
 - Processing one-time cryptocurrency payments

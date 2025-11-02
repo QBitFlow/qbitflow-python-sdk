@@ -2,22 +2,79 @@
 
 [![PyPI version](https://badge.fury.io/py/qbitflow.svg)](https://badge.fury.io/py/qbitflow)
 [![Python Support](https://img.shields.io/pypi/pyversions/qbitflow.svg)](https://pypi.org/project/qbitflow/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MPL-2.0](https://img.shields.io/pypi/l/qtwebview2)](https://opensource.org/licenses/MPL-2.0)
 
-The official Python SDK for [QBitFlow](https://qbitflow.app) - a comprehensive cryptocurrency payment processing platform that enables seamless integration of crypto payments, recurring subscriptions, and pay-as-you-go models into your applications.
+Official Python SDK for [QBitFlow](https://qbitflow.app) - a comprehensive cryptocurrency payment processing platform that enables seamless integration of crypto payments, recurring subscriptions, and pay-as-you-go models into your applications.
 
 ## Features
 
+-   🔐 **Type-Safe**: Full type hints for better IDE support
+-   🚀 **Easy to Use**: Simple, intuitive API design
+-   🔄 **Automatic Retries**: Built-in retry logic for failed requests
+-   ⚡ **Real-time Updates**: WebSocket support for transaction status monitoring
+-   🧪 **Well Tested**: Comprehensive test coverage
+-   📚 **Great Documentation**: Detailed docs with examples
+-   🔌 **Webhook Support**: Handle payment notifications easily
 -   💳 **One-Time Payments**: Accept cryptocurrency payments with ease
 -   🔄 **Recurring Subscriptions**: Automated recurring billing in cryptocurrency
 -   📊 **Pay-as-You-Go**: Usage-based billing with cryptocurrency
 -   👥 **Customer Management**: Create and manage customer profiles
 -   🛍️ **Product Management**: Organize your products and pricing
 -   📈 **Transaction Tracking**: Real-time transaction status updates
--   🔔 **Webhook Support**: Get notified of payment events
 -   🔐 **Secure Authentication**: API key-based authentication
--   🎯 **Type-Safe**: Full type hints for better IDE support
 -   📝 **Comprehensive Documentation**: Detailed docstrings and examples
+
+## Table of Contents
+
+-   [Features](#features)
+-   [Installation](#installation)
+-   [Quick Start](#quick-start)
+    -   [1. Get Your API Key](#1-get-your-api-key)
+    -   [2. Initialize the Client](#2-initialize-the-client)
+    -   [3. Create a One-Time Payment](#3-create-a-one-time-payment)
+    -   [4. Create a Recurring Subscription](#4-create-a-recurring-subscription)
+    -   [5. Check Transaction Status](#5-check-transaction-status)
+-   [Configuration](#configuration)
+-   [One-Time Payments](#one-time-payments)
+    -   [Create a Payment Session](#create-a-payment-session)
+    -   [With Redirect URLs](#with-redirect-urls)
+    -   [Get Payment Session](#get-payment-session)
+    -   [Get Completed Payment](#get-completed-payment)
+    -   [List All Payments](#list-all-payments)
+    -   [List Combined Payments](#list-combined-payments)
+-   [Subscriptions](#subscriptions)
+    -   [Create a Subscription](#create-a-subscription)
+    -   [Frequency Units](#frequency-units)
+    -   [Get Subscription](#get-subscription)
+    -   [Get all payments for subscription](#get-all-payments-for-subscription)
+-   [Pay-As-You-Go Subscriptions](#pay-as-you-go-subscriptions)
+    -   [Create PAYG Subscription](#create-payg-subscription)
+    -   [Get PAYG Subscription](#get-payg-subscription)
+    -   [Get all payments for PAYG subscription](#get-all-payments-for-payg-subscription)
+    -   [Increase units current period](#increase-units-current-period)
+-   [Transaction Status](#transaction-status)
+    -   [Check Status](#check-status)
+    -   [Transaction Types](#transaction-types)
+    -   [Status Values](#status-values)
+-   [Customer Management](#customer-management)
+    -   [Create a Customer](#create-a-customer)
+    -   [Get Customer by UUID](#get-customer-by-uuid)
+    -   [Update Customer](#update-customer)
+    -   [Delete Customer](#delete-customer)
+-   [Product Management](#product-management)
+    -   [Create a Product](#create-a-product)
+    -   [Update Product](#update-product)
+    -   [Delete Product](#delete-product)
+-   [Webhook Handling](#webhook-handling)
+    -   [FastAPI Example](#fastapi-example)
+-   [Error Handling](#error-handling)
+-   [API Reference](#api-reference)
+    -   [QBitFlow](#qbitflow)
+        -   [Constructor](#constructor)
+        -   [Properties](#properties)
+-   [License](#license)
+-   [Support](#support)
+-   [Changelog](#changelog)
 
 ## Installation
 
@@ -35,13 +92,6 @@ cd qbitflow-python-sdk
 pip install -e .
 ```
 
-## Requirements
-
--   Python 3.8 or higher
--   Dependencies:
-    -   `httpx` - HTTP client
-    -   `pydantic` - Data validation
-
 ## Quick Start
 
 ### 1. Get Your API Key
@@ -53,7 +103,7 @@ Sign up at [QBitFlow](https://qbitflow.app) and obtain your API key from the das
 ```python
 from qbitflow import QBitFlow
 
-# Initialize the client with your API key
+# Initialize the client
 client = QBitFlow(api_key="your_api_key_here")
 ```
 
@@ -62,18 +112,15 @@ client = QBitFlow(api_key="your_api_key_here")
 ```python
 # Create a payment session
 response = client.one_time_payments.create_session(
-    product_id=1,
-    customer_uuid="customer-uuid-here",
-    webhook_url="https://your-domain.com/webhook",
-    success_url="https://your-domain.com/success",
-    cancel_url="https://your-domain.com/cancel"
+	product_id=1,
+	customer_uuid="customer-uuid",
+	webhook_url="https://your-domain.com/webhook",
+	success_url="https://your-domain.com/success",
+	cancel_url="https://your-domain.com/cancel"
 )
 
 print(f"Payment link: {response.link}")
-print(f"Session UUID: {response.uuid}")
-
-# Send the payment link to your customer
-# They will complete the payment using their preferred cryptocurrency
+# Send this link to your customer
 ```
 
 ### 4. Create a Recurring Subscription
@@ -83,11 +130,11 @@ from qbitflow import Duration
 
 # Create a monthly subscription
 response = client.subscriptions.create_session(
-    product_id=1,
-    frequency=Duration(value=1, unit="months"),
-    trial_period=Duration(value=7, unit="days"),  # Optional 7-day trial
-    customer_uuid="customer-uuid-here",
-    webhook_url="https://your-domain.com/webhook"
+	product_id=1,
+	frequency=Duration(value=1, unit="months"),
+	trial_period=Duration(value=7, unit="days"),  # Optional 7-day trial
+	customer_uuid="customer-uuid",
+	webhook_url="https://your-domain.com/webhook"
 )
 
 print(f"Subscription link: {response.link}")
@@ -100,206 +147,350 @@ from qbitflow.dto.transaction.status import TransactionType, TransactionStatusVa
 
 # Get transaction status
 status = client.transaction_status.get(
-    transaction_uuid="transaction-uuid",
-    transaction_type=TransactionType.ONE_TIME_PAYMENT
+	transaction_uuid="transaction-uuid",
+	transaction_type=TransactionType.ONE_TIME_PAYMENT
 )
 
 if status.status == TransactionStatusValue.COMPLETED:
-    print(f"Payment completed! Transaction hash: {status.tx_hash}")
+	print(f"Payment completed! Transaction hash: {status.tx_hash}")
 elif status.status == TransactionStatusValue.FAILED:
-    print(f"Payment failed: {status.message}")
+	print(f"Payment failed: {status.message}")
 ```
 
-## Usage Examples
+## Configuration
 
-### Customer Management
+### Configuration Options
+
+| Option        | Type   | Default                    | Description                                  |
+| ------------- | ------ | -------------------------- | -------------------------------------------- |
+| `api_key`     | string | (required)                 | Your QBitFlow API key                        |
+| `base_url`    | string | `https://api.qbitflow.app` | API base URL                                 |
+| `timeout`     | int    | `30`                       | Request timeout in seconds                   |
+| `max_retries` | int    | `3`                        | Number of retry attempts for failed requests |
+
+## One-Time Payments
+
+### Create a Payment Session
+
+Create a payment session for a one-time purchase:
 
 ```python
-from qbitflow.dto.customer import CreateCustomerDto, UpdateCustomerDto
-
-# Create a new customer
-customer_data = CreateCustomerDto(
-    name="John",
-    last_name="Doe",
-    email="john@example.com",
-    phone_number="+1234567890",
-    reference="CRM-12345"
+# Create a payment from an existing product
+response = client.one_time_payments.create_session(
+	product_id=1,
+	customer_uuid="customer-uuid",  # optional
+	webhook_url="https://your-domain.com/webhook",
 )
+
+# Or create a custom payment
+response = client.one_time_payments.create_session(
+	product_name="Custom Product",
+	description="Product description",
+	price=99.99,  # USD
+	customer_uuid="customer-uuid",
+	webhook_url="https://your-domain.com/webhook",
+)
+
+print(response.uuid)  # Session UUID
+print(response.link)  # Payment link for customer
+```
+
+### With Redirect URLs
+
+You can provide redirect URLs for success and cancellation:
+
+```python
+response = client.one_time_payments.create_session(
+	product_id=1,
+	success_url="https://your-domain.com/success?uuid={{UUID}}&type={{TRANSACTION_TYPE}}",
+	cancel_url="https://your-domain.com/cancel",
+	customer_uuid="customer-uuid",
+)
+```
+
+**Available Placeholders:**
+
+-   `{{UUID}}`: The session UUID
+-   `{{TRANSACTION_TYPE}}`: The transaction type (e.g., "payment", "subscription", "payAsYouGo")
+
+### Get Payment Session
+
+Retrieve details of a payment session:
+
+```python
+session = client.one_time_payments.get_session("session-uuid")
+print(session.product_name, session.price)
+```
+
+### Get Completed Payment
+
+Retrieve details of a completed payment:
+
+```python
+payment = client.one_time_payments.get("payment-uuid")
+print(payment.transaction_hash, payment.amount)
+```
+
+### List All Payments
+
+List all one-time payments with pagination:
+
+```python
+page = client.one_time_payments.get_all(limit=10)
+
+print(page.items)  # Array of payments
+print(page.has_more())  # Whether there are more pages
+print(page.next_cursor)  # Cursor for next page
+
+# Fetch next page
+if page.has_more():
+	next_page = client.one_time_payments.get_all(
+		limit=10,
+		cursor=page.next_cursor
+	)
+```
+
+### List Combined Payments
+
+Get all payments (one-time and subscription payments combined):
+
+```python
+combined = client.one_time_payments.get_all_combined(limit=20)
+for payment in combined.items:
+	print(payment.source)  # "payment" or "subscription_history"
+	print(payment.amount)
+```
+
+## Subscriptions
+
+### Create a Subscription
+
+Create a recurring subscription:
+
+```python
+response = client.subscriptions.create_session(
+	product_id=1,
+	frequency=Duration(value=1, unit="months"),  # Bill monthly
+	trial_period=Duration(value=7, unit="days"),  # 7-day trial (optional)
+	webhook_url="https://your-domain.com/webhook",
+	customer_uuid="customer-uuid",
+)
+
+print(response.link)  # Send to customer
+```
+
+### Frequency Units
+
+Available units for `frequency` and `trial_period`:
+
+-   `seconds`
+-   `minutes`
+-   `hours`
+-   `days`
+-   `weeks`
+-   `months`
+
+### Get Subscription
+
+Retrieve subscription details:
+
+```python
+subscription = client.subscriptions.get("subscription-uuid")
+print(subscription.status, subscription.next_billing_date)
+```
+
+### Get all payments for subscription
+
+```python
+history = client.subscriptions.get_payment_history("subscription-uuid")
+for record in history:
+	print(record.uuid, record.amount, record.created_at)
+```
+
+## Pay-As-You-Go Subscriptions
+
+PAYG subscriptions allow customers to pay based on usage with a billing cycle.
+
+### Create PAYG Subscription
+
+```python
+response = client.pay_as_you_go.create_session(
+	product_id=1,
+	frequency=Duration(value=1, unit="months"),  # Bill monthly
+	free_credits=100,  # Initial free credits (optional)
+	webhook_url="https://your-domain.com/webhook",
+	customer_uuid="customer-uuid",
+)
+
+print(response.link)
+```
+
+### Get PAYG Subscription
+
+```python
+payg = client.pay_as_you_go.get("payg-uuid")
+print(payg.allowance, payg.units_current_period)
+```
+
+### Get all payments for PAYG subscription
+
+```python
+history = client.pay_as_you_go.get_payment_history("payg-uuid")
+for record in history:
+	print(record.uuid, record.amount, record.created_at)
+```
+
+### Increase units current period
+
+Increase the number of units for the current billing period:
+
+```python
+# For example, the product is billed per hour of usage, and the customer consumed 5 additional hours
+response = client.pay_as_you_go.increase_units_current_period("payg-uuid", 5)
+print(f"New units this period: {response.units_current_period}")
+```
+
+## Transaction Status
+
+### Check Status
+
+Get the current status of a transaction:
+
+```python
+from qbitflow import TransactionType
+
+status = client.transaction_status.get(
+	"transaction-uuid",
+	TransactionType.ONE_TIME_PAYMENT
+)
+
+print(status.status)  # "created", "pending", "completed", etc.
+print(status.tx_hash)  # Blockchain transaction hash
+```
+
+### Transaction Types
+
+```python
+class TransactionType:
+	# One-time payment transaction
+	ONE_TIME_PAYMENT = 'payment'
+	# Create subscription transaction
+	CREATE_SUBSCRIPTION = 'createSubscription'
+	# Cancel subscription transaction
+	CANCEL_SUBSCRIPTION = 'cancelSubscription'
+	# Execute subscription payment transaction
+	EXECUTE_SUBSCRIPTION_PAYMENT = 'executeSubscription'
+	# Create pay-as-you-go subscription transaction
+	CREATE_PAYG_SUBSCRIPTION = 'createPAYGSubscription'
+	# Cancel pay-as-you-go subscription transaction
+	CANCEL_PAYG_SUBSCRIPTION = 'cancelPAYGSubscription'
+	# Increase allowance transaction
+	INCREASE_ALLOWANCE = 'increaseAllowance'
+	# Update max amount transaction
+	UPDATE_MAX_AMOUNT = 'updateMaxAmount'
+```
+
+### Status Values
+
+```python
+class TransactionStatusValue:
+	# Transaction has been created but not yet processed
+	CREATED = 'created'
+	# Waiting for blockchain confirmation
+	WAITING_CONFIRMATION = 'waitingConfirmation'
+	# Transaction is pending processing
+	PENDING = 'pending'
+	# Transaction has been successfully completed
+	COMPLETED = 'completed'
+	# Transaction has failed
+	FAILED = 'failed'
+	# Transaction has been cancelled
+	CANCELLED = 'cancelled'
+	# Transaction has expired
+	EXPIRED = 'expired'
+```
+
+## Customer Management
+
+### Create a Customer
+
+```python
+customer_data = CreateCustomerDto(
+	name="John",
+	last_name="Doe",
+	email="john@example.com",
+	phone_number="+1234567890",
+	reference="CRM-12345"
+)
+
 customer = client.customers.create(customer_data)
 print(f"Customer created: {customer.uuid}")
+```
 
-# Get customer by UUID
+### Get Customer by UUID
+
+```python
 customer = client.customers.get("customer-uuid")
 print(f"{customer.name} {customer.last_name} - {customer.email}")
+```
 
-# Get customer by email
-customer = client.customers.get_by_email("john@example.com")
+### Update Customer
 
-# Update customer
+```python
 update_data = UpdateCustomerDto(
 	name="John",
-    last_name="Doe",
-    email="john.doe@example.com",
-    phone_number="+9876543210"
+	last_name="Doe",
+	email="john.doe@example.com",
+	phone_number="+9876543210"
 )
-customer = client.customers.update("customer-uuid", update_data)
 
-# Get all customers
-customers = client.customers.get_all()
-for customer in customers.items:
-    print(f"- {customer.name} ({customer.email})")
+updated_customer = client.customers.update("customer-uuid", update_data)
+```
 
-# Delete customer
+### Delete Customer
+
+```python
 response = client.customers.delete("customer-uuid")
 print(response.message)
 ```
 
-### Product Management
+## Product Management
+
+### Create a Product
 
 ```python
-from qbitflow.dto.product import CreateProductDto, UpdateProductDto
-
-# Create a product
 product_data = CreateProductDto(
-    name="Premium Subscription",
-    description="Access to all premium features",
-    price=29.99,
-    reference="PROD-PREMIUM"
+	name="Premium Subscription",
+	description="Access to all premium features",
+	price=29.99,
+	reference="PROD-PREMIUM"
 )
+
 product = client.products.create(product_data)
 print(f"Product created: ID {product.id}")
+```
 
-# Get product by ID
-product = client.products.get(1)
-print(f"{product.name}: ${product.price}")
+### Update Product
 
-# Get all products
-products = client.products.get_all()
-
-# Update product
+```python
 update_data = UpdateProductDto(
-    name="Premium Plus",
-    description="Enhanced premium features",
-    price=39.99
+	name="Premium Plus",
+	description="Enhanced premium features",
+	price=39.99
 )
-product = client.products.update(1, update_data)
 
-# Delete product
+updated_product = client.products.update(1, update_data)
+```
+
+### Delete Product
+
+```python
 response = client.products.delete(1)
 ```
 
-### One-Time Payments
+## Webhook Handling
 
-```python
-# Create payment session with product ID
-response = client.one_time_payments.create_session(
-    product_id=1,
-    customer_uuid="customer-uuid",
-    webhook_url="https://example.com/webhook",
-    success_url="https://example.com/success?uuid={{UUID}}&type={{TRANSACTION_TYPE}}",
-    cancel_url="https://example.com/cancel"
-)
-
-# Or create payment session with product details
-response = client.one_time_payments.create_session(
-    product_name="Custom Product",
-    description="One-time purchase",
-    price=99.99,
-    customer_uuid="customer-uuid"
-)
-
-# Get payment session details
-session = client.one_time_payments.get_session("session-uuid")
-print(f"Product: {session.product_name}")
-print(f"Price: ${session.price} USD")
-
-# Get completed payment details
-payment = client.one_time_payments.get("payment-uuid")
-print(f"Amount: ${payment.amount}")
-print(f"Currency: {payment.currency.name}")
-print(f"Transaction Hash: {payment.transaction_hash}")
-
-# List all payments with pagination
-page = client.one_time_payments.get_all(limit=10)
-for payment in page.items:
-    print(f"- {payment.uuid}: ${payment.amount}")
-
-# Get next page if available
-if page.has_more():
-    next_page = client.one_time_payments.get_all(
-        limit=10,
-        cursor=page.next_cursor
-    )
-
-# Get combined payments (one-time + subscription)
-combined = client.one_time_payments.get_all_combined(limit=10)
-for payment in combined.items:
-    print(f"- {payment.uuid} (source: {payment.source})")
-```
-
-### Recurring Subscriptions
-
-```python
-from qbitflow import Duration
-
-# Create subscription with monthly billing
-response = client.subscriptions.create_session(
-    product_id=1,
-    frequency=Duration(value=1, unit="months"),
-    trial_period=Duration(value=14, unit="days"),
-    customer_uuid="customer-uuid",
-    webhook_url="https://example.com/webhook"
-)
-
-# Get subscription details
-subscription = client.subscriptions.get("subscription-uuid")
-print(f"Status: {subscription.subscription_status.value}")
-print(f"Next billing: {subscription.next_billing_date}")
-
-# Get subscription payment history
-history = client.subscriptions.get_payment_history("subscription-uuid")
-for payment in history:
-    print(f"- {payment.created_at}")
-
-# Execute test billing cycle (test mode only)
-status_response = client.subscriptions.execute_test_billing_cycle("subscription-uuid")
-print(f"Test billing executed: {status_response.message}")
-
-# Force cancel subscription (use with caution!)
-response = client.subscriptions.force_cancel("subscription-uuid")
-```
-
-### Pay-as-You-Go Subscriptions
-
-```python
-from qbitflow import Duration
-
-# Create PAYG subscription
-response = client.pay_as_you_go.create_session(
-    product_id=1,
-    frequency=Duration(value=1, unit="months"),
-    free_credits=10.0,
-    customer_uuid="customer-uuid"
-)
-
-# Get PAYG subscription details
-payg = client.pay_as_you_go.get("subscription-uuid")
-print(f"Usage this period: {payg.units_current_period} units")
-print(f"Max spending: ${payg.max_spending_per_period}")
-print(f"Free credits: ${payg.free_credits}")
-
-# Increase usage units
-# The billing price will be calculated based on the product's price per unit, and the number of units increased.
-payg = client.pay_as_you_go.increase_units_current_period(
-    subscription_uuid="subscription-uuid",
-    increase_amount=5.0
-)
-print(f"New usage: {payg.units_current_period} units")
-```
-
-### Webhook Handling
-
-Create a webhook endpoint to receive payment notifications:
+### FastAPI Example
 
 ```python
 from fastapi import FastAPI
@@ -312,74 +503,19 @@ client = QBitFlow(api_key="your_api_key")
 
 @app.post("/webhook")
 def handle_webhook(event: SessionWebhookResponse):
-    """Handle webhook events from QBitFlow."""
-    print(f"Received event for session: {event.uuid}")
-    print(f"Transaction status: {event.status.status.value}")
+	"""Handle webhook events from QBitFlow."""
+	print(f"Received event for session: {event.uuid}")
+	print(f"Transaction status: {event.status.status.value}")
 
-    if event.status.status == TransactionStatusValue.COMPLETED:
-        # Payment completed successfully
-        session = event.session
-        print(f"Payment completed: {session.product_name}")
-        print(f"Customer: {session.customer_uuid}")
-        print(f"Amount: ${session.price}")
+	if event.status.status == TransactionStatusValue.COMPLETED:
+		print(f"Payment completed: {event.session.product_name}")
+		print(f"Customer: {event.session.customer_uuid}")
+		print(f"Amount: ${event.session.price}")
 
-        # Process successful payment
-        # - Grant access to product/service
-        # - Update database
-        # - Send confirmation email
-        # etc.
+	elif event.status.status == TransactionStatusValue.FAILED:
+		print(f"Payment failed: {event.status.message}")
 
-    elif event.status.status == TransactionStatusValue.FAILED:
-        # Payment failed
-        print(f"Payment failed: {event.status.message}")
-
-        # Handle failed payment
-        # - Notify customer
-        # - Log for review
-        # etc.
-
-	# Always respond with 200 OK to acknowledge receipt
-    return {"received": True}
-```
-
-### Redirect URL Handling
-
-Handle success and cancel redirects:
-
-```python
-from fastapi import FastAPI
-from qbitflow import QBitFlow
-from qbitflow.dto.transaction.status import (
-    TransactionType,
-    TransactionStatusValue
-)
-
-app = FastAPI()
-client = QBitFlow(api_key="your_api_key")
-
-@app.get("/success")
-def handle_success(uuid: str, transactionType: TransactionType):
-    """Handle successful payment redirect."""
-    # Check transaction status
-    status = client.transaction_status.get(uuid, transactionType)
-
-    if status.status == TransactionStatusValue.COMPLETED:
-        # Get payment/subscription details
-        if transactionType == TransactionType.ONE_TIME_PAYMENT:
-            session = client.one_time_payments.get_session(uuid)
-            return {
-                "status": "success",
-                "product": session.product_name,
-                "amount": session.price
-            }
-
-    return {"status": status.status.value}
-
-@app.get("/cancel")
-def handle_cancel():
-    """Handle payment cancellation."""
-    print("Payment was cancelled by the user")
-    return {"status": "cancelled"}
+	return {"received": True}
 ```
 
 ## Error Handling
@@ -389,115 +525,59 @@ The SDK provides comprehensive error handling with custom exception classes:
 ```python
 from qbitflow import QBitFlow
 from qbitflow.exceptions import (
-    QBitFlowError,
-    AuthenticationError,
-    NotFoundException,
-    ValidationError,
-    RateLimitError,
-    NetworkError,
-    APIError
+	QBitFlowError,
+	AuthenticationError,
+	NotFoundException,
+	ValidationError,
+	RateLimitError,
+	NetworkError,
+	APIError
 )
 
 client = QBitFlow(api_key="your_api_key")
 
 try:
-    payment = client.one_time_payments.get("non-existent-uuid")
+	payment = client.one_time_payments.get("non-existent-uuid")
 except AuthenticationError:
-    print("Invalid API key or authentication failed")
+	print("Invalid API key or authentication failed")
 except NotFoundException as e:
-    print(f"Payment not found: {e.message}")
+	print(f"Payment not found: {e.message}")
 except ValidationError as e:
-    print(f"Validation error: {e.message}")
+	print(f"Validation error: {e.message}")
 except RateLimitError as e:
-    print(f"Rate limit exceeded: {e.message}")
-    if e.response and 'retry_after' in e.response:
-        print(f"Retry after {e.response['retry_after']} seconds")
+	print(f"Rate limit exceeded: {e.message}")
+	if e.response and 'retry_after' in e.response:
+		print(f"Retry after {e.response['retry_after']} seconds")
 except NetworkError as e:
-    print(f"Network error: {e.message}")
+	print(f"Network error: {e.message}")
 except APIError as e:
-    print(f"API error: {e.message} (status: {e.status_code})")
+	print(f"API error: {e.message} (status: {e.status_code})")
 except QBitFlowError as e:
-    # Catch all SDK errors
-    print(f"SDK error: {e.message}")
+	print(f"SDK error: {e.message}")
 ```
 
 ## API Reference
 
-### Main Client
+### QBitFlow
 
--   `QBitFlow(api_key, timeout=None, max_retries=None)` - Initialize the client
+Main client class.
 
-### Customer Methods
-
--   `customers.create(data)` - Create a new customer
--   `customers.get(customer_uuid)` - Get customer by UUID
--   `customers.get_by_email(email)` - Get customer by email
--   `customers.get_all()` - Get all customers
--   `customers.update(customer_uuid, data)` - Update customer
--   `customers.delete(customer_uuid)` - Delete customer
-
-### Product Methods
-
--   `products.create(data)` - Create a new product
--   `products.get(product_id)` - Get product by ID
--   `products.get_all()` - Get all products
--   `products.get_by_reference(reference)` - Get product by reference
--   `products.update(product_id, data)` - Update product
--   `products.delete(product_id)` - Delete product
-
-### Payment Methods
-
--   `one_time_payments.create_session(...)` - Create payment session
--   `one_time_payments.get_session(session_uuid)` - Get session details
--   `one_time_payments.get(payment_uuid)` - Get completed payment
--   `one_time_payments.get_all(limit, cursor)` - List payments with pagination
--   `one_time_payments.get_all_combined(limit, cursor)` - List all payments
-
-### Subscription Methods
-
--   `subscriptions.create_session(...)` - Create subscription session
--   `subscriptions.get_session(session_uuid)` - Get session details
--   `subscriptions.get(subscription_uuid)` - Get subscription
--   `subscriptions.get_payment_history(subscription_uuid)` - Get payment history
--   `subscriptions.force_cancel(subscription_uuid)` - Force cancel subscription
--   `subscriptions.execute_test_billing_cycle(subscription_uuid)` - Test billing
-
-### Pay-as-You-Go Methods
-
--   `pay_as_you_go.create_session(...)` - Create PAYG session
--   `pay_as_you_go.get(subscription_uuid)` - Get PAYG subscription
--   `pay_as_you_go.increase_units_current_period(...)` - Increase usage units
-
-### Transaction Status Methods
-
--   `transaction_status.get(transaction_uuid, transaction_type)` - Get status
-
-## Configuration
-
-### Environment Variables
-
-You can configure the SDK using environment variables:
-
-```bash
-# Set custom API base URL (useful for testing)
-export QBITFLOW_BASE_URL="https://api.qbitflow.app"
-```
-
-### Programmatic Configuration
+#### Constructor
 
 ```python
-from qbitflow import config
-
-# Set custom base URL
-config.set_base_url("http://localhost:3001")  # For local testing
-
-# Configure timeout and retries
-client = QBitFlow(
-    api_key="your_api_key",
-    timeout=60,  # Request timeout in seconds
-    max_retries=5  # Maximum retry attempts
-)
+QBitFlow(api_key: str, timeout: Optional[int] = None, max_retries: Optional[int] = None)
 ```
+
+#### Properties
+
+-   `customers: CustomerRequests` - Customer operations
+-   `products: ProductRequests` - Product operations
+-   `users: UserRequests` - User operations
+-   `api_keys: ApiKeyRequests` - API key operations
+-   `one_time_payments: PaymentRequests` - One-time payment operations
+-   `subscriptions: SubscriptionRequests` - Subscription operations
+-   `pay_as_you_go: PayAsYouGoRequests` - Pay-as-you-go operations
+-   `transaction_status: TransactionStatusRequests` - Transaction status operations
 
 ## Testing
 
@@ -515,73 +595,15 @@ pytest tests/
 pytest tests/ --cov=qbitflow --cov-report=html
 ```
 
-## Development
+## License
 
-### Setting Up Development Environment
-
-```bash
-# Clone the repository
-git clone https://github.com/qbitflow/qbitflow-python-sdk.git
-cd qbitflow-python-sdk
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Run linter
-flake8 qbitflow tests
-
-# Format code
-black qbitflow tests
-```
-
-### Project Structure
-
-```
-qbitflow-python-sdk/
-├── qbitflow/              # Main package
-│   ├── __init__.py       # Package initialization
-│   ├── client.py         # Main QBitFlow client
-│   ├── config.py         # Configuration
-│   ├── dto/              # Data Transfer Objects
-│   ├── exceptions/       # Custom exceptions
-│   ├── requests/         # API request handlers
-│   └── utils/            # Utility functions
-├── tests/                # Integration tests
-├── examples/             # Example scripts
-├── docs/                 # Documentation
-├── setup.py              # Package setup
-├── pyproject.toml        # Build configuration
-├── README.md             # This file
-└── LICENSE               # MIT License
-```
+This project is licensed under the MPL-2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
 -   📖 [Documentation](https://qbitflow.app/docs)
--   💬 [Community Forum](https://community.qbitflow.app)
 -   📧 [Email Support](mailto:support@qbitflow.app)
 -   🐛 [Issue Tracker](https://github.com/qbitflow/qbitflow-python-sdk/issues)
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
 
@@ -590,11 +612,6 @@ See [CHANGELOG.md](CHANGELOG.md) for a list of changes in each version.
 ## Security
 
 For security issues, please email security@qbitflow.app instead of using the issue tracker.
-
-## Acknowledgments
-
--   Built with ❤️ by the QBitFlow team
--   Powered by [httpx](https://www.python-httpx.org/) and [Pydantic](https://pydantic-docs.helpmanual.io/)
 
 ---
 

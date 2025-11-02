@@ -198,7 +198,7 @@ class LinkResponse(BaseModel):
     expires_at: Optional[int] = Field(default=None, description="Expiration timestamp")
 
 
-class StatusResponse(BaseModel):
+class StatusLinkResponse(BaseModel):
     """
     Response containing a status link.
     
@@ -208,7 +208,7 @@ class StatusResponse(BaseModel):
     """
     
     message: str = Field(..., description="Status message")
-    status_link: str = Field(..., description="Status check link")
+    status_link: str = Field(..., description="Status check link (websocket)")
 
 
 class SessionWebhookResponse(BaseModel):

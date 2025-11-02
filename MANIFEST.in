@@ -1,11 +1,15 @@
 include README.md
 include LICENSE
 include CHANGELOG.md
-include PUBLISHING.md
+include COMPLIANCE.md
+include SECURITY.md
+include TRADEMARKS.md
+
 include pyproject.toml
-include setup.py
+
 recursive-include qbitflow *.py
 recursive-include qbitflow py.typed
+
 recursive-exclude tests *
 recursive-exclude examples *
 recursive-exclude * __pycache__

@@ -14,7 +14,7 @@ from .session import (
     CreateSessionDto,
     CreateSubscriptionOptions,
     LinkResponse,
-    StatusResponse,
+    StatusLinkResponse,
     SessionWebhookResponse,
 )
 from .status import (
@@ -38,7 +38,7 @@ __all__ = [
     "CreateSessionDto",
     "CreateSubscriptionOptions",
     "LinkResponse",
-    "StatusResponse",
+    "StatusLinkResponse",
     "SessionWebhookResponse",
     "TransactionType",
     "TransactionStatusValue",

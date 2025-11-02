@@ -4,9 +4,9 @@ Customer request handlers.
 This module provides methods for managing customers via the QBitFlow API.
 """
 
-from typing import List
+from typing import List, Optional
 
-from qbitflow.utils.cursor_data import CursorData
+from qbitflow.utils.cursor_data import CursorData, cursor_query_builder
 
 
 from .base_request import BaseRequest, SuccessResponse
@@ -115,7 +115,11 @@ class CustomerRequests(BaseRequest):
         res = self._make_request(endpoint, "GET")
         return Customer(**res)
     
-    def get_all(self) -> CursorData[Customer, str]:
+    def get_all(
+        self,
+        limit: Optional[int] = None,
+        cursor: Optional[str] = None
+    ) -> CursorData[Customer, str]:
         """
         Get all customers.
         
@@ -128,11 +132,13 @@ class CustomerRequests(BaseRequest):
         Example:
             >>> customers = client.customers.get_all()
             >>> print(f"Total customers: {len(customers)}")
-            >>> for customer in customers:
+            >>> for customer in customers.items:
             ...     print(f"- {customer.name} ({customer.email})")
         """
+        params = cursor_query_builder(limit=limit, cursor=cursor)
+
         # Returns a CursorData object for pagination
-        res = self._make_request(f"{self.BASE_ROUTE}/all", "GET")
+        res = self._make_request(f"{self.BASE_ROUTE}/all", "GET", params=params)
         return CursorData[Customer, str](**res)
     
     def update(self, customer_uuid: str, data: UpdateCustomerDto) -> Customer:

@@ -6,7 +6,7 @@ from qbitflow.requests.base_request import BaseRequest
 from qbitflow.dto.transaction.session import CreateSessionDto, LinkResponse, Session
 from qbitflow.dto.transaction import payment as dto
 from qbitflow.requests.transaction.session import SessionRequests
-from qbitflow.utils.cursor_data import CursorData
+from qbitflow.utils.cursor_data import CursorData, cursor_query_builder
 from qbitflow.exceptions import ValidationError
 
 
@@ -151,13 +151,7 @@ class PaymentRequests(BaseRequest):
             ...         cursor=page.next_cursor
             ...     )
         """
-        params = {}
-        if limit is not None:
-            if limit <= 0:
-                raise ValidationError("Limit must be positive")
-            params['limit'] = limit
-        if cursor is not None:
-            params['cursor'] = cursor
+        params = cursor_query_builder(limit=limit, cursor=cursor)
         
         res = self._make_request(f"{self.BASE_ROUTE}/payments", "GET", params=params)
         return CursorData[dto.Payment, str](**res)
@@ -182,13 +176,7 @@ class PaymentRequests(BaseRequest):
             >>> for payment in page.items:
             ...     print(f"Payment: {payment.uuid} (source: {payment.source})")
         """
-        params = {}
-        if limit is not None:
-            if limit <= 0:
-                raise ValidationError("Limit must be positive")
-            params['limit'] = limit
-        if cursor is not None:
-            params['cursor'] = cursor
+        params = cursor_query_builder(limit=limit, cursor=cursor)
         
         res = self._make_request(f"{self.BASE_ROUTE}/payments/combined", "GET", params=params)
         return CursorData[dto.CombinedPayment, str](**res)
