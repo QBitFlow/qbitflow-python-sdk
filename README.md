@@ -47,10 +47,12 @@ Official Python SDK for [QBitFlow](https://qbitflow.app) - a comprehensive crypt
     -   [Frequency Units](#frequency-units)
     -   [Get Subscription](#get-subscription)
     -   [Get all payments for subscription](#get-all-payments-for-subscription)
+    -   [Execute Test Billing Cycle](#execute-test-billing-cycle)
 -   [Pay-As-You-Go Subscriptions](#pay-as-you-go-subscriptions)
     -   [Create PAYG Subscription](#create-payg-subscription)
     -   [Get PAYG Subscription](#get-payg-subscription)
     -   [Get all payments for PAYG subscription](#get-all-payments-for-payg-subscription)
+    -   [Execute Test Billing Cycle](#execute-test-billing-cycle-1)
     -   [Increase units current period](#increase-units-current-period)
 -   [Transaction Status](#transaction-status)
     -   [Check Status](#check-status)
@@ -307,6 +309,17 @@ for record in history:
 	print(record.uuid, record.amount, record.created_at)
 ```
 
+### Execute Test Billing Cycle
+
+**Test Mode Only**: Manually trigger a billing cycle for testing.
+
+**For live mode**: Billing cycles are executed automatically based on the subscription frequency.
+
+```python
+result = client.subscriptions.execute_test_billing_cycle('subscription-uuid')
+print('Transaction status link:', result.status_link)
+```
+
 ## Pay-As-You-Go Subscriptions
 
 PAYG subscriptions allow customers to pay based on usage with a billing cycle.
@@ -338,6 +351,17 @@ print(payg.allowance, payg.units_current_period)
 history = client.pay_as_you_go.get_payment_history("payg-uuid")
 for record in history:
 	print(record.uuid, record.amount, record.created_at)
+```
+
+### Execute Test Billing Cycle
+
+**Test Mode Only**: Manually trigger a billing cycle for testing.
+
+**For live mode**: Billing cycles are executed automatically based on the subscription frequency.
+
+```python
+result = client.pay_as_you_go.execute_test_billing_cycle('subscription-uuid')
+print('Transaction status link:', result.status_link)
 ```
 
 ### Increase units current period
