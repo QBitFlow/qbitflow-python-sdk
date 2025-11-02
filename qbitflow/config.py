@@ -11,7 +11,7 @@ import os
 
 # Default base URL for QBitFlow API
 # Can be overridden by setting QBITFLOW_BASE_URL environment variable
-BASE_URL: str = os.getenv("QBITFLOW_BASE_URL", "https://api.qbitflow.app")
+BASE_URL: str = os.getenv("QBITFLOW_BASE_URL", "https://api.qbitflow.app/v1")
 
 # API version
 API_VERSION: str = "v1"
