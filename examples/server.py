@@ -133,7 +133,7 @@ async def handle_webhook(event: SessionWebhookResponse):
 
 
 @app.get("/success")
-async def handle_success(uuid: str, transactionType: TransactionType):
+async def handle_success(uuid: str, transaction_type: TransactionType):
     """
     Handle success redirect from QBitFlow payment page.
     
@@ -142,7 +142,7 @@ async def handle_success(uuid: str, transactionType: TransactionType):
     
     Args:
         uuid: The session or transaction UUID
-        transactionType: The type of transaction (payment, subscription, etc.)
+        transaction_type: The type of transaction (payment, subscription, etc.)
     
     Returns:
         Success page data or redirect
@@ -152,13 +152,13 @@ async def handle_success(uuid: str, transactionType: TransactionType):
     print("=" * 60)
     
     print(f"UUID: {uuid}")
-    print(f"Transaction Type: {transactionType.value}")
+    print(f"Transaction Type: {transaction_type.value}")
     
     try:
         # Fetch the current transaction status
         transaction_status = qbitflow_client.transaction_status.get(
             transaction_uuid=uuid,
-            transaction_type=transactionType
+            transaction_type=transaction_type
         )
         
         print(f"Current Status: {transaction_status.status.value}")
@@ -168,7 +168,7 @@ async def handle_success(uuid: str, transactionType: TransactionType):
             print("\n🎉 Transaction is confirmed!")
             
             # Get session/payment details based on transaction type
-            if transactionType == TransactionType.ONE_TIME_PAYMENT:
+            if transaction_type == TransactionType.ONE_TIME_PAYMENT:
                 session = qbitflow_client.one_time_payments.get_session(uuid)
                 print(f"Payment for: {session.product_name}")
                 print(f"Amount: ${session.price} USD")
@@ -182,7 +182,7 @@ async def handle_success(uuid: str, transactionType: TransactionType):
                     "customer_uuid": session.customer_uuid
                 }
             
-            elif transactionType == TransactionType.CREATE_SUBSCRIPTION:
+            elif transaction_type == TransactionType.CREATE_SUBSCRIPTION:
                 session = qbitflow_client.subscriptions.get_session(uuid)
                 print(f"Subscription for: {session.product_name}")
                 print(f"Amount: ${session.price} USD")
