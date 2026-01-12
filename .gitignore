@@ -13,3 +13,6 @@ PUBLISHING.md
 .idea/
 *.swp
 *.swo
+
+dist/
+qbitflow.egg-info/

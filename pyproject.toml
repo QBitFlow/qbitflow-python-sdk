@@ -33,7 +33,7 @@ classifiers=[
 	"Development Status :: 5 - Production/Stable",
 	"Intended Audience :: Developers",
 	"Topic :: Software Development :: Libraries :: Python Modules",
-	"License :: OSI Approved :: MPL-2.0 License",
+	"License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
 	"Programming Language :: Python :: 3",
 	"Programming Language :: Python :: 3.10",
 	"Programming Language :: Python :: 3.11",
@@ -45,12 +45,13 @@ classifiers=[
 dependencies = [
     "httpx>=0.24.0,<1.0.0",
     "pydantic>=2.0.0,<3.0.0",
+	"email-validator>=2.0.0,<3.0.0"
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
+    "pytest>=9.0.0",
+    "pytest-cov>=6.3.0",
     "pytest-asyncio>=0.21.0",
     "black>=23.0.0",
     "flake8>=6.0.0",
