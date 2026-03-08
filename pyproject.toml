@@ -74,7 +74,7 @@ version = {attr = "qbitflow.__version__"}
 
 [tool.setuptools.packages.find]
 include = ["qbitflow*"]
-exclude = ["tests*", "examples*"]
+exclude = ["tests*", "examples*", "test-internal*"]
 
 [tool.black]
 line-length = 100
@@ -126,7 +126,7 @@ addopts = "-v --cov=qbitflow --cov-report=term-missing --cov-report=html"
 
 [tool.coverage.run]
 source = ["qbitflow"]
-omit = ["*/tests/*", "*/examples/*"]
+omit = ["*/tests/*", "*/examples/*", "*/__init__.py", "test-internal/*"]
 
 [tool.coverage.report]
 exclude_lines = [

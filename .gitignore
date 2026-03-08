@@ -16,3 +16,6 @@ PUBLISHING.md
 
 dist/
 qbitflow.egg-info/
+
+
+test-internal/

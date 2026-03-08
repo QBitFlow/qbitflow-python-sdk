@@ -6,6 +6,11 @@ This module provides the main QBitFlow client class for interacting with the API
 
 from typing import Optional
 
+from qbitflow.requests.webhook import WebhookRequests
+
+from .exceptions.exceptions import APIError, InvalidRequestError
+
+
 from .requests.customer import CustomerRequests
 from .requests.product import ProductRequests
 from .requests.user import UserRequests
@@ -14,7 +19,7 @@ from .requests.transaction.payment import PaymentRequests
 from .requests.transaction.subscription import SubscriptionRequests
 from .requests.transaction.payg import PayAsYouGoSubscriptionRequests
 from .requests.transaction.status import TransactionStatusRequests
-
+from .requests.base_request import BaseRequest
 
 class QBitFlow:
     """
@@ -112,7 +117,10 @@ class QBitFlow:
         self.one_time_payments = PaymentRequests(api_key, timeout, max_retries)
         self.subscriptions = SubscriptionRequests(api_key, timeout, max_retries)
         self.pay_as_you_go = PayAsYouGoSubscriptionRequests(api_key, timeout, max_retries)
+
+        self.webhooks = WebhookRequests(api_key, timeout, max_retries)
     
     def __repr__(self) -> str:
         """Return a string representation of the client."""
         return f"QBitFlow(api_key='***{self.api_key[-4:]}')"
+    

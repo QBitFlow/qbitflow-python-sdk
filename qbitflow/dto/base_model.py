@@ -26,7 +26,7 @@ class BaseModel(PydanticBaseModel):
     model_config = ConfigDict(
         populate_by_name=True,  # Allow both camelCase and snake_case
         alias_generator=snake_to_camel_case,  # Generate camelCase aliases
-        use_enum_values=True,  # Use enum values instead of enum objects
+        # use_enum_values=True,  # Use enum values instead of enum objects
     )
     
     def model_dump(self, *args, **kwargs):

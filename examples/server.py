@@ -9,7 +9,9 @@ This FastAPI server demonstrates how to handle:
 Run with: uvicorn server:app --reload --port 8001
 """
 
-from fastapi import FastAPI, HTTPException
+from typing import Annotated
+from fastapi import FastAPI, HTTPException, Request, Header
+from pydantic_core import ValidationError
 from qbitflow import QBitFlow
 from qbitflow.dto.transaction.session import SessionWebhookResponse
 from qbitflow.dto.transaction.status import (
@@ -28,20 +30,23 @@ app = FastAPI(
 # In production, use environment variables for the API key
 qbitflow_client = QBitFlow(api_key="<your_api_key_here>")
 
-
 @app.post("/webhook")
-async def handle_webhook(event: SessionWebhookResponse):
+async def handle_webhook(
+    request: Request,
+    x_webhook_signature_256: Annotated[str, Header()],
+    x_webhook_timestamp: Annotated[str, Header()]
+):
     """
     Handle webhook events from QBitFlow.
     
     This endpoint receives notifications when:
     - A payment is completed
     - A subscription is created
-    - A payment fails
-    - A transaction is cancelled
     
     Args:
-        event: The webhook event payload from QBitFlow
+        request: The incoming HTTP request containing the webhook payload.
+        x_webhook_signature_256: Signature header for verifying authenticity.
+        x_webhook_timestamp: Timestamp header for verifying authenticity.
     
     Returns:
         Acknowledgment of receipt
@@ -49,6 +54,26 @@ async def handle_webhook(event: SessionWebhookResponse):
     print("=" * 60)
     print("📬 Received webhook event from QBitFlow")
     print("=" * 60)
+
+    # Read raw request body for signature verification
+    body = await request.body()
+
+    # Verify the authenticity of the webhook request
+    if not qbitflow_client.webhooks.verify(
+        payload=body,
+        signature=x_webhook_signature_256,
+        timestamp=x_webhook_timestamp
+    ):
+        print("❌ Invalid webhook signature")
+        # Sending a >= 400 code will cause QBitFlow to retry the webhook
+        raise HTTPException(status_code=401, detail="Invalid webhook signature")
+    
+    # Parse payload after verification
+    try:
+        event = SessionWebhookResponse.model_validate_json(body)
+    except ValidationError as e:
+        print(f"❌ Failed to parse webhook payload: {e}")
+        raise HTTPException(status_code=401, detail="Invalid webhook payload")
     
     # Extract event details
     session_uuid = event.uuid

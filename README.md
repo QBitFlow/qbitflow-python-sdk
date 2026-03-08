@@ -517,7 +517,8 @@ response = client.products.delete(1)
 ### FastAPI Example
 
 ```python
-from fastapi import FastAPI
+from typing import Annotated
+from fastapi import FastAPI, Request, Header, HTTPException
 from qbitflow import QBitFlow
 from qbitflow.dto.transaction.session import SessionWebhookResponse
 from qbitflow.dto.transaction.status import TransactionStatusValue
@@ -526,8 +527,33 @@ app = FastAPI()
 client = QBitFlow(api_key="your_api_key")
 
 @app.post("/webhook")
-def handle_webhook(event: SessionWebhookResponse):
+def handle_webhook(
+	request: Request,
+    x_webhook_signature_256: Annotated[str, Header()],
+    x_webhook_timestamp: Annotated[str, Header()]
+):
 	"""Handle webhook events from QBitFlow."""
+
+	# Read raw request body for signature verification
+    body = await request.body()
+
+    # Verify the authenticity of the webhook request
+    if not qbitflow_client.webhooks.verify(
+        payload=body,
+        signature=x_webhook_signature_256,
+        timestamp=x_webhook_timestamp
+    ):
+        print("❌ Invalid webhook signature")
+		# Sending a >= 400 code will cause QBitFlow to retry the webhook
+        raise HTTPException(status_code=401, detail="Invalid webhook signature")
+    
+    # Parse payload after verification
+    try:
+        event = SessionWebhookResponse.model_validate_json(body)
+    except ValidationError as e:
+        print(f"❌ Failed to parse webhook payload: {e}")
+        raise HTTPException(status_code=401, detail="Invalid webhook payload")
+
 	print(f"Received event for session: {event.uuid}")
 	print(f"Transaction status: {event.status.status.value}")
 

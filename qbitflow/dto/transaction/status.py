@@ -29,6 +29,7 @@ class TransactionType(str, enum.Enum):
         UPDATE_MAX_AMOUNT: Updating the maximum amount for a subscription.
     """
     ONE_TIME_PAYMENT = "payment"
+    TOKEN_PAYMENT = "tokenPayment"
     CREATE_SUBSCRIPTION = "createSubscription"
     CANCEL_SUBSCRIPTION = "cancelSubscription"
     EXECUTE_SUBSCRIPTION_PAYMENT = "executeSubscription"
