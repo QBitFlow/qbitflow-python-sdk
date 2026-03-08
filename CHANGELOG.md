@@ -42,3 +42,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Advanced filtering and search
 -   Rate limiting information in responses
 -   Additional payment method support
+
+## [1.1.0] - 2026-03-08
+
+### Added
+
+-   HMAC signature verification for webhook requests
+-   New `verify` method in `WebhookRequests` class
+-   Updated documentation with webhook verification examples
+
+### Security
+
+-   Improved HMAC signature verification process
+-   Enhanced input validation for webhook requests
+

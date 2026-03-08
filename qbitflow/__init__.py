@@ -32,6 +32,6 @@ from . import dto
 from . import exceptions
 from .utils.duration import Duration
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "QBitFlow"
 __all__ = ["QBitFlow", "dto", "exceptions", "Duration"]

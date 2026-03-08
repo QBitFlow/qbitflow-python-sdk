@@ -11,10 +11,27 @@ from qbitflow.exceptions.exceptions import APIError, InvalidRequestError
 from .base_request import BaseRequest
 
 
+# HMAC headers
+HEADER_SIGNATURE = "X-Webhook-Signature-256"
+HEADER_TIMESTAMP = "X-Webhook-Timestamp"
+HEADER_WEBHOOK_ID = "X-Webhook-ID"
+
 class WebhookRequests(BaseRequest):
     """Handler for Webhook-related API requests."""
     
     BASE_ROUTE = "/webhooks"
+
+    def get_signature_header(self) -> str:
+        """Return the name of the header used for webhook signatures."""
+        return HEADER_SIGNATURE
+    
+    def get_timestamp_header(self) -> str:
+        """Return the name of the header used for webhook timestamps."""
+        return HEADER_TIMESTAMP
+    
+    def get_webhook_id_header(self) -> str:
+        """Return the name of the header used for webhook IDs."""
+        return HEADER_WEBHOOK_ID
     
     def verify(self, payload: bytes, signature: str, timestamp: str)  -> bool:
         """
