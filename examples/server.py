@@ -65,7 +65,6 @@ async def handle_webhook(
         timestamp=x_webhook_timestamp
     ):
         print("❌ Invalid webhook signature")
-        # Sending a >= 400 code will cause QBitFlow to retry the webhook
         raise HTTPException(status_code=401, detail="Invalid webhook signature")
     
     # Parse payload after verification
