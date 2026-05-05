@@ -166,11 +166,10 @@ class CustomerRequests(BaseRequest):
         """
         if not customer_uuid:
             raise ValidationError("Customer UUID cannot be empty")
-        
+
         json_data = data.model_dump(exclude_none=True)
-        json_data["uuid"] = customer_uuid
-        
-        res = self._make_request(f"{self.BASE_ROUTE}/", "PUT", json_data)
+
+        res = self._make_request(f"{self.BASE_ROUTE}/{customer_uuid}", "PUT", json_data)
         return Customer(**res)
     
     def delete(self, customer_uuid: str) -> SuccessResponse:

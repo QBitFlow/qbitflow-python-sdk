@@ -114,21 +114,21 @@ print(f"  - Subscription Link: {response.link}")
 # ============================================================================
 # Example 6: Create a Pay-as-You-Go Subscription
 # ============================================================================
-print("\n6. Creating pay-as-you-go subscription...")
+# print("\n6. Creating pay-as-you-go subscription...")
 
-response = client.pay_as_you_go.create_session(
-    product_id=1,
-    frequency=Duration(value=1, unit="months"),  # Billing cycle
-    free_credits=10.0,  # $10 free credits (optional)
-    webhook_url=f"{MY_URL}/webhook",
-    customer_uuid="01997c89-d0e9-7c9a-9886-fe7709919695"
-)
+# response = client.pay_as_you_go.create_session(
+#     product_id=1,
+#     frequency=Duration(value=1, unit="months"),  # Billing cycle
+#     free_credits=10.0,  # $10 free credits (optional)
+#     webhook_url=f"{MY_URL}/webhook",
+#     customer_uuid="01997c89-d0e9-7c9a-9886-fe7709919695"
+# )
 
-print(f"✓ Pay-as-you-go subscription created!")
-print(f"  - Session UUID: {response.uuid}")
-print(f"  - Subscription Link: {response.link}")
-print(f"  - Free Credits: $10.00")
-print(f"  - Minimum Periods: 3")
+# print(f"✓ Pay-as-you-go subscription created!")
+# print(f"  - Session UUID: {response.uuid}")
+# print(f"  - Subscription Link: {response.link}")
+# print(f"  - Free Credits: $10.00")
+# print(f"  - Minimum Periods: 3")
 
 # ============================================================================
 # Example 7: Get Payment Session Details

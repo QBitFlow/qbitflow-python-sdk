@@ -222,6 +222,65 @@ class BaseRequest:
                 status_code=status_code
             )
     
+    def _make_raw_request(
+        self,
+        endpoint: str,
+        method: Literal["GET", "POST", "PUT", "DELETE"],
+        data: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        retry_count: int = 0
+    ) -> str:
+        """
+        Make an HTTP request and return the raw response text.
+
+        Same retry/error logic as _make_request, but returns response.text
+        instead of parsing JSON — useful for CSV or other non-JSON responses.
+        """
+        if not endpoint.startswith('/'):
+            endpoint = '/' + endpoint
+
+        url = f"{config.get_base_url()}{endpoint}"
+
+        try:
+            with httpx.Client(timeout=self.timeout) as client:
+                if method == "GET":
+                    response = client.get(url, headers=self.headers, params=params)
+                elif method == "POST":
+                    if data is None:
+                        raise InvalidRequestError("POST requests require data")
+                    response = client.post(url, headers=self.headers, json=data)
+                elif method == "PUT":
+                    if data is None:
+                        raise InvalidRequestError("PUT requests require data")
+                    response = client.put(url, headers=self.headers, json=data)
+                elif method == "DELETE":
+                    response = client.delete(url, headers=self.headers)
+                else:
+                    raise InvalidRequestError(f"Invalid HTTP method: {method}")
+
+            self._handle_http_status(response)
+            return response.text
+
+        except httpx.TimeoutException as e:
+            if retry_count < self.max_retries:
+                wait_time = 2 ** retry_count
+                time.sleep(wait_time)
+                return self._make_raw_request(endpoint, method, data, params, retry_count + 1)
+            raise NetworkError(f"Request timeout after {self.timeout} seconds: {str(e)}")
+
+        except httpx.NetworkError as e:
+            if retry_count < self.max_retries:
+                wait_time = 2 ** retry_count
+                time.sleep(wait_time)
+                return self._make_raw_request(endpoint, method, data, params, retry_count + 1)
+            raise NetworkError(f"Network error: {str(e)}")
+
+        except (AuthenticationError, NotFoundException, RateLimitError, APIError, InvalidRequestError):
+            raise
+
+        except Exception as e:
+            raise APIError(f"Unexpected error: {str(e)}")
+
     def _extract_error_message(self, response: httpx.Response) -> str:
         """
         Extract error message from response.

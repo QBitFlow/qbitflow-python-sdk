@@ -89,7 +89,6 @@ class CreateUserDto(BaseModel):
     name: str = Field(..., min_length=1, description="User's first name")
     last_name: str = Field(..., min_length=1, description="User's last name")
     email: EmailStr = Field(..., description="User's email address")
-    password: str = Field(..., min_length=8, description="User's password")
     role: UserRole = Field(..., description="User's role")
     organization_fee_bps: int = Field(default=0, ge=0, le=1000, description="Organization fee in basis points, for example 100 = 1%")
 

@@ -16,7 +16,7 @@ Basic Usage
 -----------
 >>> from qbitflow import QBitFlow
 >>> client = QBitFlow(api_key="your_api_key_here")
->>> 
+>>>
 >>> # Create a one-time payment session
 >>> response = client.one_time_payments.create_session(
 ...     product_id=1,
@@ -32,6 +32,6 @@ from . import dto
 from . import exceptions
 from .utils.duration import Duration
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __author__ = "QBitFlow"
 __all__ = ["QBitFlow", "dto", "exceptions", "Duration"]

@@ -1,28 +1,44 @@
 """Session request handlers for transactions."""
 
+from typing import Optional
+
 from qbitflow.requests.base_request import BaseRequest
 from qbitflow.dto.transaction import session as dto
 from qbitflow.exceptions import ValidationError
 
 
 class SessionRequests(BaseRequest):
-    """Handler for transaction session requests."""
-    
+    """Internal handler for session retrieval (shared by payment and subscription handlers)."""
+
     BASE_ROUTE = "/transaction/session-checkout"
-    
-    def create(self, data: dto.CreateSessionDto) -> dto.LinkResponse:
-        """Create a new transaction session."""
-        data.check()  # Validate before sending
-        res = self._make_request(f"{self.BASE_ROUTE}/", "POST", data.model_dump())
-        return dto.LinkResponse(**res)
-    
-    def get(self, session_uuid: str) -> dto.Session:
-        """Get a transaction session by UUID."""
+
+    def get(
+        self,
+        session_uuid: str,
+        close_to_expire_error: Optional[bool] = False,
+    ) -> dto.AnySession:
+        """
+        Retrieve a session checkout by UUID.
+
+        Args:
+            session_uuid: UUID of the session.
+            close_to_expire_error: When True, the API returns an error if the session
+                is close to expiry.
+
+        Returns:
+            The appropriate session type — OneTimePaymentSession, SubscriptionSession,
+            or PaygSubscriptionSession — resolved from the response payload.
+        """
         if not session_uuid:
             raise ValidationError("Session UUID cannot be empty")
-        
+
+        params = {}
+        if close_to_expire_error is not None:
+            params["closeToExpireError"] = str(close_to_expire_error).lower()
+
         res = self._make_request(
-            f"{self.BASE_ROUTE}/{session_uuid}?closeToExpireError=false",
-            "GET"
+            f"{self.BASE_ROUTE}/{session_uuid}",
+            "GET",
+            params=params if params else None,
         )
-        return dto.Session(**res)
+        return dto._discriminate_session(res)

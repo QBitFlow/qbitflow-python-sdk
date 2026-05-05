@@ -53,7 +53,6 @@ def test_user_data():
         email=f"user+{os.urandom(4).hex()}@example.com",
         name="Test User",
         last_name="SDK",
-        password="SecureP@ssw0rd!",
         role=UserRole.USER,
     )
 

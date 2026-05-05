@@ -9,6 +9,9 @@ from .customer import CustomerRequests
 from .product import ProductRequests
 from .user import UserRequests
 from .api_key import ApiKeyRequests
+from .refund import RefundRequests
+from .accounting import AccountingRequests
+from .claim import ClaimRequests
 from . import transaction
 
 __all__ = [
@@ -19,5 +22,8 @@ __all__ = [
     "ProductRequests",
     "UserRequests",
     "ApiKeyRequests",
+    "RefundRequests",
+    "AccountingRequests",
+    "ClaimRequests",
     "transaction",
 ]

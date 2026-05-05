@@ -6,7 +6,7 @@ This module contains data models for subscription management.
 
 from datetime import datetime
 import enum
-from typing import Optional
+from typing import Any, Dict, Optional
 from pydantic import Field
 
 from qbitflow.dto.base_model import BaseModel
@@ -154,6 +154,8 @@ class SubscriptionHistory(BaseModel):
     currency: Currency = Field(..., description="Currency details")
     test: bool = Field(..., description="Test mode flag")
     product_id: Optional[int] = Field(default=None, description="Product ID")
+    amount_min_units: Optional[str] = Field(default=None, description="Amount in smallest token units")  # noqa: E501
     subscription_uuid: str = Field(..., description="Subscription UUID")
     transaction_hash: str = Field(..., description="Blockchain transaction hash")
     customer_uuid: str = Field(..., description="Customer UUID")
+    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional metadata")

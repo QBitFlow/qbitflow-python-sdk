@@ -7,12 +7,16 @@ and related operations.
 """
 
 from .currency import Currency
-from .payment import Payment, CombinedPayment
+from .payment import Payment, CombinedPaymentItem
+from .refund import RefundEntry, RefundStatus
 from .session import (
-    Session,
-    SubscriptionOptions,
-    CreateSessionDto,
-    CreateSubscriptionOptions,
+    BaseSession,
+    OneTimePaymentSession,
+    SubscriptionSession,
+    PaygSubscriptionSession,
+    AnySession,
+    CreatePaymentSessionDto,
+    CreateSubscriptionSessionDto,
     LinkResponse,
     StatusLinkResponse,
     SessionWebhookResponse,
@@ -27,16 +31,22 @@ from .subscription import (
     Subscription,
     SubscriptionStatus,
     PayAsYouGoSubscription,
+    SubscriptionHistory,
 )
 
 __all__ = [
     "Currency",
     "Payment",
-    "CombinedPayment",
-    "Session",
-    "SubscriptionOptions",
-    "CreateSessionDto",
-    "CreateSubscriptionOptions",
+    "CombinedPaymentItem",
+    "RefundEntry",
+    "RefundStatus",
+    "BaseSession",
+    "OneTimePaymentSession",
+    "SubscriptionSession",
+    "PaygSubscriptionSession",
+    "AnySession",
+    "CreatePaymentSessionDto",
+    "CreateSubscriptionSessionDto",
     "LinkResponse",
     "StatusLinkResponse",
     "SessionWebhookResponse",
@@ -47,4 +57,5 @@ __all__ = [
     "Subscription",
     "SubscriptionStatus",
     "PayAsYouGoSubscription",
+    "SubscriptionHistory",
 ]

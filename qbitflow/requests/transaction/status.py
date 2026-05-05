@@ -7,20 +7,20 @@ from qbitflow.exceptions import ValidationError
 
 class TransactionStatusRequests(BaseRequest):
     """Handler for transaction status requests."""
-    
+
     BASE_ROUTE = "/transaction/status"
-    
+
     def get(self, transaction_uuid: str, transaction_type: TransactionType) -> TransactionStatus:
         """
         Get the status of a transaction.
-        
+
         Args:
             transaction_uuid: UUID of the transaction.
             transaction_type: Type of the transaction.
-        
+
         Returns:
             Current transaction status.
-        
+
         Example:
             >>> status = client.transaction_status.get(
             ...     "uuid",
@@ -31,11 +31,11 @@ class TransactionStatusRequests(BaseRequest):
         """
         if not transaction_uuid:
             raise ValidationError("Transaction UUID cannot be empty")
-        
+
         params = {
-            "transactionUUID": transaction_uuid,
-            "transactionStatusType": transaction_type.value
+            "txUUID": transaction_uuid,
+            "txType": transaction_type.value,
         }
-        
+
         res = self._make_request(self.BASE_ROUTE, "GET", params=params)
         return TransactionStatus(**res)

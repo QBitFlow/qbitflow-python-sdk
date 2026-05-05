@@ -84,9 +84,8 @@ class TransactionStatus(BaseModel):
         ...     print(f"Transaction failed: {status.message}")
     """
     
-    type: TransactionType = Field(..., description="Transaction type")
     status: TransactionStatusValue = Field(..., description="Current status")
-    tx_hash: Optional[str] = Field(default=None, description="Blockchain transaction hash")
+    tx_hash: str = Field(..., description="Blockchain transaction hash")
     message: Optional[str] = Field(default=None, description="Status message or error description")
 
 

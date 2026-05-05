@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from qbitflow.requests.base_request import BaseRequest, SuccessResponse
 from qbitflow.dto.transaction.session import (
-    CreateSessionDto, CreateSubscriptionOptions, LinkResponse, Session, StatusLinkResponse
+    LinkResponse, PaygSubscriptionSession, StatusLinkResponse,
 )
 from qbitflow.dto.transaction.subscription import PayAsYouGoSubscription, SubscriptionHistory
 from qbitflow.requests.transaction.session import SessionRequests
@@ -82,9 +82,10 @@ class PayAsYouGoSubscriptionRequests(BaseRequest):
         
         return self.session_requests.create(session)
     
-    def get_session(self, session_uuid: str) -> Session:
+    def get_session(self, session_uuid: str) -> PaygSubscriptionSession:
         """Get a PAYG subscription session by UUID."""
-        return self.session_requests.get(session_uuid)
+        from typing import cast
+        return cast(PaygSubscriptionSession, self.session_requests.get(session_uuid))
     
     def get(self, subscription_uuid: str) -> PayAsYouGoSubscription:
         """Get a PAYG subscription by UUID."""

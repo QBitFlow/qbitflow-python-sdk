@@ -3,8 +3,11 @@
 from typing import Optional
 
 from qbitflow.requests.base_request import BaseRequest
-from qbitflow.dto.transaction.session import CreateSessionDto, LinkResponse, Session
+from qbitflow.dto.transaction.session import (
+    CreatePaymentSessionDto, LinkResponse, OneTimePaymentSession,
+)
 from qbitflow.dto.transaction import payment as dto
+from qbitflow.dto.customer import Customer
 from qbitflow.requests.transaction.session import SessionRequests
 from qbitflow.utils.cursor_data import CursorData, cursor_query_builder
 from qbitflow.exceptions import ValidationError
@@ -13,17 +16,18 @@ from qbitflow.exceptions import ValidationError
 class PaymentRequests(BaseRequest):
     """
     Handler for one-time payment requests.
-    
+
     This class provides methods to create and manage one-time cryptocurrency payments.
     """
-    
+
     BASE_ROUTE = "/transaction"
-    
+    SESSION_ROUTE = "/transaction/session-checkout"
+
     def __init__(self, api_key: str, timeout: int | None = None, max_retries: int | None = None):
         """Initialize the payment request handler."""
         super().__init__(api_key, timeout=timeout, max_retries=max_retries)
-        self.session_requests = SessionRequests(api_key, timeout=timeout, max_retries=max_retries)
-    
+        self._session = SessionRequests(api_key, timeout=timeout, max_retries=max_retries)
+
     def create_session(
         self,
         product_id: Optional[int] = None,
@@ -33,36 +37,36 @@ class PaymentRequests(BaseRequest):
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
         webhook_url: Optional[str] = None,
-        customer_uuid: Optional[str] = None
+        customer_uuid: Optional[str] = None,
     ) -> LinkResponse:
         """
         Create a new one-time payment session.
-        
-        You must provide either product_id OR all of (product_name, description, price).
-        
+
+        Provide either product_id OR all of (product_name, description, price).
+
         Args:
-            product_id: ID of the product to purchase.
-            product_name: Name of the product (if not using product_id).
+            product_id: ID of an existing product.
+            product_name: Product name (if not using product_id).
             description: Product description (if not using product_id).
             price: Price in USD (if not using product_id).
-            success_url: URL to redirect on success (supports {{UUID}}, {{TRANSACTION_TYPE}} placeholders).
+            success_url: URL to redirect on success.
             cancel_url: URL to redirect on cancellation.
             webhook_url: Webhook URL for status updates.
-            customer_uuid: UUID of the customer making the payment.
-        
+            customer_uuid: UUID of the customer.
+
         Returns:
-            Link response with payment URL for the customer.
-        
+            Link response with the payment URL to send to the customer.
+
         Example:
-            >>> # Using product ID
+            >>> # Using a product ID
             >>> response = client.one_time_payments.create_session(
             ...     product_id=1,
             ...     customer_uuid="customer-uuid",
             ...     webhook_url="https://example.com/webhook"
             ... )
             >>> print(f"Payment link: {response.link}")
-            >>> 
-            >>> # Using product details
+            >>>
+            >>> # Using inline product details
             >>> response = client.one_time_payments.create_session(
             ...     product_name="Premium Plan",
             ...     description="One-time access",
@@ -70,7 +74,7 @@ class PaymentRequests(BaseRequest):
             ...     customer_uuid="customer-uuid"
             ... )
         """
-        session = CreateSessionDto(
+        session = CreatePaymentSessionDto(
             product_id=product_id,
             product_name=product_name,
             description=description,
@@ -78,39 +82,48 @@ class PaymentRequests(BaseRequest):
             success_url=success_url,
             cancel_url=cancel_url,
             webhook_url=webhook_url,
-            customer_uuid=customer_uuid
+            customer_uuid=customer_uuid,
         )
-        
         session.check()
-        return self.session_requests.create(session)
-    
-    def get_session(self, session_uuid: str) -> Session:
+
+        res = self._make_request(
+            f"{self.SESSION_ROUTE}/new/payment",
+            "POST",
+            session.model_dump(),
+        )
+        return LinkResponse(**res)
+
+    def get_session(
+        self, session_uuid: str, close_to_expire_error: Optional[bool] = False
+    ) -> OneTimePaymentSession:
         """
         Get a payment session by UUID.
-        
+
         Args:
             session_uuid: UUID of the session.
-        
+            close_to_expire_error: Return an error if the session is close to expiry.
+
         Returns:
-            Session details.
-        
+            One-time payment session details.
+
         Example:
             >>> session = client.one_time_payments.get_session("session-uuid")
             >>> print(f"Product: {session.product_name}")
             >>> print(f"Price: ${session.price}")
         """
-        return self.session_requests.get(session_uuid)
-    
+        from typing import cast
+        return cast(OneTimePaymentSession, self._session.get(session_uuid, close_to_expire_error))
+
     def get(self, payment_uuid: str) -> dto.Payment:
         """
         Get a completed payment by UUID.
-        
+
         Args:
             payment_uuid: UUID of the payment.
-        
+
         Returns:
             Payment details.
-        
+
         Example:
             >>> payment = client.one_time_payments.get("payment-uuid")
             >>> print(f"Amount: ${payment.amount}")
@@ -118,65 +131,78 @@ class PaymentRequests(BaseRequest):
         """
         if not payment_uuid:
             raise ValidationError("Payment UUID cannot be empty")
-        
-        endpoint = f"{self.BASE_ROUTE}/payment/{payment_uuid}"
-        res = self._make_request(endpoint, "GET")
+
+        res = self._make_request(f"{self.BASE_ROUTE}/payment/{payment_uuid}", "GET")
         return dto.Payment(**res)
-    
+
     def get_all(
         self,
         limit: Optional[int] = None,
-        cursor: Optional[str] = None
+        cursor: Optional[str] = None,
     ) -> CursorData[dto.Payment, str]:
         """
-        Get all one-time payments with pagination.
-        
+        Get all one-time payments with cursor pagination.
+
         Args:
             limit: Maximum number of results per page.
-            cursor: Pagination cursor from previous response.
-        
+            cursor: Pagination cursor from a previous response.
+
         Returns:
             Paginated payment data.
-        
+
         Example:
-            >>> # Get first page
             >>> page = client.one_time_payments.get_all(limit=10)
             >>> for payment in page.items:
-            ...     print(f"Payment: {payment.uuid}")
-            >>> 
-            >>> # Get next page
+            ...     print(payment.uuid)
             >>> if page.has_more():
             ...     next_page = client.one_time_payments.get_all(
-            ...         limit=10,
-            ...         cursor=page.next_cursor
+            ...         limit=10, cursor=page.next_cursor
             ...     )
         """
         params = cursor_query_builder(limit=limit, cursor=cursor)
-        
         res = self._make_request(f"{self.BASE_ROUTE}/payments", "GET", params=params)
         return CursorData[dto.Payment, str](**res)
-    
+
     def get_all_combined(
         self,
         limit: Optional[int] = None,
-        cursor: Optional[str] = None
-    ) -> CursorData[dto.CombinedPayment, str]:
+        cursor: Optional[str] = None,
+    ) -> CursorData[dto.CombinedPaymentItem, str]:
         """
         Get all payments from both one-time and subscription sources.
-        
+
         Args:
             limit: Maximum number of results per page.
-            cursor: Pagination cursor from previous response.
-        
+            cursor: Pagination cursor from a previous response.
+
         Returns:
             Paginated combined payment data.
-        
+
         Example:
             >>> page = client.one_time_payments.get_all_combined(limit=10)
-            >>> for payment in page.items:
-            ...     print(f"Payment: {payment.uuid} (source: {payment.source})")
+            >>> for item in page.items:
+            ...     print(f"{item.source}: {item.uuid}")
         """
         params = cursor_query_builder(limit=limit, cursor=cursor)
-        
         res = self._make_request(f"{self.BASE_ROUTE}/payments/combined", "GET", params=params)
-        return CursorData[dto.CombinedPayment, str](**res)
+        return CursorData[dto.CombinedPaymentItem, str](**res)
+
+    def get_customer_for_transaction(self, transaction_uuid: str) -> Customer:
+        """
+        Get the customer associated with a transaction.
+
+        Args:
+            transaction_uuid: UUID of the transaction.
+
+        Returns:
+            Customer information.
+
+        Example:
+            >>> customer = client.one_time_payments.get_customer_for_transaction("tx-uuid")
+            >>> print(f"Customer: {customer.name} ({customer.email})")
+        """
+        if not transaction_uuid:
+            raise ValidationError("Transaction UUID cannot be empty")
+
+        res = self._make_request(f"{self.BASE_ROUTE}/customer/{transaction_uuid}", "GET")
+        return Customer(**res)

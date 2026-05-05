@@ -12,6 +12,13 @@ from .customer import Customer, CreateCustomerDto, UpdateCustomerDto
 from .product import Product, CreateProductDto, UpdateProductDto
 from .user import User, UserRole, CreateUserDto, UpdateUserDto
 from .api_key import ApiKey, CreateApiKeyDto, CreatedKeyResponse
+from .accounting import AccountingEvent
+from .claim import (
+    ClaimRequest,
+    Organization,
+    CreateClaimRequestResponse,
+    ClaimFund,
+)
 
 __all__ = [
     "BaseModel",
@@ -29,4 +36,9 @@ __all__ = [
     "ApiKey",
     "CreateApiKeyDto",
     "CreatedKeyResponse",
+    "AccountingEvent",
+    "ClaimRequest",
+    "Organization",
+    "CreateClaimRequestResponse",
+    "ClaimFund",
 ]
