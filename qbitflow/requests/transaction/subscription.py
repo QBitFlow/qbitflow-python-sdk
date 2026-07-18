@@ -31,7 +31,6 @@ class SubscriptionRequests(BaseRequest):
         min_periods: Optional[int] = None,
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
-        webhook_url: Optional[str] = None,
         customer_uuid: Optional[str] = None,
     ) -> LinkResponse:
         """
@@ -46,7 +45,6 @@ class SubscriptionRequests(BaseRequest):
             min_periods: Optional minimum number of billing periods.
             success_url: URL to redirect on success.
             cancel_url: URL to redirect on cancellation.
-            webhook_url: Webhook URL for subscription events.
             customer_uuid: UUID of the customer.
 
         Returns:
@@ -75,7 +73,6 @@ class SubscriptionRequests(BaseRequest):
             min_periods=min_periods,
             success_url=success_url,
             cancel_url=cancel_url,
-            webhook_url=webhook_url,
             customer_uuid=customer_uuid,
         )
 

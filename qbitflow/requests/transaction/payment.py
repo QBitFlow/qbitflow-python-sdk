@@ -36,7 +36,6 @@ class PaymentRequests(BaseRequest):
         price: Optional[float] = None,
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
-        webhook_url: Optional[str] = None,
         customer_uuid: Optional[str] = None,
     ) -> LinkResponse:
         """
@@ -51,7 +50,6 @@ class PaymentRequests(BaseRequest):
             price: Price in USD (if not using product_id).
             success_url: URL to redirect on success.
             cancel_url: URL to redirect on cancellation.
-            webhook_url: Webhook URL for status updates.
             customer_uuid: UUID of the customer.
 
         Returns:
@@ -61,8 +59,7 @@ class PaymentRequests(BaseRequest):
             >>> # Using a product ID
             >>> response = client.one_time_payments.create_session(
             ...     product_id=1,
-            ...     customer_uuid="customer-uuid",
-            ...     webhook_url="https://example.com/webhook"
+            ...     customer_uuid="customer-uuid"
             ... )
             >>> print(f"Payment link: {response.link}")
             >>>
@@ -81,7 +78,6 @@ class PaymentRequests(BaseRequest):
             price=price,
             success_url=success_url,
             cancel_url=cancel_url,
-            webhook_url=webhook_url,
             customer_uuid=customer_uuid,
         )
         session.check()

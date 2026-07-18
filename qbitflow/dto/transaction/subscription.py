@@ -159,3 +159,30 @@ class SubscriptionHistory(BaseModel):
     transaction_hash: str = Field(..., description="Blockchain transaction hash")
     customer_uuid: str = Field(..., description="Customer UUID")
     metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional metadata")
+
+
+class SubscriptionStatusTransitionWebhook(BaseModel):
+    """
+    Represents a subscription status transition webhook event.
+    
+    This model contains information about a subscription status change,
+    including the previous and current status along with the update timestamp.
+    
+    Attributes:
+        subscription_uuid: UUID of the subscription that changed status.
+        previous_status: The previous subscription status.
+        current_status: The current subscription status.
+        updated_at: Timestamp when the status transition occurred.
+    
+    Example:
+        >>> webhook = SubscriptionStatusTransitionWebhook(**payload)
+        >>> print(f"Subscription: {webhook.subscription_uuid}")
+        >>> print(f"Status change: {webhook.previous_status} -> {webhook.current_status}")
+        >>> print(f"Updated at: {webhook.updated_at}")
+    """
+    
+    subscription_uuid: str = Field(..., alias="subscriptionUUID", description="Subscription UUID")
+    previous_status: SubscriptionStatus = Field(..., alias="previousStatus", description="Previous subscription status")
+    current_status: SubscriptionStatus = Field(..., alias="currentStatus", description="Current subscription status")
+    updated_at: datetime = Field(..., alias="updatedAt", description="Status transition timestamp")
+

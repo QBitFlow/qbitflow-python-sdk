@@ -51,7 +51,6 @@ class QBitFlow:
         >>> response = client.one_time_payments.create_session(
         ...     product_id=1,
         ...     customer_uuid="customer-uuid",
-        ...     webhook_url="https://example.com/webhook"
         ... )
         >>> print(f"Payment link: {response.link}")
         >>>

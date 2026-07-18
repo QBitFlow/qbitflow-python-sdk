@@ -22,13 +22,13 @@ print("QBitFlow SDK Examples")
 print("=" * 60)
 
 # ============================================================================
-# Example 1: Create a One-Time Payment Session with Webhook
+# Example 1: Create a One-Time Payment Session
+# (Webhook notifications are configured in the QBitFlow dashboard settings)
 # ============================================================================
-print("\n1. Creating one-time payment with webhook...")
+print("\n1. Creating one-time payment...")
 
 response_one_time = client.one_time_payments.create_session(
     product_id=1,  # Use an existing product from your dashboard
-    webhook_url=f"{MY_URL}/webhook",  # Webhook URL for payment notifications
     customer_uuid="01997c89-d0e9-7c9a-9886-fe7709919695",  # Customer UUID
 )
 
@@ -67,7 +67,6 @@ response = client.one_time_payments.create_session(
     description="One-time access to premium features",
     price=49.99,  # Price in USD
     customer_uuid="01997c89-d0e9-7c9a-9886-fe7709919695",
-    webhook_url=f"{MY_URL}/webhook",
 )
 
 print(f"✓ Custom payment session created!")
@@ -83,7 +82,6 @@ response = client.subscriptions.create_session(
     product_id=1,
     frequency=Duration(value=1, unit="months"),  # Bill every month
     trial_period=Duration(value=7, unit="days"),  # 7-day free trial (optional)
-    webhook_url=f"{MY_URL}/webhook",
     customer_uuid="01997c89-d0e9-7c9a-9886-fe7709919695"
 )
 
@@ -101,7 +99,6 @@ response = client.subscriptions.create_session(
     product_id=1,
     frequency=Duration(value=1, unit="weeks"),  # Bill every week
     trial_period=None,  # No trial period
-    webhook_url=f"{MY_URL}/webhook",
     customer_uuid="01997c89-d0e9-7c9a-9886-fe7709919695",
     success_url=f"{MY_URL}/success?uuid={{{{UUID}}}}",
     cancel_url=f"{MY_URL}/cancel"
@@ -120,7 +117,6 @@ print(f"  - Subscription Link: {response.link}")
 #     product_id=1,
 #     frequency=Duration(value=1, unit="months"),  # Billing cycle
 #     free_credits=10.0,  # $10 free credits (optional)
-#     webhook_url=f"{MY_URL}/webhook",
 #     customer_uuid="01997c89-d0e9-7c9a-9886-fe7709919695"
 # )
 

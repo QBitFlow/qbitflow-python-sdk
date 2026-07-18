@@ -69,7 +69,9 @@ Official Python SDK for [QBitFlow](https://qbitflow.app) - a comprehensive crypt
 -   [User Management](#user-management)
 -   [API Key Management](#api-key-management)
 -   [Webhook Handling](#webhook-handling)
-    -   [FastAPI Example](#fastapi-example)
+    -   [Configuring Webhooks](#configuring-webhooks)
+    -   [Transaction Webhook](#transaction-webhook)
+    -   [Subscription Status Webhook](#subscription-status-webhook)
 -   [Error Handling](#error-handling)
 -   [API Reference](#api-reference)
 -   [License](#license)
@@ -110,7 +112,6 @@ client = QBitFlow(api_key="your_api_key_here")
 response = client.one_time_payments.create_session(
     product_id=1,
     customer_uuid="customer-uuid",
-    webhook_url="https://your-domain.com/webhook",
     success_url="https://your-domain.com/success",
     cancel_url="https://your-domain.com/cancel"
 )
@@ -128,8 +129,7 @@ response = client.subscriptions.create_session(
     product_id=1,
     frequency=Duration(value=1, unit="months"),
     trial_period=Duration(value=7, unit="days"),  # Optional 7-day trial
-    customer_uuid="customer-uuid",
-    webhook_url="https://your-domain.com/webhook"
+    customer_uuid="customer-uuid"
 )
 
 print(f"Subscription link: {response.link}")
@@ -172,8 +172,7 @@ Provide either a `product_id` for an existing product, or `product_name` + `desc
 # From an existing product
 response = client.one_time_payments.create_session(
     product_id=1,
-    customer_uuid="customer-uuid",
-    webhook_url="https://your-domain.com/webhook",
+    customer_uuid="customer-uuid"
 )
 
 # Ad-hoc payment
@@ -181,8 +180,7 @@ response = client.one_time_payments.create_session(
     product_name="Custom Product",
     description="Product description",
     price=99.99,  # USD
-    customer_uuid="customer-uuid",
-    webhook_url="https://your-domain.com/webhook",
+    customer_uuid="customer-uuid"
 )
 
 print(response.uuid)  # Session UUID
@@ -268,7 +266,6 @@ response = client.subscriptions.create_session(
     frequency=Duration(value=1, unit="months"),
     trial_period=Duration(value=7, unit="days"),  # Optional
     min_periods=3,                                 # Optional: minimum billing periods
-    webhook_url="https://your-domain.com/webhook",
     customer_uuid="customer-uuid",
 )
 
@@ -292,6 +289,12 @@ Available units for `frequency` and `trial_period`:
 subscription = client.subscriptions.get("subscription-uuid")
 print(subscription.subscription_status, subscription.next_billing_date)
 ```
+
+> **Tracking status changes:** You no longer need to poll `get()` on a schedule
+> (e.g. a cron job) to detect subscription lifecycle changes. Enable the
+> **Subscription status webhook** in your QBitFlow dashboard settings and you will
+> receive a notification on every status transition. See
+> [Subscription Status Webhook](#subscription-status-webhook).
 
 ### Get Payment History
 
@@ -568,7 +571,50 @@ client.api_keys.delete(key_id)
 
 ## Webhook Handling
 
-### FastAPI Example
+### Configuring Webhooks
+
+Webhook URLs are **no longer set per session**. Instead, configure them once in your
+QBitFlow dashboard settings, and they apply consistently to every transaction:
+
+-   **Transaction webhook** — receives notifications when a payment or subscription
+    session changes status (e.g. completed, failed). Payload: `SessionWebhookResponse`.
+-   **Subscription status webhook** — receives notifications on every subscription
+    lifecycle transition (e.g. `trial → active`, `active → past_due`,
+    `active → cancelled`). Payload: `SubscriptionStatusTransitionWebhook`.
+
+> **Migration note:** Previous versions accepted a `webhook_url` argument on
+> `one_time_payments.create_session()` and `subscriptions.create_session()`. That
+> parameter has been removed — set the **Transaction webhook** in the dashboard instead.
+> Likewise, the **Subscription status webhook** replaces the old pattern of running a
+> cron job that periodically calls `subscriptions.get()` to detect status changes.
+
+A complete, runnable FastAPI example handling both webhook types lives in
+[`test-internal/main.py`](test-internal/main.py).
+
+#### Test Webhook Reachability
+
+The dashboard's **Test webhook** action lets you confirm your endpoint is reachable
+before going live. It sends a request with a **fake payload** that will not parse like a
+real webhook — so your handler must short-circuit it. The request carries the webhook ID
+in the `X-Webhook-ID` header; when that value equals `TEST_WEBHOOK_ID`, return HTTP `200`
+immediately and skip normal payload processing:
+
+```python
+from qbitflow.requests.webhook import TEST_WEBHOOK_ID
+
+# ...inside your handler, after verifying the signature:
+if x_webhook_id == TEST_WEBHOOK_ID:
+    return {"status": "received", "message": "Test webhook acknowledged"}
+```
+
+Perform this check **after** signature verification but **before** parsing the payload —
+otherwise the fake payload will fail validation and the reachability check will report an
+error. Both examples below include this guard.
+
+### Transaction Webhook
+
+Handles payment and subscription session status changes. Always verify the signature
+before trusting the payload:
 
 ```python
 from typing import Annotated
@@ -576,6 +622,7 @@ from fastapi import FastAPI, Request, Header, HTTPException
 from qbitflow import QBitFlow
 from qbitflow.dto.transaction.session import SessionWebhookResponse
 from qbitflow.dto.transaction.status import TransactionStatusValue
+from qbitflow.requests.webhook import TEST_WEBHOOK_ID
 
 app = FastAPI()
 client = QBitFlow(api_key="your_api_key")
@@ -583,6 +630,7 @@ client = QBitFlow(api_key="your_api_key")
 @app.post("/webhook")
 async def handle_webhook(
     request: Request,
+    x_webhook_id: Annotated[str, Header()],
     x_webhook_signature_256: Annotated[str, Header()],
     x_webhook_timestamp: Annotated[str, Header()]
 ):
@@ -593,7 +641,12 @@ async def handle_webhook(
         signature=x_webhook_signature_256,
         timestamp=x_webhook_timestamp
     ):
+        # Returning a >= 400 status causes QBitFlow to retry the webhook
         raise HTTPException(status_code=401, detail="Invalid webhook signature")
+
+    # Reachability test from the dashboard — acknowledge and skip processing
+    if x_webhook_id == TEST_WEBHOOK_ID:
+        return {"status": "received", "message": "Test webhook acknowledged"}
 
     event = SessionWebhookResponse.model_validate_json(body)
 
@@ -612,6 +665,63 @@ async def handle_webhook(
 
     return {"received": True}
 ```
+
+### Subscription Status Webhook
+
+Once the **Subscription status webhook** is enabled in the dashboard, QBitFlow POSTs a
+`SubscriptionStatusTransitionWebhook` payload whenever a subscription changes status —
+no polling required. The payload carries `subscription_uuid`, `previous_status`,
+`current_status`, and `updated_at`:
+
+```python
+from typing import Annotated
+from fastapi import FastAPI, Request, Header, HTTPException
+from qbitflow import QBitFlow
+from qbitflow.dto.transaction.subscription import (
+    SubscriptionStatusTransitionWebhook,
+    SubscriptionStatus,
+)
+from qbitflow.requests.webhook import TEST_WEBHOOK_ID
+
+app = FastAPI()
+client = QBitFlow(api_key="your_api_key")
+
+@app.post("/subscription-webhook")
+async def handle_subscription_webhook(
+    request: Request,
+    x_webhook_id: Annotated[str, Header()],
+    x_webhook_signature_256: Annotated[str, Header()],
+    x_webhook_timestamp: Annotated[str, Header()]
+):
+    body = await request.body()
+
+    if not client.webhooks.verify(
+        payload=body,
+        signature=x_webhook_signature_256,
+        timestamp=x_webhook_timestamp
+    ):
+        raise HTTPException(status_code=401, detail="Invalid webhook signature")
+
+    # Reachability test from the dashboard — acknowledge and skip processing
+    if x_webhook_id == TEST_WEBHOOK_ID:
+        return {"status": "received", "message": "Test webhook acknowledged"}
+
+    event = SubscriptionStatusTransitionWebhook.model_validate_json(body)
+
+    print(f"Subscription {event.subscription_uuid}: "
+          f"{event.previous_status.value} -> {event.current_status.value}")
+
+    # React to the lifecycle transition — e.g. revoke access on cancellation
+    if event.current_status == SubscriptionStatus.CANCELLED:
+        print(f"Revoking access for {event.subscription_uuid}")
+    elif event.current_status == SubscriptionStatus.PAST_DUE:
+        print(f"Payment failed — notifying customer for {event.subscription_uuid}")
+
+    return {"received": True}
+```
+
+`SubscriptionStatus` values: `active`, `cancelled`, `past_due`, `low_on_funds`,
+`pending`, `trial`, `trial_expired`.
 
 ## Error Handling
 
