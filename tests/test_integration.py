@@ -325,7 +325,6 @@ class TestPayments:
         response = client.one_time_payments.create_session(
             product_id=created_product.id,
             customer_uuid=created_customer_uuid,
-            webhook_url="https://example.com/webhook"
         )
 
         assert response.uuid is not None

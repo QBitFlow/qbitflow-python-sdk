@@ -18,6 +18,7 @@ from qbitflow.dto.transaction.status import (
     TransactionStatusValue,
     TransactionType
 )
+from qbitflow.requests.webhook import TEST_WEBHOOK_ID
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -33,6 +34,7 @@ qbitflow_client = QBitFlow(api_key="<your_api_key_here>")
 @app.post("/webhook")
 async def handle_webhook(
     request: Request,
+    x_webhook_id: Annotated[str, Header()],
     x_webhook_signature_256: Annotated[str, Header()],
     x_webhook_timestamp: Annotated[str, Header()]
 ):
@@ -67,6 +69,10 @@ async def handle_webhook(
         print("❌ Invalid webhook signature")
         raise HTTPException(status_code=401, detail="Invalid webhook signature")
     
+    if x_webhook_id == TEST_WEBHOOK_ID:
+        print("✅ Received test webhook event")
+        return {"status": "received", "message": "Test webhook event acknowledged"}
+    
     # Parse payload after verification
     try:
         event = SessionWebhookResponse.model_validate_json(body)
@@ -77,11 +83,11 @@ async def handle_webhook(
     # Extract event details
     session_uuid = event.uuid
     transaction_status = event.status.status
-    transaction_type = event.status.type
+    transaction_hash = event.status.tx_hash
     session = event.session
     
     print(f"Session UUID: {session_uuid}")
-    print(f"Transaction Type: {transaction_type.value}")
+    print(f"Transaction Hash: {transaction_hash}")
     print(f"Transaction Status: {transaction_status.value}")
     print(f"Product: {session.product_name}")
     print(f"Price: ${session.price} USD")

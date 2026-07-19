@@ -10,6 +10,9 @@ from qbitflow.exceptions.exceptions import APIError, InvalidRequestError
 
 from .base_request import BaseRequest
 
+# Frontend test webhook ID for testing purposes and ensure that the webhook can be reached
+TEST_WEBHOOK_ID = "test-webhook-id"
+
 
 # HMAC headers
 HEADER_SIGNATURE = "X-Webhook-Signature-256"

@@ -22,7 +22,6 @@ class BaseSession(BaseModel):
         price: Price in USD.
         success_url: URL to redirect on success.
         cancel_url: URL to redirect on cancellation.
-        webhook_url: Webhook URL for status updates.
         organization_id: Organization ID.
         organization_name: Organization name.
         fee_bps: Platform fee in basis points.
@@ -40,7 +39,6 @@ class BaseSession(BaseModel):
     price: float = Field(..., ge=0, description="Price in USD")
     success_url: Optional[str] = Field(default=None, description="Success redirect URL")
     cancel_url: Optional[str] = Field(default=None, description="Cancel redirect URL")
-    webhook_url: Optional[str] = Field(default=None, description="Webhook URL")
     organization_id: int = Field(..., description="Organization ID")
     organization_name: str = Field(..., description="Organization name")
     fee_bps: int = Field(..., description="Platform fee in basis points")
@@ -122,10 +120,9 @@ class CreatePaymentSessionDto(BaseModel):
     price: Optional[float] = Field(default=None, ge=0, description="Price in USD")
     success_url: Optional[str] = Field(default=None, description="Success redirect URL")
     cancel_url: Optional[str] = Field(default=None, description="Cancel redirect URL")
-    webhook_url: Optional[str] = Field(default=None, description="Webhook URL")
     customer_uuid: Optional[str] = Field(default=None, description="Customer UUID")
 
-    @field_validator('success_url', 'cancel_url', 'webhook_url')
+    @field_validator('success_url', 'cancel_url')
     @classmethod
     def validate_urls(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and not validate_url(v):

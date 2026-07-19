@@ -29,7 +29,6 @@ class PayAsYouGoSubscriptionRequests(BaseRequest):
         free_credits: Optional[float] = None,
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
-        webhook_url: Optional[str] = None,
         customer_uuid: Optional[str] = None,
     ) -> LinkResponse:
         """
@@ -43,7 +42,6 @@ class PayAsYouGoSubscriptionRequests(BaseRequest):
             free_credits: Optional free credits to provide.
             success_url: URL to redirect on success.
             cancel_url: URL to redirect on cancellation.
-            webhook_url: Webhook URL for events.
             customer_uuid: UUID of the customer.
         
         Returns:
@@ -75,7 +73,6 @@ class PayAsYouGoSubscriptionRequests(BaseRequest):
             product_id=product_id,
             success_url=success_url,
             cancel_url=cancel_url,
-            webhook_url=webhook_url,
             customer_uuid=customer_uuid,
             options=options
         )
