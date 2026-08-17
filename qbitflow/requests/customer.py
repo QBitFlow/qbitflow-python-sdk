@@ -90,6 +90,34 @@ class CustomerRequests(BaseRequest):
         res = self._make_request(endpoint, "GET")
         return Customer(**res)
     
+    def get_by_reference(self, reference: str) -> Customer:
+        """
+        Get a customer by the reference you assigned when creating it.
+
+        Lets you resolve a customer from your own identifier without storing
+        QBitFlow's UUID.
+
+        Args:
+            reference: The customer reference.
+
+        Returns:
+            The customer with the specified reference.
+
+        Raises:
+            NotFoundException: If no customer with that reference is found.
+            ValidationError: If the reference is empty.
+
+        Example:
+            >>> customer = client.customers.get_by_reference("CRM-12345")
+            >>> print(f"Customer UUID: {customer.uuid}")
+        """
+        if not reference:
+            raise ValidationError("Customer reference cannot be empty")
+
+        endpoint = f"{self.BASE_ROUTE}/reference/{reference}"
+        res = self._make_request(endpoint, "GET")
+        return Customer(**res)
+
     def get_by_email(self, email: str) -> Customer:
         """
         Get a customer by email address.

@@ -37,20 +37,32 @@ class PaymentRequests(BaseRequest):
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
         customer_uuid: Optional[str] = None,
+        reference: Optional[str] = None,
+        product_reference: Optional[str] = None,
+        customer_reference: Optional[str] = None,
     ) -> LinkResponse:
         """
         Create a new one-time payment session.
 
-        Provide either product_id OR all of (product_name, description, price).
+        Provide either product_id, product_reference, OR all of
+        (product_name, description, price).
 
         Args:
             product_id: ID of an existing product.
-            product_name: Product name (if not using product_id).
-            description: Product description (if not using product_id).
-            price: Price in USD (if not using product_id).
+            product_name: Product name (if not using product_id/product_reference).
+            description: Product description (if not using product_id/product_reference).
+            price: Price in USD (if not using product_id/product_reference).
             success_url: URL to redirect on success.
             cancel_url: URL to redirect on cancellation.
             customer_uuid: UUID of the customer.
+            reference: Your own reference for the transaction (e.g. an order/invoice ID).
+                Echoed back on the resulting payment and in webhooks, and usable with
+                ``get_by_reference``.
+            product_reference: Select an existing product by your own reference
+                (alternative to product_id).
+            customer_reference: Select an existing customer by your own reference
+                (alternative to customer_uuid). A new customer is created during checkout
+                if none matches.
 
         Returns:
             Link response with the payment URL to send to the customer.
@@ -63,12 +75,11 @@ class PaymentRequests(BaseRequest):
             ... )
             >>> print(f"Payment link: {response.link}")
             >>>
-            >>> # Using inline product details
+            >>> # Using your own references
             >>> response = client.one_time_payments.create_session(
-            ...     product_name="Premium Plan",
-            ...     description="One-time access",
-            ...     price=99.99,
-            ...     customer_uuid="customer-uuid"
+            ...     reference="order-1234",
+            ...     product_reference="PROD-PREMIUM",
+            ...     customer_reference="user-42",
             ... )
         """
         session = CreatePaymentSessionDto(
@@ -79,6 +90,9 @@ class PaymentRequests(BaseRequest):
             success_url=success_url,
             cancel_url=cancel_url,
             customer_uuid=customer_uuid,
+            reference=reference,
+            product_reference=product_reference,
+            customer_reference=customer_reference,
         )
         session.check()
 
@@ -129,6 +143,29 @@ class PaymentRequests(BaseRequest):
             raise ValidationError("Payment UUID cannot be empty")
 
         res = self._make_request(f"{self.BASE_ROUTE}/payment/{payment_uuid}", "GET")
+        return dto.Payment(**res)
+
+    def get_by_reference(self, reference: str) -> dto.Payment:
+        """
+        Get a completed payment by the reference you assigned when creating it.
+
+        Lets you resolve a payment from your own order/invoice ID without storing
+        QBitFlow's UUID.
+
+        Args:
+            reference: Your own payment reference.
+
+        Returns:
+            Payment details.
+
+        Example:
+            >>> payment = client.one_time_payments.get_by_reference("order-1234")
+            >>> print(payment.uuid, payment.amount)
+        """
+        if not reference:
+            raise ValidationError("Payment reference cannot be empty")
+
+        res = self._make_request(f"{self.BASE_ROUTE}/payment/reference/{reference}", "GET")
         return dto.Payment(**res)
 
     def get_all(

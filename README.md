@@ -187,6 +187,24 @@ print(response.uuid)  # Session UUID
 print(response.link)  # Payment link for customer
 ```
 
+#### Using your own references
+
+Instead of storing QBitFlow's internal UUIDs, pass your own identifiers. Set `reference` to your
+order/invoice ID, and use `product_reference` / `customer_reference` to select an existing product
+or customer by your own reference:
+
+```python
+response = client.one_time_payments.create_session(
+    reference="order-1234",            # your own transaction reference
+    product_reference="PROD-PREMIUM",  # use a product by your reference (instead of product_id)
+    customer_reference="user-42",      # use a customer by your reference (instead of customer_uuid)
+)
+```
+
+The `reference` is echoed back on the resulting `Payment` and in webhook payloads, and you can look
+the payment up later with [`get_by_reference()`](#get-payment-by-reference). If no customer matches
+`customer_reference`, one is created during checkout.
+
 ### With Redirect URLs
 
 ```python
@@ -217,6 +235,16 @@ print(session.product_name, session.price)
 ```python
 payment = client.one_time_payments.get("payment-uuid")
 print(payment.transaction_hash, payment.amount)
+```
+
+### Get Payment by Reference
+
+Look a payment up by the `reference` you assigned when creating the session — no need to store
+QBitFlow's UUID:
+
+```python
+payment = client.one_time_payments.get_by_reference("order-1234")
+print(payment.uuid, payment.amount)
 ```
 
 ### List All Payments
@@ -254,7 +282,7 @@ print(f"{customer.name} {customer.last_name} — {customer.email}")
 
 ## Subscriptions
 
-Subscriptions require an existing product (`product_id` is mandatory).
+Subscriptions require an existing product — provide either `product_id` or `product_reference`.
 
 ### Create a Subscription
 
@@ -270,6 +298,18 @@ response = client.subscriptions.create_session(
 )
 
 print(response.link)  # Send to customer
+```
+
+Like one-time payments, subscription sessions accept your own `reference`, `product_reference`,
+and `customer_reference` instead of QBitFlow's internal IDs:
+
+```python
+response = client.subscriptions.create_session(
+    reference="sub-1234",            # your own subscription reference
+    product_reference="PLAN-PRO",    # select a product by your reference
+    customer_reference="user-42",    # select a customer by your reference
+    frequency=Duration(value=1, unit="months"),
+)
 ```
 
 ### Frequency Units
@@ -288,6 +328,15 @@ Available units for `frequency` and `trial_period`:
 ```python
 subscription = client.subscriptions.get("subscription-uuid")
 print(subscription.subscription_status, subscription.next_billing_date)
+```
+
+### Get Subscription by Reference
+
+Look a subscription up by the `reference` you assigned when creating the session:
+
+```python
+subscription = client.subscriptions.get_by_reference("sub-1234")
+print(subscription.uuid, subscription.subscription_status)
 ```
 
 > **Tracking status changes:** You no longer need to poll `get()` on a schedule
@@ -470,6 +519,7 @@ customer = client.customers.create(CreateCustomerDto(
 # Get
 customer = client.customers.get("customer-uuid")
 customer = client.customers.get_by_email("john@example.com")
+customer = client.customers.get_by_reference("CRM-12345")
 
 # List (paginated)
 page = client.customers.get_all(limit=10)
@@ -656,6 +706,9 @@ async def handle_webhook(
         print(f"Payment completed: {event.session.product_name}")
         print(f"Customer: {event.session.customer_uuid}")
         print(f"Amount: ${event.session.price}")
+        # `reference` echoes back the value you set when creating the session, so you can
+        # match the transaction to your own order/invoice without storing our UUID.
+        print(f"Your reference: {event.session.reference}")
 
         from qbitflow.dto.transaction.session import SubscriptionSession
         if isinstance(event.session, SubscriptionSession):
@@ -670,8 +723,8 @@ async def handle_webhook(
 
 Once the **Subscription status webhook** is enabled in the dashboard, QBitFlow POSTs a
 `SubscriptionStatusTransitionWebhook` payload whenever a subscription changes status —
-no polling required. The payload carries `subscription_uuid`, `previous_status`,
-`current_status`, and `updated_at`:
+no polling required. The payload carries `subscription_uuid`, `subscription_reference`
+(your own reference, if set), `previous_status`, `current_status`, and `updated_at`:
 
 ```python
 from typing import Annotated
@@ -708,7 +761,8 @@ async def handle_subscription_webhook(
 
     event = SubscriptionStatusTransitionWebhook.model_validate_json(body)
 
-    print(f"Subscription {event.subscription_uuid}: "
+    print(f"Subscription {event.subscription_uuid} "
+          f"(ref: {event.subscription_reference}): "
           f"{event.previous_status.value} -> {event.current_status.value}")
 
     # React to the lifecycle transition — e.g. revoke access on cancellation

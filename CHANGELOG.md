@@ -5,6 +5,26 @@ All notable changes to the QBitFlow Python SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-08-17
+
+### Added
+
+- **Reference-based lookups** — resolve resources by the reference you assigned instead of storing QBitFlow's internal UUIDs:
+  - `one_time_payments.get_by_reference(reference)` — `GET /transaction/payment/reference/:paymentReference`
+  - `subscriptions.get_by_reference(reference)` — `GET /transaction/subscription/reference/subscription/:subscriptionReference`
+  - `customers.get_by_reference(reference)` — `GET /customer/reference/:reference`
+- **Your own references on session creation** — `one_time_payments.create_session()` and `subscriptions.create_session()` now accept:
+  - `reference` — your own transaction reference (e.g. order/invoice ID), echoed back on the resulting object and in webhooks
+  - `product_reference` — select a product by your own reference (alternative to `product_id`)
+  - `customer_reference` — select an existing customer by your own reference (alternative to `customer_uuid`); a new customer is created during checkout if none matches
+
+### Changed
+
+- **`subscriptions.create_session()` no longer requires `product_id`** — provide either `product_id` or `product_reference` (relaxes the 1.2.0 requirement).
+- **`Payment.reference`** and **`Subscription.reference`** — added; the reference you set when creating the session.
+- **`OneTimePaymentSession` / `SubscriptionSession` / `PaygSubscriptionSession`** — added `reference`, `product_reference`, and `customer_reference`, so session responses and transaction webhook payloads expose the references you provided.
+- **`SubscriptionStatusTransitionWebhook.subscription_reference`** — added; the subscription's reference is now included on status-transition webhooks.
+
 ## [1.2.1] - 2026-07-18
 
 - Removed `webhook_url` from `one_time_payments.create_session()` and `subscriptions.create_session()`. Webhook URLs are now set at the settings level in the QBitFlow dashboard, and cannot be overridden per session. This change simplifies session creation and ensures consistent webhook handling across all transactions.

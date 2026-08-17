@@ -71,6 +71,9 @@ class Subscription(BaseModel):
     """
     
     uuid: str = Field(..., description="Subscription UUID")
+    reference: Optional[str] = Field(
+        default=None, description="Your own reference for the subscription, set when the session was created"
+    )
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
     from_: str = Field(..., alias="from", description="Subscriber's address")
@@ -182,6 +185,11 @@ class SubscriptionStatusTransitionWebhook(BaseModel):
     """
     
     subscription_uuid: str = Field(..., alias="subscriptionUUID", description="Subscription UUID")
+    subscription_reference: Optional[str] = Field(
+        default=None,
+        alias="subscriptionReference",
+        description="Your own reference for the subscription, if one was set at creation",
+    )
     previous_status: SubscriptionStatus = Field(..., alias="previousStatus", description="Previous subscription status")
     current_status: SubscriptionStatus = Field(..., alias="currentStatus", description="Current subscription status")
     updated_at: datetime = Field(..., alias="updatedAt", description="Status transition timestamp")
