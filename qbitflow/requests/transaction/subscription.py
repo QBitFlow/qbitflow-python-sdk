@@ -25,18 +25,22 @@ class SubscriptionRequests(BaseRequest):
 
     def create_session(
         self,
-        product_id: int,
-        frequency: Duration,
+        product_id: Optional[int] = None,
+        frequency: Optional[Duration] = None,
         trial_period: Optional[Duration] = None,
         min_periods: Optional[int] = None,
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
         customer_uuid: Optional[str] = None,
+        reference: Optional[str] = None,
+        product_reference: Optional[str] = None,
+        customer_reference: Optional[str] = None,
     ) -> LinkResponse:
         """
         Create a subscription session.
 
-        product_id is required — subscriptions must reference an existing product.
+        Subscriptions must reference an existing product: provide either
+        product_id or product_reference.
 
         Args:
             product_id: ID of the product to subscribe to.
@@ -46,6 +50,13 @@ class SubscriptionRequests(BaseRequest):
             success_url: URL to redirect on success.
             cancel_url: URL to redirect on cancellation.
             customer_uuid: UUID of the customer.
+            reference: Your own reference for the subscription (e.g. an order/invoice ID).
+                Echoed back on the resulting subscription and in webhooks, and usable with
+                ``get_by_reference``.
+            product_reference: Select the product by your own reference (alternative to product_id).
+            customer_reference: Select an existing customer by your own reference
+                (alternative to customer_uuid). A new customer is created during checkout
+                if none matches.
 
         Returns:
             Link response with the subscription URL.
@@ -60,11 +71,17 @@ class SubscriptionRequests(BaseRequest):
             ... )
             >>> print(f"Subscription link: {response.link}")
         """
-        if product_id <= 0:
+        if frequency is None:
+            raise ValidationError("Frequency is required")
+
+        if product_id is not None and product_id <= 0:
             raise ValidationError("Product ID must be positive")
 
         if min_periods is not None and min_periods <= 0:
             raise ValidationError("Minimum periods must be positive")
+
+        if product_id is None and product_reference is None:
+            raise ValidationError("Either product_id or product_reference must be provided")
 
         session = CreateSubscriptionSessionDto(
             product_id=product_id,
@@ -74,7 +91,11 @@ class SubscriptionRequests(BaseRequest):
             success_url=success_url,
             cancel_url=cancel_url,
             customer_uuid=customer_uuid,
+            reference=reference,
+            product_reference=product_reference,
+            customer_reference=customer_reference,
         )
+        session.check()
 
         res = self._make_request(
             f"{self.SESSION_ROUTE}/new/subscription",
@@ -118,6 +139,31 @@ class SubscriptionRequests(BaseRequest):
             raise ValidationError("Subscription UUID cannot be empty")
 
         res = self._make_request(f"{self.BASE_ROUTE}/{subscription_uuid}", "GET")
+        return Subscription(**res)
+
+    def get_by_reference(self, reference: str) -> Subscription:
+        """
+        Get a subscription by the reference you assigned when creating it.
+
+        Lets you resolve a subscription from your own order/invoice ID without storing
+        QBitFlow's UUID.
+
+        Args:
+            reference: Your own subscription reference.
+
+        Returns:
+            Subscription details.
+
+        Example:
+            >>> sub = client.subscriptions.get_by_reference("sub-1234")
+            >>> print(sub.uuid, sub.subscription_status.value)
+        """
+        if not reference:
+            raise ValidationError("Subscription reference cannot be empty")
+
+        res = self._make_request(
+            f"{self.BASE_ROUTE}/reference/subscription/{reference}", "GET"
+        )
         return Subscription(**res)
 
     def get_payment_history(self, subscription_uuid: str) -> List[SubscriptionHistory]:

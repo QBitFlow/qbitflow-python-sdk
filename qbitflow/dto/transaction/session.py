@@ -33,7 +33,14 @@ class BaseSession(BaseModel):
     """
 
     uuid: str = Field(..., description="Session UUID")
+    reference: Optional[str] = Field(
+        default=None,
+        description="Your own reference for the transaction, set when the session was created",
+    )
     product_id: Optional[int] = Field(default=None, description="Product ID")
+    product_reference: Optional[str] = Field(
+        default=None, description="Your own product reference, if the product was selected by reference"
+    )
     product_name: str = Field(..., description="Product name")
     description: str = Field(..., description="Description")
     price: float = Field(..., ge=0, description="Price in USD")
@@ -49,6 +56,9 @@ class BaseSession(BaseModel):
         ...,
         validation_alias=AliasChoices('customerUUID', 'customerUuid', 'customer_uuid'),
         description="Customer UUID",
+    )
+    customer_reference: Optional[str] = Field(
+        default=None, description="Your own customer reference, if the customer was pre-filled by reference"
     )
     available_currencies: List[Currency] = Field(
         default_factory=list, description="Available currencies"
@@ -114,13 +124,24 @@ class CreatePaymentSessionDto(BaseModel):
     Provide either product_id OR all of (product_name, description, price).
     """
 
+    reference: Optional[str] = Field(
+        default=None,
+        description="Your own reference for the transaction (e.g. an order or invoice ID)",
+    )
     product_id: Optional[int] = Field(default=None, description="Product ID")
+    product_reference: Optional[str] = Field(
+        default=None, description="Select an existing product by your own reference (alternative to product_id)"
+    )
     product_name: Optional[str] = Field(default=None, description="Product name")
     description: Optional[str] = Field(default=None, description="Description")
     price: Optional[float] = Field(default=None, ge=0, description="Price in USD")
     success_url: Optional[str] = Field(default=None, description="Success redirect URL")
     cancel_url: Optional[str] = Field(default=None, description="Cancel redirect URL")
     customer_uuid: Optional[str] = Field(default=None, description="Customer UUID")
+    customer_reference: Optional[str] = Field(
+        default=None,
+        description="Select an existing customer by your own reference (alternative to customer_uuid)",
+    )
 
     @field_validator('success_url', 'cancel_url')
     @classmethod
@@ -131,13 +152,18 @@ class CreatePaymentSessionDto(BaseModel):
 
     def check(self) -> None:
         """Validate that required product fields are present."""
-        if self.product_id is None and (
-            self.product_name is None or
-            self.description is None or
-            self.price is None
+        if (
+            self.product_id is None
+            and self.product_reference is None
+            and (
+                self.product_name is None or
+                self.description is None or
+                self.price is None
+            )
         ):
             raise ValueError(
-                "Either product_id or (product_name, description, price) must be provided"
+                "Either product_id, product_reference, or "
+                "(product_name, description, price) must be provided"
             )
 
 
@@ -145,16 +171,19 @@ class CreateSubscriptionSessionDto(CreatePaymentSessionDto):
     """
     DTO for creating a subscription session.
 
-    product_id is required — subscriptions must reference an existing product.
+    Subscriptions must reference an existing product: provide either product_id
+    or product_reference.
     """
 
-    product_id: int = Field(..., description="Product ID (required for subscriptions)")
+    product_id: Optional[int] = Field(default=None, description="Product ID")
     frequency: Duration = Field(..., description="Billing frequency")
     trial_period: Optional[Duration] = Field(default=None, description="Trial period")
     min_periods: Optional[int] = Field(default=None, gt=0, description="Minimum billing periods")
 
     def check(self) -> None:
-        pass
+        """Validate that an existing product is referenced."""
+        if self.product_id is None and self.product_reference is None:
+            raise ValueError("Either product_id or product_reference must be provided")
 
 
 class LinkResponse(BaseModel):

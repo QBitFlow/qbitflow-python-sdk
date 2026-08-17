@@ -41,6 +41,9 @@ class Payment(BaseModel):
     """
 
     uuid: str = Field(..., description="Payment UUID")
+    reference: Optional[str] = Field(
+        default=None, description="Your own reference for the payment, set when the session was created"
+    )
     created_at: datetime = Field(..., description="Creation timestamp")
     from_: str = Field(..., alias="from", description="Sender's address")
     to: str = Field(..., description="Recipient's address")

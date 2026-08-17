@@ -91,7 +91,25 @@ class PayAsYouGoSubscriptionRequests(BaseRequest):
         
         res = self._make_request(f"{self.BASE_ROUTE}/{subscription_uuid}", "GET")
         return PayAsYouGoSubscription(**res)
-    
+
+    def get_by_reference(self, reference: str) -> PayAsYouGoSubscription:
+        """
+        Get a pay-as-you-go subscription by the reference you assigned when creating it.
+
+        Args:
+            reference: Your own subscription reference.
+
+        Returns:
+            PAYG subscription details.
+        """
+        if not reference:
+            raise ValidationError("Subscription reference cannot be empty")
+
+        res = self._make_request(
+            f"{self.BASE_ROUTE}/reference/payAsYouGo/{reference}", "GET"
+        )
+        return PayAsYouGoSubscription(**res)
+
     def get_payment_history(self, subscription_uuid: str) -> List[SubscriptionHistory]:
         """Get payment history for a PAYG subscription."""
         if not subscription_uuid:
