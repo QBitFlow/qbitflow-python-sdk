@@ -35,6 +35,7 @@ Official Python SDK for [QBitFlow](https://qbitflow.app) - a comprehensive crypt
     -   [4. Create a Recurring Subscription](#4-create-a-recurring-subscription)
     -   [5. Check Transaction Status](#5-check-transaction-status)
 -   [Configuration](#configuration)
+-   [Acting on Behalf of a User](#acting-on-behalf-of-a-user)
 -   [One-Time Payments](#one-time-payments)
     -   [Create a Payment Session](#create-a-payment-session)
     -   [With Redirect URLs](#with-redirect-urls)
@@ -161,6 +162,27 @@ elif status.status == TransactionStatusValue.FAILED:
 | `base_url`    | string | `https://api.qbitflow.app` | API base URL                                 |
 | `timeout`     | int    | `30`                       | Request timeout in seconds                   |
 | `max_retries` | int    | `3`                        | Number of retry attempts for failed requests |
+
+## Acting on Behalf of a User
+
+If you hold an **organization (admin) API key**, you can perform any request as one of the users in your organization, without needing that user's own API key. This is useful for admin-level tooling, dashboards, and back-office automation where your server acts for a specific user (e.g. listing _their_ products, creating a payment session _for them_, or reading _their_ subscriptions).
+
+Every service exposes an `on_behalf_of(user_id)` method. It returns a scoped copy of that service which adds an `On-Behalf-Of` header to each request; the original client is left untouched, so you can freely mix org-level and per-user calls.
+
+```python
+user_id = 123
+
+# List the products belonging to user 123
+products = client.products.on_behalf_of(user_id).get_all()
+
+# Read that user's payments
+user_payments = client.one_time_payments.on_behalf_of(user_id).get_all()
+
+# The base client is unaffected — this call still runs at the organization level
+all_org_products = client.products.get_all()
+```
+
+> **Note:** `on_behalf_of` requires an admin-level API key. Using it with a regular user key results in a `403` (`InvalidRequestError`).
 
 ## One-Time Payments
 
@@ -584,6 +606,9 @@ me = client.users.get()
 # Get by ID or list all (admin only)
 user = client.users.get_by_id(42)
 users = client.users.get_all()
+
+# Get by email (admin only for other users in the organization)
+user = client.users.get_by_email("alice@example.com")
 
 # Update
 updated = client.users.update(user.id, UpdateUserDto(

@@ -38,6 +38,14 @@ class UserRequests(BaseRequest):
         
         res = self._make_request(f"{self.BASE_ROUTE}/id/{user_id}", "GET")
         return dto.User(**res)
+
+    def get_by_email(self, email: str) -> dto.User:
+        """Get a user by their email. Must be an admin to use this method, and the user must be in the same organization."""
+        if not email:
+            raise ValidationError("Email must not be empty")
+        
+        res = self._make_request(f"{self.BASE_ROUTE}/email/{email}", "GET")
+        return dto.User(**res)
     
     def update(self, user_id: int, user: dto.UpdateUserDto) -> dto.User:
         """Update an existing user."""
