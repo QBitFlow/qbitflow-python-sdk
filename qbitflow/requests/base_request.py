@@ -55,7 +55,7 @@ class BaseRequest:
         max_retries: Maximum number of retry attempts.
     """
     
-    def __init__(self, api_key: str, timeout: Optional[int] = None, max_retries: Optional[int] = None):
+    def __init__(self, api_key: str, timeout: Optional[int] = None, max_retries: Optional[int] = None, headers: Optional[Dict[str, str]] = None):
         """
         Initialize the request handler.
         
@@ -63,6 +63,7 @@ class BaseRequest:
             api_key: API key for authentication.
             timeout: Optional request timeout in seconds (defaults to config.DEFAULT_TIMEOUT).
             max_retries: Optional maximum retry attempts (defaults to config.MAX_RETRIES).
+            headers: Optional HTTP headers to include in requests.
         
         Raises:
             ValueError: If api_key is empty or None.
@@ -78,6 +79,26 @@ class BaseRequest:
             "X-API-Key": self.api_key,
             "Content-Type": "application/json"
         }
+
+        if headers:
+            self.headers.update(headers)
+
+    def on_behalf_of(self, user_id: int):
+        """
+        Act on behalf of a specific user within the same organization.
+        
+        Args:
+            user_id: ID of the user to act for.
+        
+        Returns:
+            A new request instance with the On-Behalf-Of header set.
+        """
+        return self.__class__(
+            api_key=self.api_key,
+            timeout=self.timeout,
+            max_retries=self.max_retries,
+            headers={"On-Behalf-Of": str(user_id)}
+        )
     
     def _make_request(
         self,
