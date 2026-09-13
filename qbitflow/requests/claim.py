@@ -2,12 +2,12 @@
 
 from typing import List
 
-from qbitflow.requests.base_request import BaseRequest, SuccessResponse
 from qbitflow.dto.claim import (
     ClaimFund,
     CreateClaimRequestResponse,
 )
 from qbitflow.exceptions import ValidationError
+from qbitflow.requests.base_request import BaseRequest, SuccessResponse
 
 
 class ClaimRequests(BaseRequest):

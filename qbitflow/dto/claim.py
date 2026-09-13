@@ -1,6 +1,7 @@
 """Claim-related data models."""
 
 from datetime import datetime
+
 from pydantic import Field
 
 from qbitflow.dto.base_model import BaseModel
@@ -39,7 +40,6 @@ class ClaimRequest(BaseModel):
     uuid: str = Field(..., description="Claim request UUID")
     user_id: int = Field(..., description="User ID")
     created_at: datetime = Field(..., description="Creation timestamp")
-
 
 
 class CreateClaimRequestResponse(BaseModel):

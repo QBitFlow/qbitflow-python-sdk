@@ -1,4 +1,3 @@
-
 """
 QBitFlow Python SDK
 ===================
@@ -27,11 +26,10 @@ Basic Usage
 For more examples, see the documentation at https://qbitflow.app/docs
 """
 
+from . import dto, exceptions
 from .client import QBitFlow
-from . import dto
-from . import exceptions
 from .utils.duration import Duration
 
-__version__ = "1.3.1"
+__version__ = "2.0.0"
 __author__ = "QBitFlow"
 __all__ = ["QBitFlow", "dto", "exceptions", "Duration"]

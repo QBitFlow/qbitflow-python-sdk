@@ -1,18 +1,22 @@
 """Session-related data models."""
 
 from typing import Any, Dict, List, Optional, Union
+
 from pydantic import AliasChoices, Field, field_validator, model_validator
 
 from qbitflow.dto.base_model import BaseModel
 from qbitflow.utils.duration import Duration
 from qbitflow.utils.helpers import validate_url
-from .currency import Currency
-from .status import TransactionStatus, TransactionType
+
+from .status import TransactionShortType, TransactionStatus, TransactionType
 
 
 class BaseSession(BaseModel):
     """
     Common fields shared by all session types (maps to TransactionData).
+
+    Fields marked "authenticated only" are returned only when the checkout is
+    retrieved with authentication; on the public checkout page they are omitted.
 
     Attributes:
         uuid: Session UUID.
@@ -22,14 +26,18 @@ class BaseSession(BaseModel):
         price: Price in USD.
         success_url: URL to redirect on success.
         cancel_url: URL to redirect on cancellation.
-        organization_id: Organization ID.
+        organization_id: Organization ID (authenticated only).
         organization_name: Organization name.
-        fee_bps: Platform fee in basis points.
-        organization_fee_bps: Optional organization fee in basis points.
-        user_id: User ID of the session creator.
+        fee_bps: Platform fee in basis points (authenticated only).
+        organization_fee_bps: Organization fee in basis points (authenticated only).
+        user_id: User ID of the session creator (authenticated only).
+        user_name: Name of the session creator (set only for user-role creators).
+        tx_type: Short transaction category of the session.
         test: Whether this is a test session.
-        customer_uuid: Customer UUID.
-        available_currencies: Accepted currencies.
+        customer_uuid: Customer UUID (authenticated only).
+        customer_reference: Your own customer reference (authenticated only).
+        available_currencies: IDs of the currencies accepted for this session. Resolve
+            details via ``client.currencies``.
     """
 
     uuid: str = Field(..., description="Session UUID")
@@ -39,29 +47,36 @@ class BaseSession(BaseModel):
     )
     product_id: Optional[int] = Field(default=None, description="Product ID")
     product_reference: Optional[str] = Field(
-        default=None, description="Your own product reference, if the product was selected by reference"
+        default=None,
+        description="Your own product reference, if the product was selected by reference",
     )
     product_name: str = Field(..., description="Product name")
     description: str = Field(..., description="Description")
     price: float = Field(..., ge=0, description="Price in USD")
     success_url: Optional[str] = Field(default=None, description="Success redirect URL")
     cancel_url: Optional[str] = Field(default=None, description="Cancel redirect URL")
-    organization_id: int = Field(..., description="Organization ID")
     organization_name: str = Field(..., description="Organization name")
-    fee_bps: int = Field(..., description="Platform fee in basis points")
-    organization_fee_bps: Optional[int] = Field(default=None, description="Organization fee in basis points")  # noqa: E501
-    user_id: Optional[int] = Field(default=None, description="User ID")
+    tx_type: TransactionShortType = Field(..., description="Short transaction category")
     test: bool = Field(..., description="Test mode flag")
-    customer_uuid: str = Field(
-        ...,
-        validation_alias=AliasChoices('customerUUID', 'customerUuid', 'customer_uuid'),
+    available_currencies: List[int] = Field(
+        default_factory=list, description="IDs of the accepted currencies"
+    )
+    # Authenticated only — omitted on the public checkout page.
+    organization_id: Optional[int] = Field(default=None, description="Organization ID")
+    fee_bps: Optional[int] = Field(default=None, description="Platform fee in basis points")
+    organization_fee_bps: Optional[int] = Field(
+        default=None, description="Organization fee in basis points"
+    )  # noqa: E501
+    user_id: Optional[int] = Field(default=None, description="User ID")
+    user_name: Optional[str] = Field(default=None, description="Name of the session creator")
+    customer_uuid: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("customerUUID", "customerUuid", "customer_uuid"),
         description="Customer UUID",
     )
     customer_reference: Optional[str] = Field(
-        default=None, description="Your own customer reference, if the customer was pre-filled by reference"
-    )
-    available_currencies: List[Currency] = Field(
-        default_factory=list, description="Available currencies"
+        default=None,
+        description="Your own customer reference, if the customer was pre-filled by reference",
     )
 
 
@@ -113,7 +128,7 @@ def _discriminate_session(data: Dict[str, Any]) -> AnySession:
         if isinstance(freq, dict):
             return PaygSubscriptionSession.model_validate(data)
         return SubscriptionSession.model_validate(data)
-    
+
     return OneTimePaymentSession.model_validate(data)
 
 
@@ -130,7 +145,8 @@ class CreatePaymentSessionDto(BaseModel):
     )
     product_id: Optional[int] = Field(default=None, description="Product ID")
     product_reference: Optional[str] = Field(
-        default=None, description="Select an existing product by your own reference (alternative to product_id)"
+        default=None,
+        description="Select an existing product by your own reference (alternative to product_id)",
     )
     product_name: Optional[str] = Field(default=None, description="Product name")
     description: Optional[str] = Field(default=None, description="Description")
@@ -140,10 +156,10 @@ class CreatePaymentSessionDto(BaseModel):
     customer_uuid: Optional[str] = Field(default=None, description="Customer UUID")
     customer_reference: Optional[str] = Field(
         default=None,
-        description="Select an existing customer by your own reference (alternative to customer_uuid)",
+        description="Select an existing customer by your own reference (alternative to customer_uuid)",  # noqa: E501
     )
 
-    @field_validator('success_url', 'cancel_url')
+    @field_validator("success_url", "cancel_url")
     @classmethod
     def validate_urls(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and not validate_url(v):
@@ -155,11 +171,7 @@ class CreatePaymentSessionDto(BaseModel):
         if (
             self.product_id is None
             and self.product_reference is None
-            and (
-                self.product_name is None or
-                self.description is None or
-                self.price is None
-            )
+            and (self.product_name is None or self.description is None or self.price is None)
         ):
             raise ValueError(
                 "Either product_id, product_reference, or "
@@ -224,12 +236,14 @@ class SessionWebhookResponse(BaseModel):
     status: TransactionStatus = Field(..., description="Transaction status")
     session: AnySession = Field(..., description="Session details")
     tx_type: TransactionType = Field(..., description="Transaction type")
-    management_page_link: str = Field(..., description="Link to the QBitFlow management page for this transaction")
+    management_page_link: str = Field(
+        ..., description="Link to the QBitFlow management page for this transaction"
+    )
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     @classmethod
     def _parse_session_type(cls, data: Any) -> Any:
-        if isinstance(data, dict) and isinstance(data.get('session'), dict):
+        if isinstance(data, dict) and isinstance(data.get("session"), dict):
             data = dict(data)
-            data['session'] = _discriminate_session(data['session'])
+            data["session"] = _discriminate_session(data["session"])
         return data

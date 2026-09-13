@@ -1,4 +1,3 @@
-
 """
 Configuration module for QBitFlow SDK.
 
@@ -6,7 +5,6 @@ This module contains configuration settings for the SDK including API base URLs
 and other global settings.
 """
 
-from typing import Optional
 import os
 
 # Default base URL for QBitFlow API
@@ -26,12 +24,12 @@ MAX_RETRIES: int = 3
 def set_base_url(url: str) -> None:
     """
     Set the base URL for API requests.
-    
+
     This is useful for testing or when using a different API endpoint.
-    
+
     Args:
         url: The base URL to use for all API requests.
-        
+
     Example:
         >>> from qbitflow import config
         >>> config.set_base_url("http://localhost:3001")
@@ -43,10 +41,10 @@ def set_base_url(url: str) -> None:
 def get_base_url() -> str:
     """
     Get the current base URL for API requests.
-    
+
     Returns:
         The current base URL.
-        
+
     Example:
         >>> from qbitflow import config
         >>> print(config.get_base_url())

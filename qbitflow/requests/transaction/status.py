@@ -1,8 +1,8 @@
 """Transaction status request handlers."""
 
-from qbitflow.requests.base_request import BaseRequest
 from qbitflow.dto.transaction.status import TransactionStatus, TransactionType
 from qbitflow.exceptions import ValidationError
+from qbitflow.requests.base_request import BaseRequest
 
 
 class TransactionStatusRequests(BaseRequest):

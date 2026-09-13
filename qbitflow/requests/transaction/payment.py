@@ -2,15 +2,17 @@
 
 from typing import Optional
 
-from qbitflow.requests.base_request import BaseRequest
-from qbitflow.dto.transaction.session import (
-    CreatePaymentSessionDto, LinkResponse, OneTimePaymentSession,
-)
-from qbitflow.dto.transaction import payment as dto
 from qbitflow.dto.customer import Customer
+from qbitflow.dto.transaction import payment as dto
+from qbitflow.dto.transaction.session import (
+    CreatePaymentSessionDto,
+    LinkResponse,
+    OneTimePaymentSession,
+)
+from qbitflow.exceptions import ValidationError
+from qbitflow.requests.base_request import BaseRequest
 from qbitflow.requests.transaction.session import SessionRequests
 from qbitflow.utils.cursor_data import CursorData, cursor_query_builder
-from qbitflow.exceptions import ValidationError
 
 
 class PaymentRequests(BaseRequest):
@@ -122,6 +124,7 @@ class PaymentRequests(BaseRequest):
             >>> print(f"Price: ${session.price}")
         """
         from typing import cast
+
         return cast(OneTimePaymentSession, self._session.get(session_uuid, close_to_expire_error))
 
     def get(self, payment_uuid: str) -> dto.Payment:

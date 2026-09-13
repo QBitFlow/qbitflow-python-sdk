@@ -6,6 +6,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.0] - 2026-09-13
+
+Major release aligning the SDK with the current QBitFlow API. The API base URL is
+unchanged (`/v1`); only the SDK version changes.
+
+### ⚠️ Breaking changes
+
+- **Typed payment metadata.** `PaymentMetadata` is now a structured model
+  (`fee_bps`, `organization_fee`, `referral_fee`, `tx_metadata`, `tx_amounts`) instead of
+  an opaque dict. `Payment.metadata`, `CombinedPaymentItem.metadata`, and
+  `SubscriptionHistory.metadata` are now `Optional[PaymentMetadata]`; `RefundEntry.metadata`
+  is now `Optional[TxMetadata]`.
+- **`SessionCheckout.available_currencies` is now `list[int]`** (currency IDs) instead of
+  a list of `Currency`. Resolve details via the new `client.currencies` service.
+- **`Subscription.allowance` is now a `str`** (decimal) instead of `float`, to preserve
+  precision.
+- **`ApiKey.expires_at` is nullable** (`None` when the key never expires).
+- **Removed `api_keys.create` / `api_keys.delete`** (and the `CreateApiKeyDto` /
+  `CreatedKeyResponse` models). API-key management is a JWT-only API operation and cannot
+  be performed with an API key; manage keys from the dashboard. Read access
+  (`get_all`, `get_for_user`) is unchanged.
+- **Removed `pay_as_you_go.create_session`** — PAYG session creation is disabled on the API.
+  Existing PAYG subscriptions can still be retrieved and managed (`get`, `get_session`,
+  `get_by_reference`, `get_payment_history`, `force_cancel`, `execute_test_billing_cycle`).
+
+### Added
+
+- **`client.currencies` service** — `get_all_available(test=False)` and
+  `get_all_main(test=False)` (public `/utils/all-*-currencies` endpoints) to resolve
+  currency IDs.
+- **Authenticated-only fields** now modeled where the API returns them under
+  authentication: `organization_id` / `user_id` on `Customer`, `Payment`, and
+  `SubscriptionHistory`; `settlement_details` on `TransactionStatus`; `user_name` and
+  `tx_type` on session checkouts.
+- **`User.claimed_at`** — set once an invited user has claimed their account.
+- **`UpdateCustomerDto.reference`** — update a customer's reference.
+- Expanded enums: `TransactionType` (`transfer`, `tokenTransfer`,
+  `refund`, `faucet`, `claimFunds`), new `TransactionShortType`, and the `years`
+  duration unit.
+
+### Changed
+
+- User `organization_fee_bps` validation range widened to `0–5000` bps, matching the API.
+
 ## [1.3.1] - 2026-08-25
 
 ### Added

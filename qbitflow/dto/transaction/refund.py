@@ -2,14 +2,18 @@
 
 import enum
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Optional
+
 from pydantic import Field
 
 from qbitflow.dto.base_model import BaseModel
 
+from .metadata import TxMetadata
+
 
 class RefundStatus(str, enum.Enum):
     """Possible states of a refund entry."""
+
     PENDING = "pending"
     APPROVED = "approved"
     REFUSED = "refused"
@@ -50,5 +54,9 @@ class RefundEntry(BaseModel):
     responded_at: Optional[datetime] = Field(default=None, description="Processing timestamp")
     organization_id: int = Field(..., description="Organization ID")
     tx_hash: Optional[str] = Field(default=None, description="On-chain transaction hash")
-    amount_min_units: Optional[str] = Field(default=None, description="Refund amount in smallest units")  # noqa: E501
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional metadata")
+    amount_min_units: Optional[str] = Field(
+        default=None, description="Refund amount in smallest units"
+    )  # noqa: E501
+    metadata: Optional[TxMetadata] = Field(
+        default=None, description="On-chain transaction metadata for the refund"
+    )

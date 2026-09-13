@@ -5,8 +5,9 @@ This module provides the base class for all API request handlers with
 comprehensive error handling and retry logic.
 """
 
-from typing import Any, Dict, Literal, Optional
 import time
+from typing import Any, Dict, Literal, Optional
+
 import httpx
 from pydantic import BaseModel, Field
 
@@ -14,71 +15,76 @@ from qbitflow import config
 from qbitflow.exceptions import (
     APIError,
     AuthenticationError,
+    InvalidRequestError,
     NetworkError,
     NotFoundException,
     RateLimitError,
-    InvalidRequestError,
 )
 
 
 class SuccessResponse(BaseModel):
     """
     Standard success response model.
-    
+
     Attributes:
         message: Success message from the API.
     """
+
     message: str = Field(..., description="Success message")
 
 
 class ErrorResponse(BaseModel):
     """
     Standard error response model.
-    
+
     Attributes:
         error: Error message or code.
     """
+
     error: str = Field(..., description="Error message or code")
 
 
 class BaseRequest:
     """
     Base class for all API request handlers.
-    
+
     This class provides common functionality for making HTTP requests to the
     QBitFlow API, including authentication, error handling, and retries.
-    
+
     Attributes:
         api_key: API key for authentication.
         headers: HTTP headers to include in requests.
         timeout: Request timeout in seconds.
         max_retries: Maximum number of retry attempts.
     """
-    
-    def __init__(self, api_key: str, timeout: Optional[int] = None, max_retries: Optional[int] = None, headers: Optional[Dict[str, str]] = None):
+
+    def __init__(
+        self,
+        api_key: str,
+        timeout: Optional[int] = None,
+        max_retries: Optional[int] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ):
         """
         Initialize the request handler.
-        
+
         Args:
             api_key: API key for authentication.
             timeout: Optional request timeout in seconds (defaults to config.DEFAULT_TIMEOUT).
             max_retries: Optional maximum retry attempts (defaults to config.MAX_RETRIES).
             headers: Optional HTTP headers to include in requests.
-        
+
         Raises:
             ValueError: If api_key is empty or None.
         """
         if not api_key:
             raise ValueError("API key cannot be empty")
-        
+
         self.api_key = api_key
         self.timeout = timeout or config.DEFAULT_TIMEOUT
         self.max_retries = max_retries or config.MAX_RETRIES
-        
-        self.headers = {
-            "X-API-Key": self.api_key,
-            "Content-Type": "application/json"
-        }
+
+        self.headers = {"X-API-Key": self.api_key, "Content-Type": "application/json"}
 
         if headers:
             self.headers.update(headers)
@@ -86,10 +92,10 @@ class BaseRequest:
     def on_behalf_of(self, user_id: int):
         """
         Act on behalf of a specific user within the same organization.
-        
+
         Args:
             user_id: ID of the user to act for.
-        
+
         Returns:
             A new request instance with the On-Behalf-Of header set.
         """
@@ -97,30 +103,30 @@ class BaseRequest:
             api_key=self.api_key,
             timeout=self.timeout,
             max_retries=self.max_retries,
-            headers={"On-Behalf-Of": str(user_id)}
+            headers={"On-Behalf-Of": str(user_id)},
         )
-    
+
     def _make_request(
         self,
         endpoint: str,
         method: Literal["GET", "POST", "PUT", "DELETE"],
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
-        retry_count: int = 0
+        retry_count: int = 0,
     ):
         """
         Make an HTTP request to the API with error handling and retries.
-        
+
         Args:
             endpoint: API endpoint path.
             method: HTTP method to use.
             data: Optional request body data.
             params: Optional query parameters.
             retry_count: Current retry attempt number.
-        
+
         Returns:
             Parsed JSON response from the API.
-        
+
         Raises:
             AuthenticationError: If authentication fails (401).
             NotFoundException: If resource is not found (404).
@@ -130,11 +136,11 @@ class BaseRequest:
             InvalidRequestError: If the request is malformed.
         """
         # Ensure endpoint starts with /
-        if not endpoint.startswith('/'):
-            endpoint = '/' + endpoint
-        
+        if not endpoint.startswith("/"):
+            endpoint = "/" + endpoint
+
         url = f"{config.get_base_url()}{endpoint}"
-        
+
         try:
             with httpx.Client(timeout=self.timeout) as client:
                 if method == "GET":
@@ -151,10 +157,10 @@ class BaseRequest:
                     response = client.delete(url, headers=self.headers)
                 else:
                     raise InvalidRequestError(f"Invalid HTTP method: {method}")
-            
+
             # Handle HTTP errors
             self._handle_http_status(response)
-            
+
             # Parse and return JSON response
             try:
                 return response.json()
@@ -162,38 +168,44 @@ class BaseRequest:
                 raise APIError(
                     f"Failed to parse JSON response: {str(e)}",
                     status_code=response.status_code,
-                    response={"raw": response.text}
+                    response={"raw": response.text},
                 )
-        
+
         except httpx.TimeoutException as e:
             if retry_count < self.max_retries:
                 # Exponential backoff
-                wait_time = 2 ** retry_count
+                wait_time = 2**retry_count
                 time.sleep(wait_time)
                 return self._make_request(endpoint, method, data, params, retry_count + 1)
             raise NetworkError(f"Request timeout after {self.timeout} seconds: {str(e)}")
-        
+
         except httpx.NetworkError as e:
             if retry_count < self.max_retries:
-                wait_time = 2 ** retry_count
+                wait_time = 2**retry_count
                 time.sleep(wait_time)
                 return self._make_request(endpoint, method, data, params, retry_count + 1)
             raise NetworkError(f"Network error: {str(e)}")
-        
-        except (AuthenticationError, NotFoundException, RateLimitError, APIError, InvalidRequestError):
+
+        except (
+            AuthenticationError,
+            NotFoundException,
+            RateLimitError,
+            APIError,
+            InvalidRequestError,
+        ):
             # Don't retry these errors
             raise
-        
+
         except Exception as e:
             raise APIError(f"Unexpected error: {str(e)}")
-    
+
     def _handle_http_status(self, response: httpx.Response) -> None:
         """
         Handle HTTP response status codes and raise appropriate exceptions.
-        
+
         Args:
             response: HTTP response object.
-        
+
         Raises:
             AuthenticationError: If authentication fails (401).
             NotFoundException: If resource is not found (404).
@@ -201,55 +213,50 @@ class BaseRequest:
             APIError: For other error status codes.
         """
         status_code = response.status_code
-        
+
         # Success codes
         if 200 <= status_code < 300:
             return
-        
+
         # Extract error message from response
         error_message = self._extract_error_message(response)
-        
+
         # Handle specific status codes
         if status_code == 401:
             raise AuthenticationError(
                 error_message or "Authentication failed - check your API key",
-                status_code=status_code
+                status_code=status_code,
             )
-        
+
         elif status_code == 404:
-            raise NotFoundException(
-                error_message or "Resource not found",
-                status_code=status_code
-            )
-        
+            raise NotFoundException(error_message or "Resource not found", status_code=status_code)
+
         elif status_code == 429:
             retry_after = response.headers.get("Retry-After")
             response_data = {"retry_after": retry_after} if retry_after else None
             raise RateLimitError(
                 error_message or "Rate limit exceeded",
                 status_code=status_code,
-                response=response_data
+                response=response_data,
             )
-        
+
         elif 400 <= status_code < 500:
             raise InvalidRequestError(
-                error_message or f"Bad request (status {status_code})",
-                status_code=status_code
+                error_message or f"Bad request (status {status_code})", status_code=status_code
             )
-        
+
         else:
             raise APIError(
-                error_message or f"API error (status {status_code})",
-                status_code=status_code
+                error_message or f"API error (status {status_code})", status_code=status_code
             )
-    
+
     def _make_raw_request(
         self,
         endpoint: str,
         method: Literal["GET", "POST", "PUT", "DELETE"],
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
-        retry_count: int = 0
+        retry_count: int = 0,
     ) -> str:
         """
         Make an HTTP request and return the raw response text.
@@ -257,8 +264,8 @@ class BaseRequest:
         Same retry/error logic as _make_request, but returns response.text
         instead of parsing JSON — useful for CSV or other non-JSON responses.
         """
-        if not endpoint.startswith('/'):
-            endpoint = '/' + endpoint
+        if not endpoint.startswith("/"):
+            endpoint = "/" + endpoint
 
         url = f"{config.get_base_url()}{endpoint}"
 
@@ -284,19 +291,25 @@ class BaseRequest:
 
         except httpx.TimeoutException as e:
             if retry_count < self.max_retries:
-                wait_time = 2 ** retry_count
+                wait_time = 2**retry_count
                 time.sleep(wait_time)
                 return self._make_raw_request(endpoint, method, data, params, retry_count + 1)
             raise NetworkError(f"Request timeout after {self.timeout} seconds: {str(e)}")
 
         except httpx.NetworkError as e:
             if retry_count < self.max_retries:
-                wait_time = 2 ** retry_count
+                wait_time = 2**retry_count
                 time.sleep(wait_time)
                 return self._make_raw_request(endpoint, method, data, params, retry_count + 1)
             raise NetworkError(f"Network error: {str(e)}")
 
-        except (AuthenticationError, NotFoundException, RateLimitError, APIError, InvalidRequestError):
+        except (
+            AuthenticationError,
+            NotFoundException,
+            RateLimitError,
+            APIError,
+            InvalidRequestError,
+        ):
             raise
 
         except Exception as e:
@@ -305,23 +318,23 @@ class BaseRequest:
     def _extract_error_message(self, response: httpx.Response) -> str:
         """
         Extract error message from response.
-        
+
         Args:
             response: HTTP response object.
-        
+
         Returns:
             Extracted error message or default message.
         """
         try:
             data = response.json()
-            
+
             # Check for common error message fields
             if "error" in data:
                 return str(data["error"])
-            
+
             if "message" in data:
                 return str(data["message"])
-            
+
             if "errors" in data:
                 errors = data["errors"]
                 if isinstance(errors, list) and len(errors) > 0:
@@ -330,8 +343,8 @@ class BaseRequest:
                         return str(first_error["message"])
                     return str(first_error)
                 return str(errors)
-            
+
             return f"API error (status {response.status_code})"
-        
+
         except Exception:
             return f"API error (status {response.status_code})"

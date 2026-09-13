@@ -2,9 +2,9 @@
 
 from typing import Optional
 
-from qbitflow.requests.base_request import BaseRequest
 from qbitflow.dto.transaction import session as dto
 from qbitflow.exceptions import ValidationError
+from qbitflow.requests.base_request import BaseRequest
 
 
 class SessionRequests(BaseRequest):

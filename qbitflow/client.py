@@ -8,17 +8,19 @@ from typing import Optional
 
 from qbitflow.requests.webhook import WebhookRequests
 
+from .requests.accounting import AccountingRequests
+from .requests.api_key import ApiKeyRequests
+from .requests.claim import ClaimRequests
+from .requests.currencies import CurrencyRequests
 from .requests.customer import CustomerRequests
 from .requests.product import ProductRequests
-from .requests.user import UserRequests
-from .requests.api_key import ApiKeyRequests
 from .requests.refund import RefundRequests
-from .requests.accounting import AccountingRequests
-from .requests.claim import ClaimRequests
 from .requests.transaction.payment import PaymentRequests
-from .requests.transaction.subscription import SubscriptionRequests
+
 # from .requests.transaction.payg import PayAsYouGoSubscriptionRequests  # PAYG disabled
 from .requests.transaction.status import TransactionStatusRequests
+from .requests.transaction.subscription import SubscriptionRequests
+from .requests.user import UserRequests
 
 
 class QBitFlow:
@@ -33,7 +35,8 @@ class QBitFlow:
         customers: Handler for customer-related operations.
         products: Handler for product-related operations.
         users: Handler for user-related operations.
-        api_keys: Handler for API key management.
+        api_keys: Handler for read-only API key access.
+        currencies: Handler for supported-currency lookups.
         transaction_status: Handler for checking transaction statuses.
         one_time_payments: Handler for one-time payment operations.
         subscriptions: Handler for recurring subscription operations.
@@ -103,6 +106,7 @@ class QBitFlow:
         self.products = ProductRequests(api_key, timeout, max_retries)
         self.users = UserRequests(api_key, timeout, max_retries)
         self.api_keys = ApiKeyRequests(api_key, timeout, max_retries)
+        self.currencies = CurrencyRequests(api_key, timeout, max_retries)
 
         # Transaction handlers
         self.transaction_status = TransactionStatusRequests(api_key, timeout, max_retries)

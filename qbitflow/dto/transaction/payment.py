@@ -5,11 +5,14 @@ This module contains data models for one-time payments.
 """
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Optional
+
 from pydantic import Field
 
 from qbitflow.dto.base_model import BaseModel
+
 from .currency import Currency
+from .metadata import PaymentMetadata
 
 
 class Payment(BaseModel):
@@ -42,7 +45,8 @@ class Payment(BaseModel):
 
     uuid: str = Field(..., description="Payment UUID")
     reference: Optional[str] = Field(
-        default=None, description="Your own reference for the payment, set when the session was created"
+        default=None,
+        description="Your own reference for the payment, set when the session was created",
     )
     created_at: datetime = Field(..., description="Creation timestamp")
     from_: str = Field(..., alias="from", description="Sender's address")
@@ -50,14 +54,24 @@ class Payment(BaseModel):
     name: str = Field(..., description="Product/service name")
     description: str = Field(..., description="Payment description")
     amount: float = Field(..., ge=0, description="Amount in USD")
-    amount_min_units: Optional[str] = Field(default=None, description="Amount in smallest token units")  # noqa: E501
+    amount_min_units: Optional[str] = Field(
+        default=None, description="Amount in smallest token units"
+    )  # noqa: E501
     currency_id: int = Field(..., description="Currency ID")
     currency: Currency = Field(..., description="Currency details")
     test: bool = Field(..., description="Test mode flag")
     product_id: Optional[int] = Field(default=None, description="Product ID")
     transaction_hash: str = Field(..., description="Blockchain transaction hash")
     customer_uuid: str = Field(..., description="Customer UUID")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional metadata")
+    organization_id: Optional[int] = Field(
+        default=None, description="Organization ID (returned only when authenticated)"
+    )
+    user_id: Optional[int] = Field(
+        default=None, description="User ID (returned only when authenticated)"
+    )
+    metadata: Optional[PaymentMetadata] = Field(
+        default=None, description="Typed payment metadata (fee breakdown, on-chain details)"
+    )
 
 
 class CombinedPaymentItem(BaseModel):
@@ -99,12 +113,18 @@ class CombinedPaymentItem(BaseModel):
     name: str = Field(..., description="Product/service name")
     description: str = Field(..., description="Payment description")
     amount: float = Field(..., ge=0, description="Amount in USD")
-    amount_min_units: Optional[str] = Field(default=None, description="Amount in smallest token units")  # noqa: E501
+    amount_min_units: Optional[str] = Field(
+        default=None, description="Amount in smallest token units"
+    )  # noqa: E501
     currency_id: int = Field(..., description="Currency ID")
     currency: Optional[Currency] = Field(default=None, description="Currency details")
     product_id: Optional[int] = Field(default=None, description="Product ID")
     transaction_hash: str = Field(..., description="Blockchain transaction hash")
     customer_uuid: str = Field(..., description="Customer UUID")
-    subscription_uuid: Optional[str] = Field(default=None, description="Subscription UUID if applicable")  # noqa: E501
+    subscription_uuid: Optional[str] = Field(
+        default=None, description="Subscription UUID if applicable"
+    )  # noqa: E501
     test: bool = Field(..., description="Test mode flag")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional metadata")
+    metadata: Optional[PaymentMetadata] = Field(
+        default=None, description="Typed payment metadata (fee breakdown, on-chain details)"
+    )

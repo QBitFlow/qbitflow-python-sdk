@@ -2,10 +2,10 @@
 
 from typing import List, Optional
 
-from qbitflow.requests.base_request import BaseRequest
 from qbitflow.dto.transaction.refund import RefundEntry
-from qbitflow.utils.cursor_data import CursorData, cursor_query_builder
 from qbitflow.exceptions import ValidationError
+from qbitflow.requests.base_request import BaseRequest
+from qbitflow.utils.cursor_data import CursorData, cursor_query_builder
 
 
 class RefundRequests(BaseRequest):

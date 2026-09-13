@@ -3,9 +3,9 @@
 import json
 from typing import List, Literal, Union
 
-from qbitflow.requests.base_request import BaseRequest
 from qbitflow.dto.accounting import AccountingEvent
 from qbitflow.exceptions import ValidationError
+from qbitflow.requests.base_request import BaseRequest
 
 
 class AccountingRequests(BaseRequest):
