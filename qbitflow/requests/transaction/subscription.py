@@ -2,14 +2,17 @@
 
 from typing import List, Optional
 
-from qbitflow.requests.base_request import BaseRequest, SuccessResponse
 from qbitflow.dto.transaction.session import (
-    CreateSubscriptionSessionDto, LinkResponse, SubscriptionSession, StatusLinkResponse,
+    CreateSubscriptionSessionDto,
+    LinkResponse,
+    StatusLinkResponse,
+    SubscriptionSession,
 )
 from qbitflow.dto.transaction.subscription import Subscription, SubscriptionHistory
+from qbitflow.exceptions import ValidationError
+from qbitflow.requests.base_request import BaseRequest, SuccessResponse
 from qbitflow.requests.transaction.session import SessionRequests
 from qbitflow.utils.duration import Duration
-from qbitflow.exceptions import ValidationError
 
 
 class SubscriptionRequests(BaseRequest):
@@ -118,6 +121,7 @@ class SubscriptionRequests(BaseRequest):
             Subscription session details.
         """
         from typing import cast
+
         return cast(SubscriptionSession, self._session.get(session_uuid, close_to_expire_error))
 
     def get(self, subscription_uuid: str) -> Subscription:
@@ -161,9 +165,7 @@ class SubscriptionRequests(BaseRequest):
         if not reference:
             raise ValidationError("Subscription reference cannot be empty")
 
-        res = self._make_request(
-            f"{self.BASE_ROUTE}/reference/subscription/{reference}", "GET"
-        )
+        res = self._make_request(f"{self.BASE_ROUTE}/reference/subscription/{reference}", "GET")
         return Subscription(**res)
 
     def get_payment_history(self, subscription_uuid: str) -> List[SubscriptionHistory]:

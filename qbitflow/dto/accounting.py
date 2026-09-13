@@ -1,6 +1,7 @@
 """Accounting export data models."""
 
 from datetime import datetime
+
 from pydantic import Field
 
 from qbitflow.dto.base_model import BaseModel
@@ -20,15 +21,24 @@ class AccountingEvent(BaseModel):
     """
 
     payment_id: str = Field(..., description="Payment identifier")
-    type: str = Field(..., description="Event type: one_time | subscription | refund")
+    payment_reference: str = Field(..., description="Payment reference, if available")
+    type: str = Field(
+        ...,
+        description="Event type: payment | subscriptionHistory | refund | organizationFee | referralFee",  # noqa: E501
+    )
     tx_time_utc: datetime = Field(..., description="Transaction time in UTC")
     receipt_url: str = Field(..., description="Receipt URL")
     related_payment_id: str = Field(..., description="For refunds: original payment ID")
+    related_payment_reference: str = Field(
+        ..., description="For refunds: original payment reference"
+    )
 
     product_id: int = Field(..., description="Product ID")
+    product_reference: str = Field(..., description="Product reference")
     product_name: str = Field(..., description="Product name")
     product_description: str = Field(..., description="Product description")
     customer_uuid: str = Field(..., description="Customer UUID")
+    customer_reference: str = Field(..., description="Customer reference")
 
     chain: str = Field(..., description="Blockchain network")
     block_number_or_slot: str = Field(..., description="Block number or slot")

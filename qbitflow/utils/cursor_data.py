@@ -1,34 +1,33 @@
-
 """
 Cursor-based pagination utility.
 
 This module provides a generic CursorData class for handling paginated API responses.
 """
 
-from typing import Any, Dict, Generic, TypeVar, List, Optional
+from typing import Any, Dict, Generic, List, Optional, TypeVar
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from qbitflow.exceptions.exceptions import ValidationError
 
-
-T = TypeVar('T')  # Type of items in the list
-V = TypeVar('V')  # Type of cursor value
+T = TypeVar("T")  # Type of items in the list
+V = TypeVar("V")  # Type of cursor value
 
 
 class CursorData(BaseModel, Generic[T, V]):
     """
     Generic container for cursor-based paginated data.
-    
+
     This class represents a page of results with a cursor for fetching the next page.
-    
+
     Type Parameters:
         T: The type of items in the list.
         V: The type of the cursor value (typically str or int).
-    
+
     Attributes:
         items: List of items in the current page.
         next_cursor: Cursor value for fetching the next page, or None if this is the last page.
-    
+
     Examples:
         >>> # Iterate through all payments
         >>> cursor = None
@@ -40,41 +39,37 @@ class CursorData(BaseModel, Generic[T, V]):
         ...         break
         ...     cursor = page.next_cursor
     """
-    
-    items: List[T] = Field(
-        default_factory=list,
-        description="List of items in the current page"
-    )
+
+    items: List[T] = Field(default_factory=list, description="List of items in the current page")
     next_cursor: Optional[V] = Field(
         default=None,
         description="Cursor for fetching the next page (None if last page)",
-        alias="nextCursor"
+        alias="nextCursor",
     )
-    
 
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,
     )
+
     def has_more(self) -> bool:
         """
         Check if there are more pages available.
-        
+
         Returns:
             True if there are more pages, False otherwise.
         """
         return self.next_cursor is not None
-    
+
     def __len__(self) -> int:
         """Return the number of items in the current page."""
         return len(self.items)
 
 
-
 def cursor_query_builder(limit: Optional[int] = None, cursor: Optional[V] = None) -> Dict[str, Any]:
     """
     Build a query string for cursor-based pagination.
-    
+
     Args:
         limit: Maximum number of results per page.
         cursor: Pagination cursor from previous response.
@@ -82,12 +77,12 @@ def cursor_query_builder(limit: Optional[int] = None, cursor: Optional[V] = None
     Returns:
         A dictionary containing the query parameters for the request.
     """
-    params = {}
+    params: Dict[str, Any] = {}
     if limit is not None:
         if limit <= 0:
             raise ValidationError("Limit must be positive")
-        params['limit'] = limit
+        params["limit"] = limit
     if cursor is not None:
-        params['cursor'] = cursor
+        params["cursor"] = cursor
 
     return params

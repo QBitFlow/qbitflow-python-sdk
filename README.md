@@ -69,6 +69,7 @@ Official Python SDK for [QBitFlow](https://qbitflow.app) - a comprehensive crypt
 -   [Product Management](#product-management)
 -   [User Management](#user-management)
 -   [API Key Management](#api-key-management)
+-   [Currencies](#currencies)
 -   [Webhook Handling](#webhook-handling)
     -   [Configuring Webhooks](#configuring-webhooks)
     -   [Transaction Webhook](#transaction-webhook)
@@ -623,26 +624,45 @@ client.users.delete(user.id)
 
 ## API Key Management
 
+API-key **creation and deletion are JWT-only** API operations and cannot be performed
+with an API key, so the SDK exposes **read-only** access. Create and revoke keys from the
+QBitFlow dashboard.
+
 ```python
-from qbitflow.dto.api_key import CreateApiKeyDto
-
-# Create
-resp = client.api_keys.create(CreateApiKeyDto(
-    name="Production Key",
-    user_id=user_id,
-    test=False
-))
-print(f"Key (only shown once): {resp.key}")
-
 # List API keys for the current user
 keys = client.api_keys.get_all()
 
 # List API keys for a specific user (admin only)
 keys = client.api_keys.get_for_user(user_id)
-
-# Delete
-client.api_keys.delete(key_id)
 ```
+
+## Currencies
+
+Sessions and payment records reference currencies by **ID** (e.g.
+`session.available_currencies` is a `list[int]`). Use the public currency lookups to
+resolve those IDs to full `Currency` details.
+
+```python
+# All supported currencies (native currencies and tokens)
+currencies = client.currencies.get_all_available()
+
+# Only the main (native / blockchain) currencies, excluding tokens
+main_currencies = client.currencies.get_all_main()
+
+by_id = {c.id: c for c in currencies}
+session = client.one_time_payments.get_session("session-uuid")
+for currency_id in session.available_currencies:
+    currency = by_id[currency_id]
+    print(f"{currency.name} ({currency.symbol})")
+```
+
+### Typed payment metadata
+
+Payment metadata is fully typed. `Payment.metadata`, `CombinedPaymentItem.metadata`, and
+`SubscriptionHistory.metadata` are `Optional[PaymentMetadata]`, and `RefundEntry.metadata`
+is `Optional[TxMetadata]`. `PaymentMetadata` exposes the fee breakdown (`fee_bps`,
+`organization_fee`, `referral_fee`), on-chain details (`tx_metadata`), and the computed
+per-party amounts (`tx_amounts`, in both USD and smallest currency units).
 
 ## Webhook Handling
 
@@ -850,7 +870,8 @@ QBitFlow(api_key: str, timeout: Optional[int] = None, max_retries: Optional[int]
 | `customers`          | `CustomerRequests`            | Customer CRUD operations                 |
 | `products`           | `ProductRequests`             | Product CRUD operations                  |
 | `users`              | `UserRequests`                | User management operations               |
-| `api_keys`           | `ApiKeyRequests`              | API key management                       |
+| `api_keys`           | `ApiKeyRequests`              | Read-only API key access                 |
+| `currencies`         | `CurrencyRequests`            | Supported-currency lookups               |
 | `one_time_payments`  | `PaymentRequests`             | One-time payment sessions and history    |
 | `subscriptions`      | `SubscriptionRequests`        | Recurring subscription management        |
 | `refunds`            | `RefundRequests`              | Refund retrieval                         |
