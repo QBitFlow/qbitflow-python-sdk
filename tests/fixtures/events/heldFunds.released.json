@@ -1,0 +1,139 @@
+{
+  "createdAt": "2026-10-01T12:00:00Z",
+  "data": {
+    "amount": 98.3458,
+    "amountMinUnits": "98345800",
+    "chain": "BASE",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "currency": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "decimals": 6,
+      "id": 8,
+      "mainCurrency": {
+        "address": "",
+        "decimals": 18,
+        "id": 3,
+        "mainCurrency": null,
+        "name": "Base",
+        "symbol": "BASE",
+        "test": false
+      },
+      "mainCurrencyId": 3,
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "test": false
+    },
+    "currencyId": 8,
+    "explorerUrl": "https://basescan.org/tx/0x5555555555555555555555555555555555555555555555555555555555555555",
+    "from": "0x9876543210fedcba9876543210fedcba98765432",
+    "ledgers": [
+      {
+        "amount": 100,
+        "createdAt": "2026-09-28T12:00:00Z",
+        "currencyId": 8,
+        "description": "Payment pay@01a0f755-f200-7000-8000-000000000001",
+        "metadata": {
+          "feePercent": 1.5,
+          "txAmounts": {
+            "minUnits": {
+              "merchant": "98500000",
+              "organization": "0",
+              "platform": "1500000",
+              "referral": "0"
+            },
+            "usd": {
+              "merchant": 98.5,
+              "platform": 1.5
+            }
+          },
+          "txMetadata": {
+            "blockData": {
+              "number": "52468103",
+              "timestamp": 1790596798
+            },
+            "networkFees": {
+              "amount": "1140000000000",
+              "unitsConsumed": 95000
+            }
+          }
+        },
+        "owedMinUnits": "98500000",
+        "owedUsd": 98.5,
+        "txUuid": "pay@01a0f755-f200-7000-8000-000000000001",
+        "type": "payment"
+      },
+      {
+        "amount": 10,
+        "createdAt": "2026-09-29T12:00:00Z",
+        "currencyId": 8,
+        "description": "Payment pay@01a0d6d7-c600-7000-8000-00000000000c",
+        "metadata": {
+          "feePercent": 1.5,
+          "txAmounts": {
+            "minUnits": {
+              "merchant": "9850000",
+              "networkFee": "4200",
+              "organization": "0",
+              "platform": "150000",
+              "referral": "0"
+            },
+            "usd": {
+              "merchant": 9.85,
+              "networkFee": 0.0042,
+              "platform": 0.15
+            }
+          },
+          "txMetadata": {
+            "blockData": {
+              "number": "52468103",
+              "timestamp": 1790683198
+            },
+            "networkFees": {
+              "amount": "1140000000000",
+              "unitsConsumed": 95000
+            }
+          }
+        },
+        "owedMinUnits": "9850000",
+        "owedUsd": 9.85,
+        "txUuid": "pay@01a0d6d7-c600-7000-8000-00000000000c",
+        "type": "payment"
+      },
+      {
+        "amount": 10.0042,
+        "createdAt": "2026-09-30T12:00:00Z",
+        "currencyId": 8,
+        "description": "Refund of payment pay@01a0d6d7-c600-7000-8000-00000000000c",
+        "metadata": null,
+        "owedMinUnits": "-10004200",
+        "owedUsd": -10.0042,
+        "refundedTxUuid": "pay@01a0d6d7-c600-7000-8000-00000000000c",
+        "txUuid": "refund@01a0ec3b-3ba0-7000-8000-000000000006",
+        "type": "refund"
+      }
+    ],
+    "received": true,
+    "test": false,
+    "to": "0x1234567890abcdef1234567890abcdef12345678",
+    "txHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+    "txMetadata": {
+      "blockData": {
+        "number": "52468103",
+        "timestamp": 1790855998
+      },
+      "mainCurrencyPriceUsd": 4512.37,
+      "networkFees": {
+        "amount": "1140000000000",
+        "unitsConsumed": 95000
+      }
+    },
+    "type": "heldFundsRelease",
+    "userUuid": "019eca82-5680-7b00-8000-0000000000b1",
+    "uuid": "transfer@01a0f755-f200-7000-8000-000000000007"
+  },
+  "id": "evt_620352e2-0285-52e8-adc1-64a9774278c1",
+  "test": false,
+  "type": "heldFunds.released",
+  "userUuid": "019eca82-5680-7b00-8000-0000000000b1",
+  "version": "v2"
+}

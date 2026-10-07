@@ -1,0 +1,1192 @@
+{
+  "cases": [
+    {
+      "expect": {
+        "dataShape": "payment",
+        "id": "evt_63b9afe7-5561-5c7e-b2c5-42b4d58ecba8",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "checkout.expired",
+        "userUuid": ""
+      },
+      "name": "fixture checkout.expired",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "pay@01a0f22f-9600-7000-8000-000000000008"
+        },
+        {
+          "path": "data.txType",
+          "value": "payment"
+        },
+        {
+          "optional": true,
+          "path": "data.price",
+          "value": 10
+        },
+        {
+          "optional": true,
+          "path": "data.productName",
+          "value": "Pro plan (lifetime)"
+        },
+        {
+          "optional": true,
+          "path": "data.productUuid",
+          "value": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        {
+          "path": "data.availableCurrencyIds",
+          "value": [
+            2,
+            5,
+            8
+          ]
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "data.expiresAt",
+          "value": "2026-10-01T12:00:00Z"
+        },
+        {
+          "optional": true,
+          "path": "data.userName",
+          "value": ""
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"availableCurrencyIds\": [\n      2,\n      5,\n      8\n    ],\n    \"cancelUrl\": \"https://shop.example.com/cart\",\n    \"createdAt\": \"2026-09-30T12:00:00Z\",\n    \"description\": \"Lifetime access to the Pro plan\",\n    \"expiresAt\": \"2026-10-01T12:00:00Z\",\n    \"organizationName\": \"Example Shop\",\n    \"price\": 10,\n    \"productName\": \"Pro plan (lifetime)\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"order-1043\",\n    \"successUrl\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f22f-9600-7000-8000-000000000008&redirectUrl=https%3A%2F%2Fshop.example.com%2Fthanks\",\n    \"test\": false,\n    \"txType\": \"payment\",\n    \"uuid\": \"pay@01a0f22f-9600-7000-8000-000000000008\"\n  },\n  \"id\": \"evt_63b9afe7-5561-5c7e-b2c5-42b4d58ecba8\",\n  \"test\": false,\n  \"type\": \"checkout.expired\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_620352e2-0285-52e8-adc1-64a9774278c1",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "heldFunds.released",
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "name": "fixture heldFunds.released",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "transfer@01a0f755-f200-7000-8000-000000000007"
+        },
+        {
+          "path": "data.type",
+          "value": "heldFundsRelease"
+        },
+        {
+          "path": "data.received",
+          "value": true
+        },
+        {
+          "path": "data.amount",
+          "value": 98.3458
+        },
+        {
+          "path": "data.amountMinUnits",
+          "value": "98345800"
+        },
+        {
+          "optional": true,
+          "path": "data.userUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        },
+        {
+          "path": "data.txMetadata.blockData.number",
+          "value": "52468103"
+        },
+        {
+          "path": "data.ledgers[0].txUuid",
+          "value": "pay@01a0f755-f200-7000-8000-000000000001"
+        },
+        {
+          "path": "data.ledgers[0].type",
+          "value": "payment"
+        },
+        {
+          "path": "data.ledgers[0].owedUsd",
+          "value": 98.5
+        },
+        {
+          "path": "data.ledgers[0].owedMinUnits",
+          "value": "98500000"
+        },
+        {
+          "path": "data.ledgers[0].metadata.feePercent",
+          "value": 1.5
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amount\": 98.3458,\n    \"amountMinUnits\": \"98345800\",\n    \"chain\": \"BASE\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"explorerUrl\": \"https://basescan.org/tx/0x5555555555555555555555555555555555555555555555555555555555555555\",\n    \"from\": \"0x9876543210fedcba9876543210fedcba98765432\",\n    \"ledgers\": [\n      {\n        \"amount\": 100,\n        \"createdAt\": \"2026-09-28T12:00:00Z\",\n        \"currencyId\": 8,\n        \"description\": \"Payment pay@01a0f755-f200-7000-8000-000000000001\",\n        \"metadata\": {\n          \"feePercent\": 1.5,\n          \"txAmounts\": {\n            \"minUnits\": {\n              \"merchant\": \"98500000\",\n              \"organization\": \"0\",\n              \"platform\": \"1500000\",\n              \"referral\": \"0\"\n            },\n            \"usd\": {\n              \"merchant\": 98.5,\n              \"platform\": 1.5\n            }\n          },\n          \"txMetadata\": {\n            \"blockData\": {\n              \"number\": \"52468103\",\n              \"timestamp\": 1790596798\n            },\n            \"networkFees\": {\n              \"amount\": \"1140000000000\",\n              \"unitsConsumed\": 95000\n            }\n          }\n        },\n        \"owedMinUnits\": \"98500000\",\n        \"owedUsd\": 98.5,\n        \"txUuid\": \"pay@01a0f755-f200-7000-8000-000000000001\",\n        \"type\": \"payment\"\n      },\n      {\n        \"amount\": 10,\n        \"createdAt\": \"2026-09-29T12:00:00Z\",\n        \"currencyId\": 8,\n        \"description\": \"Payment pay@01a0d6d7-c600-7000-8000-00000000000c\",\n        \"metadata\": {\n          \"feePercent\": 1.5,\n          \"txAmounts\": {\n            \"minUnits\": {\n              \"merchant\": \"9850000\",\n              \"networkFee\": \"4200\",\n              \"organization\": \"0\",\n              \"platform\": \"150000\",\n              \"referral\": \"0\"\n            },\n            \"usd\": {\n              \"merchant\": 9.85,\n              \"networkFee\": 0.0042,\n              \"platform\": 0.15\n            }\n          },\n          \"txMetadata\": {\n            \"blockData\": {\n              \"number\": \"52468103\",\n              \"timestamp\": 1790683198\n            },\n            \"networkFees\": {\n              \"amount\": \"1140000000000\",\n              \"unitsConsumed\": 95000\n            }\n          }\n        },\n        \"owedMinUnits\": \"9850000\",\n        \"owedUsd\": 9.85,\n        \"txUuid\": \"pay@01a0d6d7-c600-7000-8000-00000000000c\",\n        \"type\": \"payment\"\n      },\n      {\n        \"amount\": 10.0042,\n        \"createdAt\": \"2026-09-30T12:00:00Z\",\n        \"currencyId\": 8,\n        \"description\": \"Refund of payment pay@01a0d6d7-c600-7000-8000-00000000000c\",\n        \"metadata\": null,\n        \"owedMinUnits\": \"-10004200\",\n        \"owedUsd\": -10.0042,\n        \"refundedTxUuid\": \"pay@01a0d6d7-c600-7000-8000-00000000000c\",\n        \"txUuid\": \"refund@01a0ec3b-3ba0-7000-8000-000000000006\",\n        \"type\": \"refund\"\n      }\n    ],\n    \"received\": true,\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"txHash\": \"0x5555555555555555555555555555555555555555555555555555555555555555\",\n    \"txMetadata\": {\n      \"blockData\": {\n        \"number\": \"52468103\",\n        \"timestamp\": 1790855998\n      },\n      \"mainCurrencyPriceUsd\": 4512.37,\n      \"networkFees\": {\n        \"amount\": \"1140000000000\",\n        \"unitsConsumed\": 95000\n      }\n    },\n    \"type\": \"heldFundsRelease\",\n    \"userUuid\": \"019eca82-5680-7b00-8000-0000000000b1\",\n    \"uuid\": \"transfer@01a0f755-f200-7000-8000-000000000007\"\n  },\n  \"id\": \"evt_620352e2-0285-52e8-adc1-64a9774278c1\",\n  \"test\": false,\n  \"type\": \"heldFunds.released\",\n  \"userUuid\": \"019eca82-5680-7b00-8000-0000000000b1\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_634bf7f1-010f-5f60-8232-06c30f013f28",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "member.joined",
+        "userUuid": ""
+      },
+      "name": "fixture member.joined",
+      "probes": [
+        {
+          "path": "data.userUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        },
+        {
+          "path": "data.invitationUuid",
+          "value": "01a0f755-f200-7000-8000-00000000000a"
+        },
+        {
+          "path": "data.email",
+          "value": "alice@example.com"
+        },
+        {
+          "path": "data.organizationFeePercent",
+          "value": 5
+        },
+        {
+          "kind": "time",
+          "path": "data.trustedAt",
+          "value": null
+        },
+        {
+          "kind": "time",
+          "path": "data.joinedAt",
+          "value": "2026-10-01T12:00:00Z"
+        },
+        {
+          "path": "data.acceptedCurrencyIds",
+          "value": [
+            8
+          ]
+        },
+        {
+          "path": "data.spaceUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b2"
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"acceptedCurrencyIds\": [\n      8\n    ],\n    \"email\": \"alice@example.com\",\n    \"invitationUuid\": \"01a0f755-f200-7000-8000-00000000000a\",\n    \"joinedAt\": \"2026-10-01T12:00:00Z\",\n    \"lastName\": \"Martin\",\n    \"name\": \"Alice\",\n    \"organizationFeePercent\": 5,\n    \"spaceUuid\": \"019eca82-5680-7b00-8000-0000000000b2\",\n    \"test\": false,\n    \"trustedAt\": null,\n    \"userUuid\": \"019eca82-5680-7b00-8000-0000000000b1\"\n  },\n  \"id\": \"evt_634bf7f1-010f-5f60-8232-06c30f013f28\",\n  \"test\": false,\n  \"type\": \"member.joined\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_d32aec3c-d46c-57e3-9292-f8433766df46",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "member.removed",
+        "userUuid": ""
+      },
+      "name": "fixture member.removed",
+      "probes": [
+        {
+          "path": "data.userUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        },
+        {
+          "kind": "time",
+          "path": "data.trustedAt",
+          "value": "2026-07-01T09:00:00Z"
+        },
+        {
+          "kind": "time",
+          "path": "data.joinedAt",
+          "value": "2026-06-15T09:00:00Z"
+        },
+        {
+          "path": "data.acceptedCurrencyIds",
+          "value": [
+            8
+          ]
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"acceptedCurrencyIds\": [\n      8\n    ],\n    \"email\": \"alice@example.com\",\n    \"joinedAt\": \"2026-06-15T09:00:00Z\",\n    \"lastName\": \"Martin\",\n    \"name\": \"Alice\",\n    \"organizationFeePercent\": 5,\n    \"spaceUuid\": \"019eca82-5680-7b00-8000-0000000000b2\",\n    \"test\": false,\n    \"trustedAt\": \"2026-07-01T09:00:00Z\",\n    \"userUuid\": \"019eca82-5680-7b00-8000-0000000000b1\"\n  },\n  \"id\": \"evt_d32aec3c-d46c-57e3-9292-f8433766df46\",\n  \"test\": false,\n  \"type\": \"member.removed\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_82c1e15d-c0d9-584f-a65a-fb4099925273",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "payment.completed",
+        "userUuid": ""
+      },
+      "name": "fixture payment.completed",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "pay@01a0f755-f200-7000-8000-000000000001"
+        },
+        {
+          "path": "data.amount",
+          "value": 10
+        },
+        {
+          "path": "data.amountMinUnits",
+          "value": "10000000"
+        },
+        {
+          "path": "data.currencyId",
+          "value": 8
+        },
+        {
+          "path": "data.currency.symbol",
+          "value": "USDC"
+        },
+        {
+          "path": "data.currency.mainCurrency.symbol",
+          "value": "BASE"
+        },
+        {
+          "path": "data.metadata.feePercent",
+          "value": 1.5
+        },
+        {
+          "path": "data.metadata.txAmounts.usd.merchant",
+          "value": 9.85
+        },
+        {
+          "path": "data.metadata.txAmounts.minUnits.platform",
+          "value": "150000"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "data.confirmedAt",
+          "value": "2026-10-01T11:59:58Z"
+        },
+        {
+          "optional": true,
+          "path": "data.managementPageLink",
+          "value": "https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f755-f200-7000-8000-000000000001"
+        },
+        {
+          "optional": true,
+          "path": "data.customer",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "data.refundable",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "data.refund",
+          "value": null
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amount\": 10,\n    \"amountMinUnits\": \"10000000\",\n    \"chain\": \"BASE\",\n    \"checkoutOpenedAt\": \"2026-10-01T12:00:00Z\",\n    \"confirmedAt\": \"2026-10-01T11:59:58Z\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"description\": \"Lifetime access to the Pro plan\",\n    \"explorerUrl\": \"https://basescan.org/tx/0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f755-f200-7000-8000-000000000001\",\n    \"metadata\": {\n      \"feePercent\": 1.5,\n      \"txAmounts\": {\n        \"minUnits\": {\n          \"merchant\": \"9850000\",\n          \"networkFee\": \"4200\",\n          \"organization\": \"0\",\n          \"platform\": \"150000\",\n          \"referral\": \"0\"\n        },\n        \"usd\": {\n          \"merchant\": 9.85,\n          \"networkFee\": 0.0042,\n          \"platform\": 0.15\n        }\n      },\n      \"txMetadata\": {\n        \"blockData\": {\n          \"number\": \"52468103\",\n          \"timestamp\": 1790855998\n        },\n        \"networkFees\": {\n          \"amount\": \"1140000000000\",\n          \"unitsConsumed\": 95000\n        }\n      }\n    },\n    \"name\": \"Pro plan (lifetime)\",\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"order-1042\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"txHash\": \"0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"uuid\": \"pay@01a0f755-f200-7000-8000-000000000001\"\n  },\n  \"id\": \"evt_82c1e15d-c0d9-584f-a65a-fb4099925273\",\n  \"test\": false,\n  \"type\": \"payment.completed\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_952693cf-2ec5-5094-a79b-234165e388aa",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "refund.completed",
+        "userUuid": ""
+      },
+      "name": "fixture refund.completed",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "refund@01a0ec3b-3ba0-7000-8000-000000000006"
+        },
+        {
+          "path": "data.status",
+          "value": "approved"
+        },
+        {
+          "path": "data.refundPercent",
+          "value": 50
+        },
+        {
+          "path": "data.amountUsd",
+          "value": 5.0021
+        },
+        {
+          "kind": "time",
+          "path": "data.respondedAt",
+          "value": "2026-10-01T12:00:00Z"
+        },
+        {
+          "path": "data.metadata.blockData.number",
+          "value": "52468103"
+        },
+        {
+          "optional": true,
+          "path": "data.metadata.mainCurrencyPriceUsd",
+          "value": 4512.37
+        },
+        {
+          "path": "data.held",
+          "value": false
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amountMinUnits\": \"5002100\",\n    \"amountUsd\": 5.0021,\n    \"chain\": \"BASE\",\n    \"createdAt\": \"2026-09-29T08:15:00Z\",\n    \"currencyId\": 8,\n    \"explorerUrl\": \"https://basescan.org/tx/0x4444444444444444444444444444444444444444444444444444444444444444\",\n    \"held\": false,\n    \"initiatedBy\": \"customer\",\n    \"merchantMessage\": \"\",\n    \"metadata\": {\n      \"blockData\": {\n        \"number\": \"52468103\",\n        \"timestamp\": 1790855998\n      },\n      \"mainCurrencyPriceUsd\": 4512.37,\n      \"networkFees\": {\n        \"amount\": \"1140000000000\",\n        \"unitsConsumed\": 95000\n      }\n    },\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"reason\": \"I was charged twice for the same order\",\n    \"refundPercent\": 50,\n    \"respondedAt\": \"2026-10-01T12:00:00Z\",\n    \"status\": \"approved\",\n    \"test\": false,\n    \"txHash\": \"0x4444444444444444444444444444444444444444444444444444444444444444\",\n    \"txUuid\": \"pay@01a0f755-f200-7000-8000-000000000001\",\n    \"uuid\": \"refund@01a0ec3b-3ba0-7000-8000-000000000006\"\n  },\n  \"id\": \"evt_952693cf-2ec5-5094-a79b-234165e388aa\",\n  \"test\": false,\n  \"type\": \"refund.completed\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_fa171de1-b845-53e3-b885-2c59c88c0ddf",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "refund.denied",
+        "userUuid": ""
+      },
+      "name": "fixture refund.denied",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "refund@01a0ec3b-3ba0-7000-8000-000000000006"
+        },
+        {
+          "path": "data.status",
+          "value": "rejected"
+        },
+        {
+          "path": "data.merchantMessage",
+          "value": "Only one payment was received for this order"
+        },
+        {
+          "kind": "time",
+          "path": "data.respondedAt",
+          "value": "2026-10-01T12:00:00Z"
+        },
+        {
+          "path": "data.amountUsd",
+          "value": 10.0042
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amountMinUnits\": \"10004200\",\n    \"amountUsd\": 10.0042,\n    \"chain\": \"BASE\",\n    \"createdAt\": \"2026-09-29T08:15:00Z\",\n    \"currencyId\": 8,\n    \"held\": false,\n    \"initiatedBy\": \"customer\",\n    \"merchantMessage\": \"Only one payment was received for this order\",\n    \"metadata\": null,\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"reason\": \"I was charged twice for the same order\",\n    \"refundPercent\": 100,\n    \"respondedAt\": \"2026-10-01T12:00:00Z\",\n    \"status\": \"rejected\",\n    \"test\": false,\n    \"txHash\": \"\",\n    \"txUuid\": \"pay@01a0f755-f200-7000-8000-000000000001\",\n    \"uuid\": \"refund@01a0ec3b-3ba0-7000-8000-000000000006\"\n  },\n  \"id\": \"evt_fa171de1-b845-53e3-b885-2c59c88c0ddf\",\n  \"test\": false,\n  \"type\": \"refund.denied\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_ef774d14-7666-58e4-b447-10383579da8e",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "refund.requested",
+        "userUuid": ""
+      },
+      "name": "fixture refund.requested",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "refund@01a0ec3b-3ba0-7000-8000-000000000006"
+        },
+        {
+          "path": "data.txUuid",
+          "value": "pay@01a0f755-f200-7000-8000-000000000001"
+        },
+        {
+          "path": "data.status",
+          "value": "pending"
+        },
+        {
+          "path": "data.initiatedBy",
+          "value": "customer"
+        },
+        {
+          "path": "data.refundPercent",
+          "value": 100
+        },
+        {
+          "path": "data.amountUsd",
+          "value": 10.0042
+        },
+        {
+          "path": "data.amountMinUnits",
+          "value": "10004200"
+        },
+        {
+          "kind": "time",
+          "path": "data.respondedAt",
+          "value": null
+        },
+        {
+          "path": "data.metadata",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "data.approval",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "data.customer",
+          "value": null
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amountMinUnits\": \"10004200\",\n    \"amountUsd\": 10.0042,\n    \"chain\": \"BASE\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currencyId\": 8,\n    \"held\": false,\n    \"initiatedBy\": \"customer\",\n    \"merchantMessage\": \"\",\n    \"metadata\": null,\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"reason\": \"I was charged twice for the same order\",\n    \"refundPercent\": 100,\n    \"respondedAt\": null,\n    \"status\": \"pending\",\n    \"test\": false,\n    \"txHash\": \"\",\n    \"txUuid\": \"pay@01a0f755-f200-7000-8000-000000000001\",\n    \"uuid\": \"refund@01a0ec3b-3ba0-7000-8000-000000000006\"\n  },\n  \"id\": \"evt_ef774d14-7666-58e4-b447-10383579da8e\",\n  \"test\": false,\n  \"type\": \"refund.requested\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_b4e9b659-4641-5b64-bf03-ade86da0c456",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "subscription.actionRequiredChanged",
+        "userUuid": ""
+      },
+      "name": "fixture subscription.actionRequiredChanged",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "sub@01a05cd7-2a00-7000-8000-000000000003"
+        },
+        {
+          "path": "data.status",
+          "value": "active"
+        },
+        {
+          "optional": true,
+          "path": "data.actionRequired",
+          "value": "topUpAllowance"
+        },
+        {
+          "optional": true,
+          "path": "data.previousActionRequired",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "data.managementPageLink",
+          "value": "https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003"
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"actionRequired\": \"topUpAllowance\",\n    \"allowance\": \"1500000\",\n    \"createdAt\": \"2026-09-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"currentPeriodEnd\": \"2026-10-31T12:00:00Z\",\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"frequency\": {\n      \"unit\": \"months\",\n      \"value\": 1\n    },\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"lastBillingDate\": \"2026-10-01T12:00:00Z\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\n    \"maxAmountPerPeriod\": \"30000000\",\n    \"nextBillingDate\": \"2026-10-31T12:00:00Z\",\n    \"priceUsd\": \"10\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"customer-7731\",\n    \"status\": \"active\",\n    \"subscriptionHash\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"updatedAt\": \"2026-10-01T12:00:00Z\",\n    \"uuid\": \"sub@01a05cd7-2a00-7000-8000-000000000003\"\n  },\n  \"id\": \"evt_b4e9b659-4641-5b64-bf03-ade86da0c456\",\n  \"test\": false,\n  \"type\": \"subscription.actionRequiredChanged\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_bca1239f-e7d7-517c-b004-08aaeee1e76f",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "subscription.billed",
+        "userUuid": ""
+      },
+      "name": "fixture subscription.billed",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+        },
+        {
+          "path": "data.subscriptionUuid",
+          "value": "sub@01a0f755-c320-7000-8000-000000000002"
+        },
+        {
+          "path": "data.subscriptionStatus",
+          "value": "active"
+        },
+        {
+          "optional": true,
+          "path": "data.subscriptionReference",
+          "value": "customer-7731"
+        },
+        {
+          "path": "data.amount",
+          "value": 10
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "data.periodStart",
+          "value": "2026-10-01T12:00:00Z"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "data.periodEnd",
+          "value": "2026-10-31T12:00:00Z"
+        },
+        {
+          "path": "data.metadata.txMetadata.blockData.number",
+          "value": "52468103"
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amount\": 10,\n    \"amountMinUnits\": \"10000000\",\n    \"chain\": \"BASE\",\n    \"confirmedAt\": \"2026-10-01T11:59:58Z\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"description\": \"Monthly access to the Pro plan\",\n    \"explorerUrl\": \"https://basescan.org/tx/0x3333333333333333333333333333333333333333333333333333333333333333\",\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"metadata\": {\n      \"feePercent\": 1.5,\n      \"txAmounts\": {\n        \"minUnits\": {\n          \"merchant\": \"9850000\",\n          \"networkFee\": \"4200\",\n          \"organization\": \"0\",\n          \"platform\": \"150000\",\n          \"referral\": \"0\"\n        },\n        \"usd\": {\n          \"merchant\": 9.85,\n          \"networkFee\": 0.0042,\n          \"platform\": 0.15\n        }\n      },\n      \"txMetadata\": {\n        \"blockData\": {\n          \"number\": \"52468103\",\n          \"timestamp\": 1790855998\n        },\n        \"networkFees\": {\n          \"amount\": \"1140000000000\",\n          \"unitsConsumed\": 95000\n        }\n      }\n    },\n    \"name\": \"Pro plan\",\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"periodEnd\": \"2026-10-31T12:00:00Z\",\n    \"periodStart\": \"2026-10-01T12:00:00Z\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"subscriptionReference\": \"customer-7731\",\n    \"subscriptionStatus\": \"active\",\n    \"subscriptionUuid\": \"sub@01a0f755-c320-7000-8000-000000000002\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"txHash\": \"0x3333333333333333333333333333333333333333333333333333333333333333\",\n    \"uuid\": \"sub-hist@01a0f755-f200-7000-8000-000000000005\"\n  },\n  \"id\": \"evt_bca1239f-e7d7-517c-b004-08aaeee1e76f\",\n  \"test\": false,\n  \"type\": \"subscription.billed\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_82950239-430c-595f-ad42-595955b921a0",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "subscription.billingFailed",
+        "userUuid": ""
+      },
+      "name": "fixture subscription.billingFailed",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "sub@01a05cd7-2a00-7000-8000-000000000003"
+        },
+        {
+          "path": "data.amountUsd",
+          "value": "10"
+        },
+        {
+          "path": "data.billUuid",
+          "value": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+        },
+        {
+          "path": "data.reason",
+          "value": "insufficientBalance"
+        },
+        {
+          "optional": true,
+          "path": "data.failureCode",
+          "value": "insufficient_funds"
+        },
+        {
+          "path": "data.attempt",
+          "value": 1
+        },
+        {
+          "path": "data.remainingAttempts",
+          "value": 4
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "data.nextAttemptAt",
+          "value": "2026-10-02T12:00:00Z"
+        },
+        {
+          "path": "data.status",
+          "value": "pastDue"
+        },
+        {
+          "optional": true,
+          "path": "data.managementPageLink",
+          "value": "https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003"
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"allowance\": \"110000000\",\n    \"amountUsd\": \"10\",\n    \"attempt\": 1,\n    \"billUuid\": \"sub-hist@01a0f755-f200-7000-8000-000000000005\",\n    \"createdAt\": \"2026-09-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"currentPeriodEnd\": \"2026-10-01T12:00:00Z\",\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"failureCode\": \"insufficient_funds\",\n    \"frequency\": {\n      \"unit\": \"months\",\n      \"value\": 1\n    },\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"lastBillingDate\": \"2026-09-01T12:00:00Z\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\n    \"maxAmountPerPeriod\": \"30000000\",\n    \"nextAttemptAt\": \"2026-10-02T12:00:00Z\",\n    \"nextBillingDate\": \"2026-10-01T12:00:00Z\",\n    \"priceUsd\": \"10\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reason\": \"insufficientBalance\",\n    \"reference\": \"customer-7731\",\n    \"remainingAttempts\": 4,\n    \"status\": \"pastDue\",\n    \"subscriptionHash\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"updatedAt\": \"2026-10-01T12:00:00Z\",\n    \"uuid\": \"sub@01a05cd7-2a00-7000-8000-000000000003\"\n  },\n  \"id\": \"evt_82950239-430c-595f-ad42-595955b921a0\",\n  \"test\": false,\n  \"type\": \"subscription.billingFailed\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_4fad5fdd-5eed-5d81-a971-ba2ade1e6c20",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "subscription.created",
+        "userUuid": ""
+      },
+      "name": "fixture subscription.created",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "sub@01a0f755-c320-7000-8000-000000000002"
+        },
+        {
+          "path": "data.status",
+          "value": "active"
+        },
+        {
+          "path": "data.frequency.value",
+          "value": 1
+        },
+        {
+          "optional": true,
+          "path": "data.frequency.unit",
+          "value": "months"
+        },
+        {
+          "path": "data.priceUsd",
+          "value": "10"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "data.currentPeriodEnd",
+          "value": "2026-10-31T12:00:00Z"
+        },
+        {
+          "optional": true,
+          "path": "data.managementPageLink",
+          "value": "https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a0f755-c320-7000-8000-000000000002"
+        },
+        {
+          "optional": true,
+          "path": "data.dunning",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "data.customer",
+          "value": null
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"allowance\": \"110000000\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"currentPeriodEnd\": \"2026-10-31T12:00:00Z\",\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"frequency\": {\n      \"unit\": \"months\",\n      \"value\": 1\n    },\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"lastBillingDate\": \"2026-10-01T12:00:00Z\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a0f755-c320-7000-8000-000000000002\",\n    \"maxAmountPerPeriod\": \"30000000\",\n    \"nextBillingDate\": \"2026-10-31T12:00:00Z\",\n    \"priceUsd\": \"10\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"customer-7731\",\n    \"status\": \"active\",\n    \"subscriptionHash\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"updatedAt\": \"2026-10-01T12:00:00Z\",\n    \"uuid\": \"sub@01a0f755-c320-7000-8000-000000000002\"\n  },\n  \"id\": \"evt_4fad5fdd-5eed-5d81-a971-ba2ade1e6c20\",\n  \"test\": false,\n  \"type\": \"subscription.created\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_9c02c80f-4040-582c-a749-f50329b95421",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "subscription.statusChanged",
+        "userUuid": ""
+      },
+      "name": "fixture subscription.statusChanged",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "sub@01a05cd7-2a00-7000-8000-000000000003"
+        },
+        {
+          "path": "data.status",
+          "value": "active"
+        },
+        {
+          "path": "data.previousStatus",
+          "value": "pastDue"
+        },
+        {
+          "optional": true,
+          "path": "data.cancellationReason",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "data.cancelledAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "data.managementPageLink",
+          "value": "https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003"
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"allowance\": \"110000000\",\n    \"createdAt\": \"2026-09-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"currentPeriodEnd\": \"2026-10-31T12:00:00Z\",\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"frequency\": {\n      \"unit\": \"months\",\n      \"value\": 1\n    },\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"lastBillingDate\": \"2026-10-01T12:00:00Z\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\n    \"maxAmountPerPeriod\": \"30000000\",\n    \"nextBillingDate\": \"2026-10-31T12:00:00Z\",\n    \"previousStatus\": \"pastDue\",\n    \"priceUsd\": \"10\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"customer-7731\",\n    \"status\": \"active\",\n    \"subscriptionHash\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"updatedAt\": \"2026-10-01T12:00:00Z\",\n    \"uuid\": \"sub@01a05cd7-2a00-7000-8000-000000000003\"\n  },\n  \"id\": \"evt_9c02c80f-4040-582c-a749-f50329b95421\",\n  \"test\": false,\n  \"type\": \"subscription.statusChanged\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_234c641e-08ac-5669-9147-efc5b7b97bd5",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "subscription.upcomingBill",
+        "userUuid": ""
+      },
+      "name": "fixture subscription.upcomingBill",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "sub@01a06c4a-3e00-7000-8000-000000000004"
+        },
+        {
+          "path": "data.amountUsd",
+          "value": 10
+        },
+        {
+          "kind": "time",
+          "path": "data.billingDate",
+          "value": "2026-10-04T12:00:00Z"
+        },
+        {
+          "path": "data.trialEnding",
+          "value": false
+        },
+        {
+          "optional": true,
+          "path": "data.balanceSufficient",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "data.allowanceSufficient",
+          "value": true
+        },
+        {
+          "path": "data.priceUsd",
+          "value": "10"
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"allowance\": \"110000000\",\n    \"allowanceSufficient\": true,\n    \"amountUsd\": 10,\n    \"balanceSufficient\": true,\n    \"billingDate\": \"2026-10-04T12:00:00Z\",\n    \"createdAt\": \"2026-09-04T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"currentPeriodEnd\": \"2026-10-04T12:00:00Z\",\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"frequency\": {\n      \"unit\": \"months\",\n      \"value\": 1\n    },\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"lastBillingDate\": \"2026-09-04T12:00:00Z\",\n    \"maxAmountPerPeriod\": \"30000000\",\n    \"nextBillingDate\": \"2026-10-04T12:00:00Z\",\n    \"priceUsd\": \"10\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"customer-7731\",\n    \"status\": \"active\",\n    \"subscriptionHash\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"trialEnding\": false,\n    \"updatedAt\": \"2026-09-04T12:00:00Z\",\n    \"uuid\": \"sub@01a06c4a-3e00-7000-8000-000000000004\"\n  },\n  \"id\": \"evt_234c641e-08ac-5669-9147-efc5b7b97bd5\",\n  \"test\": false,\n  \"type\": \"subscription.upcomingBill\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_bd1a913d-188e-5ac5-a2d6-5fd25cd67301",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "webhook.test",
+        "userUuid": ""
+      },
+      "name": "fixture webhook.test",
+      "probes": [
+        {
+          "path": "data.endpointUuid",
+          "value": "019cadfd-8900-7e00-8000-0000000000e1"
+        },
+        {
+          "path": "data.message",
+          "value": "A test event from the dashboard: nothing happened"
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"endpointUuid\": \"019cadfd-8900-7e00-8000-0000000000e1\",\n    \"message\": \"A test event from the dashboard: nothing happened\"\n  },\n  \"id\": \"evt_bd1a913d-188e-5ac5-a2d6-5fd25cd67301\",\n  \"test\": false,\n  \"type\": \"webhook.test\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "dataShape": "subscription",
+        "id": "evt_00000000-0000-5000-8000-000000000001",
+        "known": true,
+        "ok": true,
+        "test": true,
+        "type": "checkout.expired",
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "name": "checkout.expired, subscription session",
+      "note": "txType createSubscription selects the subscription session shape",
+      "probes": [
+        {
+          "kind": "time",
+          "path": "createdAt",
+          "value": "2026-10-01T12:00:00+02:00"
+        },
+        {
+          "optional": true,
+          "path": "userUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        },
+        {
+          "path": "data.uuid",
+          "value": "sub@01a0f22f-9600-7000-8000-000000000009"
+        },
+        {
+          "path": "data.txType",
+          "value": "createSubscription"
+        },
+        {
+          "path": "data.frequency.value",
+          "value": 1
+        },
+        {
+          "optional": true,
+          "path": "data.frequency.unit",
+          "value": "months"
+        },
+        {
+          "path": "data.trialPeriod.value",
+          "value": 7
+        },
+        {
+          "optional": true,
+          "path": "data.minPeriods",
+          "value": 3
+        },
+        {
+          "optional": true,
+          "path": "data.price",
+          "value": 9.99
+        },
+        {
+          "optional": true,
+          "path": "data.upgradingFromTrial",
+          "value": null
+        }
+      ],
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00+02:00\",\"data\":{\"availableCurrencyIds\":[8],\"createdAt\":\"2026-09-30T12:00:00Z\",\"expiresAt\":\"2026-10-01T12:00:00Z\",\"frequency\":{\"unit\":\"months\",\"value\":1},\"minPeriods\":3,\"organizationName\":\"Example Shop\",\"price\":9.99,\"productName\":\"Pro plan (monthly)\",\"test\":true,\"trialPeriod\":{\"unit\":\"days\",\"value\":7},\"txType\":\"createSubscription\",\"uuid\":\"sub@01a0f22f-9600-7000-8000-000000000009\"},\"id\":\"evt_00000000-0000-5000-8000-000000000001\",\"test\":true,\"type\":\"checkout.expired\",\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "dataShape": "payment",
+        "id": "evt_00000000-0000-5000-8000-000000000002",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "checkout.expired",
+        "userUuid": ""
+      },
+      "name": "checkout.expired, unknown txType",
+      "note": "an unknown txType decodes as the payment session shape, txType kept raw",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "pay@01a0f22f-9600-7000-8000-00000000000a"
+        },
+        {
+          "path": "data.txType",
+          "value": "somethingNew"
+        },
+        {
+          "optional": true,
+          "path": "data.price",
+          "value": 5
+        },
+        {
+          "path": "data.availableCurrencyIds",
+          "value": []
+        },
+        {
+          "optional": true,
+          "path": "data.productName",
+          "value": ""
+        }
+      ],
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{\"organizationName\":\"Example Shop\",\"price\":5,\"txType\":\"somethingNew\",\"uuid\":\"pay@01a0f22f-9600-7000-8000-00000000000a\"},\"id\":\"evt_00000000-0000-5000-8000-000000000002\",\"test\":false,\"type\":\"checkout.expired\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "id": "evt_00000000-0000-5000-8000-000000000003",
+        "known": false,
+        "ok": true,
+        "test": true,
+        "type": "invoice.created",
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "name": "unknown type keeps raw data",
+      "note": "an unknown type is not an error: a generic event with the raw data",
+      "probes": [
+        {
+          "kind": "time",
+          "path": "createdAt",
+          "value": "2026-10-01T12:00:00.123456+02:00"
+        },
+        {
+          "optional": true,
+          "path": "userUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        },
+        {
+          "path": "data.foo",
+          "value": 1
+        },
+        {
+          "path": "data.nested.bar",
+          "value": [
+            "x",
+            2.5
+          ]
+        },
+        {
+          "path": "data.nested.bar[1]",
+          "value": 2.5
+        }
+      ],
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00.123456+02:00\",\"data\":{\"foo\":1,\"nested\":{\"bar\":[\"x\",2.5]}},\"id\":\"evt_00000000-0000-5000-8000-000000000003\",\"test\":true,\"type\":\"invoice.created\",\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "id": "evt_x",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "webhook.test",
+        "userUuid": ""
+      },
+      "name": "webhook.test with null data",
+      "note": "null data decodes as the zero data",
+      "probes": [
+        {
+          "path": "data.endpointUuid",
+          "value": ""
+        },
+        {
+          "path": "data.message",
+          "value": ""
+        }
+      ],
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":null,\"id\":\"evt_x\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "id": "evt_x",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "webhook.test",
+        "userUuid": ""
+      },
+      "name": "webhook.test without data",
+      "note": "absent data decodes as the zero data",
+      "probes": [
+        {
+          "path": "data.endpointUuid",
+          "value": ""
+        },
+        {
+          "path": "data.message",
+          "value": ""
+        }
+      ],
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"id\":\"evt_x\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "id": "evt_y",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "webhook.test",
+        "userUuid": ""
+      },
+      "name": "envelope: absent test and createdAt",
+      "note": "absent envelope fields decode to zero values",
+      "probes": [
+        {
+          "kind": "time",
+          "path": "createdAt",
+          "value": null
+        },
+        {
+          "path": "data.endpointUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000e1"
+        }
+      ],
+      "rawBody": "{\"data\":{\"endpointUuid\":\"019eca82-5680-7b00-8000-0000000000e1\",\"message\":\"hi\"},\"id\":\"evt_y\",\"type\":\"webhook.test\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "id": "evt_z",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "webhook.test",
+        "userUuid": ""
+      },
+      "name": "envelope: unknown keys ignored",
+      "probes": [
+        {
+          "path": "data.endpointUuid",
+          "value": "e"
+        },
+        {
+          "path": "data.message",
+          "value": "m"
+        }
+      ],
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{\"endpointUuid\":\"e\",\"extra\":true,\"message\":\"m\"},\"id\":\"evt_z\",\"newField\":{\"a\":1},\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "id": "evt_w",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "webhook.test",
+        "userUuid": ""
+      },
+      "name": "envelope: surrounding whitespace",
+      "probes": [
+        {
+          "path": "data.message",
+          "value": "m"
+        }
+      ],
+      "rawBody": "\n  {\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{\"endpointUuid\":\"e\",\"message\":\"m\"},\"id\":\"evt_w\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_634bf7f1-010f-5f60-8232-06c30f013f28",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "member.joined",
+        "userUuid": ""
+      },
+      "name": "data: integral float into an integer field",
+      "note": "1.0 into an integer is accepted",
+      "probes": [
+        {
+          "path": "data.acceptedCurrencyIds",
+          "value": [
+            8
+          ]
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"acceptedCurrencyIds\": [8.0],\n    \"email\": \"alice@example.com\",\n    \"invitationUuid\": \"01a0f755-f200-7000-8000-00000000000a\",\n    \"joinedAt\": \"2026-10-01T12:00:00Z\",\n    \"lastName\": \"Martin\",\n    \"name\": \"Alice\",\n    \"organizationFeePercent\": 5,\n    \"spaceUuid\": \"019eca82-5680-7b00-8000-0000000000b2\",\n    \"test\": false,\n    \"trustedAt\": null,\n    \"userUuid\": \"019eca82-5680-7b00-8000-0000000000b1\"\n  },\n  \"id\": \"evt_634bf7f1-010f-5f60-8232-06c30f013f28\",\n  \"test\": false,\n  \"type\": \"member.joined\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "id": "evt_9c02c80f-4040-582c-a749-f50329b95421",
+        "known": true,
+        "ok": true,
+        "test": false,
+        "type": "subscription.statusChanged",
+        "userUuid": ""
+      },
+      "name": "data: unknown enum values kept",
+      "probes": [
+        {
+          "path": "data.status",
+          "value": "frozenactive"
+        },
+        {
+          "path": "data.previousStatus",
+          "value": "pastDue"
+        }
+      ],
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"allowance\": \"110000000\",\n    \"createdAt\": \"2026-09-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"currentPeriodEnd\": \"2026-10-31T12:00:00Z\",\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"frequency\": {\n      \"unit\": \"months\",\n      \"value\": 1\n    },\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"lastBillingDate\": \"2026-10-01T12:00:00Z\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\n    \"maxAmountPerPeriod\": \"30000000\",\n    \"nextBillingDate\": \"2026-10-31T12:00:00Z\",\n    \"previousStatus\": \"pastDue\",\n    \"priceUsd\": \"10\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"customer-7731\",\n    \"status\": \"frozenactive\",\n    \"subscriptionHash\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"updatedAt\": \"2026-10-01T12:00:00Z\",\n    \"uuid\": \"sub@01a05cd7-2a00-7000-8000-000000000003\"\n  },\n  \"id\": \"evt_9c02c80f-4040-582c-a749-f50329b95421\",\n  \"test\": false,\n  \"type\": \"subscription.statusChanged\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "version v1",
+      "note": "v1 bodies are refused: move the endpoint to v2",
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"endpointUuid\": \"019cadfd-8900-7e00-8000-0000000000e1\",\n    \"message\": \"A test event from the dashboard: nothing happened\"\n  },\n  \"id\": \"evt_bd1a913d-188e-5ac5-a2d6-5fd25cd67301\",\n  \"test\": false,\n  \"type\": \"webhook.test\",\n  \"version\": \"v1\"\n}\n"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "version absent",
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_x\",\"test\":false,\"type\":\"webhook.test\"}"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "version wrong JSON type",
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_x\",\"test\":false,\"type\":\"webhook.test\",\"version\":2}"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "body: JSON array",
+      "rawBody": "[{\"type\":\"webhook.test\",\"version\":\"v2\"}]"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "body: JSON string",
+      "rawBody": "\"webhook.test\""
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "body: JSON null",
+      "rawBody": "null"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "body: empty",
+      "rawBody": ""
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "body: invalid JSON",
+      "rawBody": "{\"type\":\"webhook.test\",\"version\":\"v2\""
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "envelope: test is a string",
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_x\",\"test\":\"false\",\"type\":\"webhook.test\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "envelope: id is a number",
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":42,\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "parse"
+      },
+      "name": "envelope: createdAt is a number",
+      "rawBody": "{\"createdAt\":1790856000,\"data\":{},\"id\":\"evt_x\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "data"
+      },
+      "name": "data: upcomingBill amountUsd as a string",
+      "note": "subscription.upcomingBill.amountUsd is a number (types.md §3)",
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"allowance\": \"110000000\",\n    \"allowanceSufficient\": true,\n    \"amountUsd\": \"10\",\n    \"balanceSufficient\": true,\n    \"billingDate\": \"2026-10-04T12:00:00Z\",\n    \"createdAt\": \"2026-09-04T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"currentPeriodEnd\": \"2026-10-04T12:00:00Z\",\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"frequency\": {\n      \"unit\": \"months\",\n      \"value\": 1\n    },\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"lastBillingDate\": \"2026-09-04T12:00:00Z\",\n    \"maxAmountPerPeriod\": \"30000000\",\n    \"nextBillingDate\": \"2026-10-04T12:00:00Z\",\n    \"priceUsd\": \"10\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"customer-7731\",\n    \"status\": \"active\",\n    \"subscriptionHash\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"trialEnding\": false,\n    \"updatedAt\": \"2026-09-04T12:00:00Z\",\n    \"uuid\": \"sub@01a06c4a-3e00-7000-8000-000000000004\"\n  },\n  \"id\": \"evt_234c641e-08ac-5669-9147-efc5b7b97bd5\",\n  \"test\": false,\n  \"type\": \"subscription.upcomingBill\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "data"
+      },
+      "name": "data: billingFailed amountUsd as a number",
+      "note": "subscription.billingFailed.amountUsd is a decimal string (types.md §3)",
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"allowance\": \"110000000\",\n    \"amountUsd\": 10,\n    \"attempt\": 1,\n    \"billUuid\": \"sub-hist@01a0f755-f200-7000-8000-000000000005\",\n    \"createdAt\": \"2026-09-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"currentPeriodEnd\": \"2026-10-01T12:00:00Z\",\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"failureCode\": \"insufficient_funds\",\n    \"frequency\": {\n      \"unit\": \"months\",\n      \"value\": 1\n    },\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"lastBillingDate\": \"2026-09-01T12:00:00Z\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\n    \"maxAmountPerPeriod\": \"30000000\",\n    \"nextAttemptAt\": \"2026-10-02T12:00:00Z\",\n    \"nextBillingDate\": \"2026-10-01T12:00:00Z\",\n    \"priceUsd\": \"10\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reason\": \"insufficientBalance\",\n    \"reference\": \"customer-7731\",\n    \"remainingAttempts\": 4,\n    \"status\": \"pastDue\",\n    \"subscriptionHash\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"updatedAt\": \"2026-10-01T12:00:00Z\",\n    \"uuid\": \"sub@01a05cd7-2a00-7000-8000-000000000003\"\n  },\n  \"id\": \"evt_82950239-430c-595f-ad42-595955b921a0\",\n  \"test\": false,\n  \"type\": \"subscription.billingFailed\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "data"
+      },
+      "name": "data: payment amount as a string",
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amount\": \"10\",\n    \"amountMinUnits\": \"10000000\",\n    \"chain\": \"BASE\",\n    \"checkoutOpenedAt\": \"2026-10-01T12:00:00Z\",\n    \"confirmedAt\": \"2026-10-01T11:59:58Z\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"description\": \"Lifetime access to the Pro plan\",\n    \"explorerUrl\": \"https://basescan.org/tx/0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f755-f200-7000-8000-000000000001\",\n    \"metadata\": {\n      \"feePercent\": 1.5,\n      \"txAmounts\": {\n        \"minUnits\": {\n          \"merchant\": \"9850000\",\n          \"networkFee\": \"4200\",\n          \"organization\": \"0\",\n          \"platform\": \"150000\",\n          \"referral\": \"0\"\n        },\n        \"usd\": {\n          \"merchant\": 9.85,\n          \"networkFee\": 0.0042,\n          \"platform\": 0.15\n        }\n      },\n      \"txMetadata\": {\n        \"blockData\": {\n          \"number\": \"52468103\",\n          \"timestamp\": 1790855998\n        },\n        \"networkFees\": {\n          \"amount\": \"1140000000000\",\n          \"unitsConsumed\": 95000\n        }\n      }\n    },\n    \"name\": \"Pro plan (lifetime)\",\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"order-1042\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"txHash\": \"0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"uuid\": \"pay@01a0f755-f200-7000-8000-000000000001\"\n  },\n  \"id\": \"evt_82c1e15d-c0d9-584f-a65a-fb4099925273\",\n  \"test\": false,\n  \"type\": \"payment.completed\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "data"
+      },
+      "name": "data: fractional attempt",
+      "note": "an integer field refuses 1.5",
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"allowance\": \"110000000\",\n    \"amountUsd\": \"10\",\n    \"attempt\": 1.5,\n    \"billUuid\": \"sub-hist@01a0f755-f200-7000-8000-000000000005\",\n    \"createdAt\": \"2026-09-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"currentPeriodEnd\": \"2026-10-01T12:00:00Z\",\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"failureCode\": \"insufficient_funds\",\n    \"frequency\": {\n      \"unit\": \"months\",\n      \"value\": 1\n    },\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"lastBillingDate\": \"2026-09-01T12:00:00Z\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\n    \"maxAmountPerPeriod\": \"30000000\",\n    \"nextAttemptAt\": \"2026-10-02T12:00:00Z\",\n    \"nextBillingDate\": \"2026-10-01T12:00:00Z\",\n    \"priceUsd\": \"10\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reason\": \"insufficientBalance\",\n    \"reference\": \"customer-7731\",\n    \"remainingAttempts\": 4,\n    \"status\": \"pastDue\",\n    \"subscriptionHash\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"updatedAt\": \"2026-10-01T12:00:00Z\",\n    \"uuid\": \"sub@01a05cd7-2a00-7000-8000-000000000003\"\n  },\n  \"id\": \"evt_82950239-430c-595f-ad42-595955b921a0\",\n  \"test\": false,\n  \"type\": \"subscription.billingFailed\",\n  \"version\": \"v2\"\n}\n"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "data"
+      },
+      "name": "data: ledgers is an object",
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{\"ledgers\":{\"txUuid\":\"x\"},\"uuid\":\"transfer@01a0f755-f200-7000-8000-000000000009\"},\"id\":\"evt_x\",\"test\":false,\"type\":\"heldFunds.released\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
+        "errorClass": "ValidationError",
+        "ok": false,
+        "stage": "data"
+      },
+      "name": "data: webhook.test data is a list",
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":[],\"id\":\"evt_x\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}"
+    }
+  ],
+  "comment": "Webhook event parsing (behaviour.md §7, types.md §4): parseEvent(rawBody), then the typed data of its type.",
+  "generator": ".claude/cross-sdk-checks/v3/gen (cd gen && go run .)",
+  "sdk": "qbitflow-go-sdk 3.0.0"
+}

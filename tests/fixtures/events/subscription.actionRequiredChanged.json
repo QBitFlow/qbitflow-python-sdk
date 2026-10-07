@@ -1,0 +1,52 @@
+{
+  "createdAt": "2026-10-01T12:00:00Z",
+  "data": {
+    "actionRequired": "topUpAllowance",
+    "allowance": "1500000",
+    "createdAt": "2026-09-01T12:00:00Z",
+    "currency": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "decimals": 6,
+      "id": 8,
+      "mainCurrency": {
+        "address": "",
+        "decimals": 18,
+        "id": 3,
+        "mainCurrency": null,
+        "name": "Base",
+        "symbol": "BASE",
+        "test": false
+      },
+      "mainCurrencyId": 3,
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "test": false
+    },
+    "currencyId": 8,
+    "currentPeriodEnd": "2026-10-31T12:00:00Z",
+    "customerReference": "crm-5521",
+    "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
+    "frequency": {
+      "unit": "months",
+      "value": 1
+    },
+    "from": "0xabcdef1234567890abcdef1234567890abcdef12",
+    "lastBillingDate": "2026-10-01T12:00:00Z",
+    "managementPageLink": "https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003",
+    "maxAmountPerPeriod": "30000000",
+    "nextBillingDate": "2026-10-31T12:00:00Z",
+    "priceUsd": "10",
+    "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+    "reference": "customer-7731",
+    "status": "active",
+    "subscriptionHash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+    "test": false,
+    "to": "0x1234567890abcdef1234567890abcdef12345678",
+    "updatedAt": "2026-10-01T12:00:00Z",
+    "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+  },
+  "id": "evt_b4e9b659-4641-5b64-bf03-ade86da0c456",
+  "test": false,
+  "type": "subscription.actionRequiredChanged",
+  "version": "v2"
+}

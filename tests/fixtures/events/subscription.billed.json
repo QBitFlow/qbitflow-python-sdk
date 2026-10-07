@@ -1,0 +1,78 @@
+{
+  "createdAt": "2026-10-01T12:00:00Z",
+  "data": {
+    "amount": 10,
+    "amountMinUnits": "10000000",
+    "chain": "BASE",
+    "confirmedAt": "2026-10-01T11:59:58Z",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "currency": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "decimals": 6,
+      "id": 8,
+      "mainCurrency": {
+        "address": "",
+        "decimals": 18,
+        "id": 3,
+        "mainCurrency": null,
+        "name": "Base",
+        "symbol": "BASE",
+        "test": false
+      },
+      "mainCurrencyId": 3,
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "test": false
+    },
+    "currencyId": 8,
+    "customerReference": "crm-5521",
+    "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
+    "description": "Monthly access to the Pro plan",
+    "explorerUrl": "https://basescan.org/tx/0x3333333333333333333333333333333333333333333333333333333333333333",
+    "from": "0xabcdef1234567890abcdef1234567890abcdef12",
+    "metadata": {
+      "feePercent": 1.5,
+      "txAmounts": {
+        "minUnits": {
+          "merchant": "9850000",
+          "networkFee": "4200",
+          "organization": "0",
+          "platform": "150000",
+          "referral": "0"
+        },
+        "usd": {
+          "merchant": 9.85,
+          "networkFee": 0.0042,
+          "platform": 0.15
+        }
+      },
+      "txMetadata": {
+        "blockData": {
+          "number": "52468103",
+          "timestamp": 1790855998
+        },
+        "networkFees": {
+          "amount": "1140000000000",
+          "unitsConsumed": 95000
+        }
+      }
+    },
+    "name": "Pro plan",
+    "paidMinUnits": "10004200",
+    "paidUsd": 10.0042,
+    "periodEnd": "2026-10-31T12:00:00Z",
+    "periodStart": "2026-10-01T12:00:00Z",
+    "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+    "subscriptionReference": "customer-7731",
+    "subscriptionStatus": "active",
+    "subscriptionUuid": "sub@01a0f755-c320-7000-8000-000000000002",
+    "test": false,
+    "to": "0x1234567890abcdef1234567890abcdef12345678",
+    "txHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+    "uuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+  },
+  "id": "evt_bca1239f-e7d7-517c-b004-08aaeee1e76f",
+  "test": false,
+  "type": "subscription.billed",
+  "version": "v2"
+}

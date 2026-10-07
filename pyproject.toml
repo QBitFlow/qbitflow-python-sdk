@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "qbitflow"
 dynamic = ["version"]
-description = "Official Python SDK for QBitFlow - Next Generation Crypto Payment Processing"
+description = "Official Python SDK for QBitFlow (API v2): non-custodial crypto checkouts, subscriptions, marketplaces and webhooks"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MPL-2.0"}
@@ -44,8 +44,8 @@ classifiers=[
 ]
 dependencies = [
     "httpx>=0.24.0,<1.0.0",
-    # 2.2 is the first release with Field(union_mode=...), used to keep unknown enum values.
-    "pydantic>=2.2.0,<3.0.0",
+    # 2.5 is the first release with callable discriminators (the webhook event union).
+    "pydantic>=2.5.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
@@ -123,6 +123,7 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --cov=qbitflow --cov-report=term-missing --cov-report=html"
+markers = ["integration: live checks against a QBitFlow API (need QBITFLOW_API_KEY and QBITFLOW_BASE_URL)"]
 
 [tool.coverage.run]
 source = ["qbitflow"]

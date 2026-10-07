@@ -1,0 +1,5842 @@
+{
+  "cases": [
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: valid minimal"
+    },
+    {
+      "args": {
+        "params": {
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name absent"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name empty"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "   ",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name blank"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "   ",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name only no-break spaces"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "A",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "AB",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name 2 chars"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "😀",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name 1 emoji (1 code point, 2 UTF-16 units)"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "😀😀",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name 2 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name 100 ASCII"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name 101 ASCII"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name 100 accented (200 bytes)"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name 101 accented"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa😀",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name 99 ASCII + 1 emoji = 100"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name 100 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name 101 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "éééééééééééééééééééééééééééééééééééééééééééééééééé",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name 50 decomposed e+acute = 100 code points"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "ééééééééééééééééééééééééééééééééééééééééééééééééééé",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name 51 decomposed e+acute = 102 code points"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro < plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"<\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro > plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \">\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro { plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"{\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro } plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"}\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro [ plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"[\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro ] plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"]\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro ` plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"`\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro \\ plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"\\\\\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro | plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"|\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro ; plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \";\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro \" plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"\\\"\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro ~ plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"~\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro ^ plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with \"^\""
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro\tplan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with tab"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro\nplan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with newline"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro\rplan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with carriage return"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro\u0000plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with NUL"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Proplan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with DEL"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Proplan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with C1 control U+0085"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro‪plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with bidi U+202A"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro‮plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with bidi U+202E"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro⁦plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with bidi U+2066"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro⁩plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: name with bidi U+2069"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro‎plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name with U+200E (not in the bidi list)"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro​plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name with zero-width space U+200B"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "  Pro plan  ",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name with leading and trailing spaces"
+    },
+    {
+      "args": {
+        "params": {
+          "name": " A",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name of 2 code points of which 1 is a space"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan (v2) - 50% off! #1, 'best' & more: ok? @home / é ü ß 日本",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: name with allowed punctuation"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "x",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: description 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "xy",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: description 2 chars"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: description 500"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: description 501"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: description 500 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "   ",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: description blank"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Line 1\r\nLine 2\n\tindented",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: description with newline, tab and CRLF"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Line\u0000one",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: description with NUL"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Line\u000bone",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: description with vertical tab"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "a <b> tag",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: description with <"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "abc‮def",
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: description with bidi U+202E (allowed in text)"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan"
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: price absent"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 0
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: price 0"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": -1
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: price negative"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": "NaN"
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: price NaN"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": "Infinity"
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: price Infinity"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": "-Infinity"
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: price -Infinity"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 0.01
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: price 0.01"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 0.000001
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: price 0.000001"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 1000000000
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: price large"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "reference": "Ref.A_z:0@9-x"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: reference charset A-Z a-z 0-9 . _ : @ -"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "reference": "order 1043"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: reference with space"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "reference": "order/1043"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: reference with slash"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "reference": "commandé"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: reference with accent"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "reference": "order#1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: reference with #"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "reference": "a+b"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: reference with +"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "reference": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: reference 100"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "reference": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: reference 101"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "reference": "r"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: reference 1"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription monthly"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "minPeriods": 3
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription without frequency"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "days",
+              "value": 0
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency.value"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency value 0"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "value": 1
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency.unit"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency without unit"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "fortnights",
+              "value": 1
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency.unit"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency unknown unit"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "value": 0
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency.value"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 0 without unit"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "seconds",
+              "value": 31536000
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription frequency 31536000 seconds"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "seconds",
+              "value": 31536001
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 31536001 seconds"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "minutes",
+              "value": 525600
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription frequency 525600 minutes"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "minutes",
+              "value": 525601
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 525601 minutes"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "hours",
+              "value": 8760
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription frequency 8760 hours"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "hours",
+              "value": 8761
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 8761 hours"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "days",
+              "value": 365
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription frequency 365 days"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "days",
+              "value": 366
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 366 days"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "weeks",
+              "value": 52
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription frequency 52 weeks"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "weeks",
+              "value": 53
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 53 weeks"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 12
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription frequency 12 months"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 13
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 13 months"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "years",
+              "value": 1
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription frequency 1 years"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "years",
+              "value": 2
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 2 years"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "seconds",
+              "value": 4294967295
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 4294967295 seconds"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "years",
+              "value": 4294967295
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription frequency 4294967295 years"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "trialPeriod": {
+              "value": 0
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription trial 0 without unit"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "trialPeriod": {
+              "unit": "days",
+              "value": 0
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription trial 0 days"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "trialPeriod": {
+              "value": 7
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.trialPeriod.unit"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription trial 7 without unit"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "trialPeriod": {
+              "unit": "days",
+              "value": 7
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription trial 7 days"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "trialPeriod": {
+              "unit": "decades",
+              "value": 7
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.trialPeriod.unit"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription trial unknown unit"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "trialPeriod": {
+              "unit": "years",
+              "value": 4294967295
+            }
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription trial longer than 1 year (no maximum)"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "minPeriods": 0
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription minPeriods 0"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "minPeriods": 1000
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: subscription minPeriods 1000"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "minPeriods": 1001
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.minPeriods"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription minPeriods 1001"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10,
+          "subscription": {
+            "frequency": {
+              "unit": "years",
+              "value": 2
+            },
+            "minPeriods": 5000,
+            "trialPeriod": {
+              "value": 3
+            }
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency",
+          "subscription.minPeriods",
+          "subscription.trialPeriod.unit"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: subscription several term errors"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "x",
+          "name": "",
+          "price": 0,
+          "reference": "a b"
+        }
+      },
+      "expect": {
+        "fields": [
+          "description",
+          "name",
+          "price",
+          "reference"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: several errors at once"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.update",
+      "name": "products.update: empty update"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "019CADFD-8900-7C00-8000-0000000000C1"
+      },
+      "expect": "ok",
+      "method": "products.update",
+      "name": "products.update: uuid uppercase"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "00000000-0000-0000-0000-000000000000"
+      },
+      "expect": "ok",
+      "method": "products.update",
+      "name": "products.update: uuid nil (a valid UUID for a path)"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "not-a-uuid"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: uuid invalid"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": ""
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: uuid empty"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "{019cadfd-8900-7c00-8000-0000000000c1}"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: uuid with braces"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "019cadfd89007c0080000000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: uuid without dashes"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "pay@019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: uuid prefixed like a tx id"
+    },
+    {
+      "args": {
+        "params": {
+          "description": ""
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.update",
+      "name": "products.update: description empty clears"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "x"
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: description 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "name": ""
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.update",
+      "name": "products.update: name empty means unchanged"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "A"
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: name 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "price": "NaN"
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: price NaN"
+    },
+    {
+      "args": {
+        "params": {
+          "price": 0
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: price 0"
+    },
+    {
+      "args": {
+        "params": {
+          "removeSubscription": true,
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            }
+          }
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "removeSubscription"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: subscription and removeSubscription"
+    },
+    {
+      "args": {
+        "params": {
+          "subscription": {
+            "minPeriods": 2
+          }
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.update",
+      "name": "products.update: subscription without frequency"
+    },
+    {
+      "args": {
+        "params": {
+          "subscription": {
+            "frequency": {
+              "unit": "days",
+              "value": 0
+            }
+          }
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "subscription.frequency.value"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: subscription frequency 0"
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000cz"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "products.get",
+      "name": "products.get: uuid invalid"
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "products.get",
+      "name": "products.get: uuid too short"
+    },
+    {
+      "args": {
+        "uuid": ""
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "products.delete",
+      "name": "products.delete: uuid empty"
+    },
+    {
+      "args": {
+        "reference": "a/b c@d#é"
+      },
+      "expect": "ok",
+      "method": "products.getByReference",
+      "name": "products.getByReference: any reference (not checked)"
+    },
+    {
+      "args": {
+        "reference": ""
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.getByReference",
+      "name": "products.getByReference: empty"
+    },
+    {
+      "args": {
+        "reference": "  "
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.getByReference",
+      "name": "products.getByReference: blank"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: valid minimal"
+    },
+    {
+      "args": {
+        "params": {
+          "address": "1 rue de la Paix\nParis",
+          "email": "alice@example.com",
+          "lastName": "Martin",
+          "name": "Alice",
+          "phoneNumber": "+33 6 12 34 56 78",
+          "reference": "crm-5521"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: valid full"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com"
+        }
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: name absent"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: email absent"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice.example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: email without @"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: email without dot in domain"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@.example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: email domain starts with a dot"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com.",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: email domain ends with a dot"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "a@b@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: email with two @"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "al ice@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: email with a space"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: email empty local part"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "Alice@Example.COM",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: email mixed case (no normalisation)"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "élodie@exämple.fr",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: email non-ASCII"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice+vip@mail.example.co.uk",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: email plus tag and subdomains"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: email 254"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: email 255"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "lastName": "M",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: lastName 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "lastName": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: lastName 100"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "lastName": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "lastName"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: lastName 101"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "lastName": "Mar;tin",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "lastName"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: lastName with ;"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "lastName": " ",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "lastName"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: lastName blank"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "+33 6 12 34 56 78"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: phone international with spaces"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "0612345678"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: phone digits only"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "1 (555) 123-45.67"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: phone with dots, dashes and parentheses"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "(555) 123-4567"
+        }
+      },
+      "expect": {
+        "fields": [
+          "phoneNumber"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: phone starting with ("
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "123456"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: phone 6 digits"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "12345"
+        }
+      },
+      "expect": {
+        "fields": [
+          "phoneNumber"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: phone 5 digits"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "0612345678-"
+        }
+      },
+      "expect": {
+        "fields": [
+          "phoneNumber"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: phone ending with a separator"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "06123456x8"
+        }
+      },
+      "expect": {
+        "fields": [
+          "phoneNumber"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: phone with a letter"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "++33612345678"
+        }
+      },
+      "expect": {
+        "fields": [
+          "phoneNumber"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: phone double plus"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "+1111111111111111111111111111111"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: phone 32"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "phoneNumber": "+11111111111111111111111111111111"
+        }
+      },
+      "expect": {
+        "fields": [
+          "phoneNumber"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: phone 33"
+    },
+    {
+      "args": {
+        "params": {
+          "address": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "email": "alice@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: address 500"
+    },
+    {
+      "args": {
+        "params": {
+          "address": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "email": "alice@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "address"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: address 501"
+    },
+    {
+      "args": {
+        "params": {
+          "address": "a",
+          "email": "alice@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: address 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "address": "1 rue de la Paix\r\n75002 Paris\tFrance",
+          "email": "alice@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: address multiline"
+    },
+    {
+      "args": {
+        "params": {
+          "address": "1 rue {Paix}",
+          "email": "alice@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "address"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: address with {"
+    },
+    {
+      "args": {
+        "params": {
+          "address": "\n\t ",
+          "email": "alice@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "address"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: address blank"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice",
+          "reference": "crm 5521"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: reference with space"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": "ok",
+      "method": "customers.update",
+      "name": "customers.update: empty update"
+    },
+    {
+      "args": {
+        "params": {
+          "phoneNumber": ""
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": "ok",
+      "method": "customers.update",
+      "name": "customers.update: phoneNumber empty clears"
+    },
+    {
+      "args": {
+        "params": {
+          "address": ""
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": "ok",
+      "method": "customers.update",
+      "name": "customers.update: address empty clears"
+    },
+    {
+      "args": {
+        "params": {
+          "phoneNumber": "abc"
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": {
+        "fields": [
+          "phoneNumber"
+        ]
+      },
+      "method": "customers.update",
+      "name": "customers.update: phoneNumber invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "email": ""
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": "ok",
+      "method": "customers.update",
+      "name": "customers.update: email empty means unchanged"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bad"
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.update",
+      "name": "customers.update: email invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "A"
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": {
+        "fields": [
+          "name"
+        ]
+      },
+      "method": "customers.update",
+      "name": "customers.update: name 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Alice"
+        },
+        "uuid": "bad"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "customers.update",
+      "name": "customers.update: uuid invalid"
+    },
+    {
+      "args": {},
+      "expect": "ok",
+      "method": "customers.list",
+      "name": "customers.list: no params"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "a@b.co"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.list",
+      "name": "customers.list: email filter valid"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "a@b"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.list",
+      "name": "customers.list: email filter invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "01a05cd7-2a00-7d00-8000-0000000000d1",
+          "limit": 10,
+          "verified": false
+        }
+      },
+      "expect": "ok",
+      "method": "customers.list",
+      "name": "customers.list: verified false, limit and cursor"
+    },
+    {
+      "args": {
+        "uuid": "alice"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "customers.get",
+      "name": "customers.get: uuid invalid"
+    },
+    {
+      "args": {
+        "email": ""
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.getByEmail",
+      "name": "customers.getByEmail: empty"
+    },
+    {
+      "args": {
+        "email": "not-an-email"
+      },
+      "expect": "ok",
+      "method": "customers.getByEmail",
+      "name": "customers.getByEmail: not an email (not checked)"
+    },
+    {
+      "args": {
+        "reference": ""
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "customers.getByReference",
+      "name": "customers.getByReference: empty"
+    },
+    {
+      "args": {
+        "uuid": "00000000-0000-0000-0000-000000000000"
+      },
+      "expect": "ok",
+      "method": "customers.delete",
+      "name": "customers.delete: uuid nil"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productUuid"
+    },
+    {
+      "args": {
+        "params": {
+          "productReference": "pro-plan"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productReference"
+    },
+    {
+      "args": {
+        "params": {
+          "price": 10,
+          "productName": "Pro"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Lifetime access",
+          "price": 10,
+          "productName": "Pro"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline with description"
+    },
+    {
+      "args": {
+        "params": {}
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: no product"
+    },
+    {
+      "args": {
+        "params": {
+          "productReference": "pro-plan",
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productUuid and productReference"
+    },
+    {
+      "args": {
+        "params": {
+          "productName": "Pro",
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productUuid and productName"
+    },
+    {
+      "args": {
+        "params": {
+          "price": 10,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productUuid and price"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Lifetime access",
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productUuid and description"
+    },
+    {
+      "args": {
+        "params": {
+          "price": 10,
+          "productReference": "pro-plan"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productReference and price"
+    },
+    {
+      "args": {
+        "params": {
+          "price": 10,
+          "productName": "Pro",
+          "productReference": "pro-plan",
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: all three"
+    },
+    {
+      "args": {
+        "params": {
+          "productName": "Pro"
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline without price"
+    },
+    {
+      "args": {
+        "params": {
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "productName"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline without productName"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Lifetime access"
+        }
+      },
+      "expect": {
+        "fields": [
+          "price",
+          "productName"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: description only"
+    },
+    {
+      "args": {
+        "params": {
+          "price": -1,
+          "productName": "Pro"
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline price negative"
+    },
+    {
+      "args": {
+        "params": {
+          "price": "NaN",
+          "productName": "Pro"
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline price NaN"
+    },
+    {
+      "args": {
+        "params": {
+          "price": 10,
+          "productName": "P"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productName"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline productName 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "price": 10,
+          "productName": "Pro|Max"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productName"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline productName with |"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "x",
+          "price": 10,
+          "productName": "Pro"
+        }
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline description 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "pro-plan"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "00000000-0000-0000-0000-000000000000"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productUuid nil UUID"
+    },
+    {
+      "args": {
+        "params": {
+          "productReference": "pro plan"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productReference"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productReference invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "expiresInMinutes": 9,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "expiresInMinutes"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: expiresInMinutes 9"
+    },
+    {
+      "args": {
+        "params": {
+          "expiresInMinutes": 10,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: expiresInMinutes 10"
+    },
+    {
+      "args": {
+        "params": {
+          "expiresInMinutes": 1440,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: expiresInMinutes 1440"
+    },
+    {
+      "args": {
+        "params": {
+          "expiresInMinutes": 1441,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "expiresInMinutes"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: expiresInMinutes 1441"
+    },
+    {
+      "args": {
+        "params": {
+          "expiresInMinutes": 0,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: expiresInMinutes 0 (unset)"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "https://shop.example.com/ok?uuid={{UUID}}&type={{TRANSACTION_TYPE}}"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl with placeholders"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "HTTPS://shop.example.com/ok"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl uppercase scheme"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "http://localhost:3000/cb"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl http localhost with port"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "ftp://shop.example.com/ok"
+        }
+      },
+      "expect": {
+        "fields": [
+          "successUrl"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl ftp"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "/ok"
+        }
+      },
+      "expect": {
+        "fields": [
+          "successUrl"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl relative"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "https://"
+        }
+      },
+      "expect": {
+        "fields": [
+          "successUrl"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl without host"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "javascript:alert(1)"
+        }
+      },
+      "expect": {
+        "fields": [
+          "successUrl"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl javascript"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "https://shop example.com/ok"
+        }
+      },
+      "expect": {
+        "fields": [
+          "successUrl"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl with a space in the host"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl 2048"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "successUrl": "https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      },
+      "expect": {
+        "fields": [
+          "successUrl"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: successUrl 2049"
+    },
+    {
+      "args": {
+        "params": {
+          "cancelUrl": "mailto:a@example.com",
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "cancelUrl"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: cancelUrl mailto"
+    },
+    {
+      "args": {
+        "params": {
+          "customerUuid": "crm-5521",
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "customerUuid"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: customerUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "customerReference": "crm 5521",
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "customerReference"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: customerReference invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "reference": "order#1043"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: reference invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: productUuid only (frequency optional)"
+    },
+    {
+      "args": {
+        "params": {
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: monthly"
+    },
+    {
+      "args": {
+        "params": {
+          "frequency": {
+            "unit": "days",
+            "value": 0
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "frequency.value"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: frequency 0"
+    },
+    {
+      "args": {
+        "params": {
+          "frequency": {
+            "unit": "years",
+            "value": 1
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: frequency 1 year"
+    },
+    {
+      "args": {
+        "params": {
+          "frequency": {
+            "unit": "days",
+            "value": 366
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "frequency"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: frequency 366 days"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "trialPeriod": {
+            "value": 0
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: trial 0 without unit"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "trialPeriod": {
+            "value": 7
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "trialPeriod.unit"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: trial 7 without unit"
+    },
+    {
+      "args": {
+        "params": {
+          "minPeriods": 1000,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: minPeriods 1000"
+    },
+    {
+      "args": {
+        "params": {
+          "minPeriods": 1001,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "minPeriods"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: minPeriods 1001"
+    },
+    {
+      "args": {
+        "params": {
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          },
+          "price": 9.99,
+          "productName": "Pro monthly",
+          "trialPeriod": {
+            "unit": "days",
+            "value": 7
+          }
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: inline with terms"
+    },
+    {
+      "args": {
+        "params": {
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: no product"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Monthly",
+          "productReference": "pro-plan"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: productReference with description"
+    },
+    {
+      "args": {
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id pay@"
+    },
+    {
+      "args": {
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id sub@"
+    },
+    {
+      "args": {
+        "uuid": "payg@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id payg@"
+    },
+    {
+      "args": {
+        "uuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id sub-hist@"
+    },
+    {
+      "args": {
+        "uuid": "refund@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id refund@"
+    },
+    {
+      "args": {
+        "uuid": "transfer@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id transfer@"
+    },
+    {
+      "args": {
+        "uuid": "01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id bare UUID"
+    },
+    {
+      "args": {
+        "uuid": "pay@01A0F22F-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id uppercase UUID after pay@"
+    },
+    {
+      "args": {
+        "uuid": "inv@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id unknown prefix"
+    },
+    {
+      "args": {
+        "uuid": "PAY@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id uppercase prefix"
+    },
+    {
+      "args": {
+        "uuid": "pay@"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id prefix without id"
+    },
+    {
+      "args": {
+        "uuid": "pay@not-a-uuid"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id prefix with a bad id"
+    },
+    {
+      "args": {
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008@x"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id two @"
+    },
+    {
+      "args": {
+        "uuid": ""
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id empty"
+    },
+    {
+      "args": {
+        "uuid": "@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "checkoutSessions.getStatus",
+      "name": "checkoutSessions.getStatus: tx id @ only"
+    },
+    {
+      "args": {
+        "uuid": "session-1"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "checkoutSessions.expire",
+      "name": "checkoutSessions.expire: tx id invalid"
+    },
+    {
+      "args": {},
+      "expect": "ok",
+      "method": "payments.list",
+      "name": "payments.list: no params"
+    },
+    {
+      "args": {
+        "params": {
+          "customerUuid": "bad"
+        }
+      },
+      "expect": {
+        "fields": [
+          "customerUuid"
+        ]
+      },
+      "method": "payments.list",
+      "name": "payments.list: customerUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "bad"
+        }
+      },
+      "expect": {
+        "fields": [
+          "productUuid"
+        ]
+      },
+      "method": "payments.list",
+      "name": "payments.list: productUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "userUuid": "bad"
+        }
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "payments.list",
+      "name": "payments.list: userUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "payments.list",
+      "name": "payments.list: includeMembers and userUuid"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        }
+      },
+      "expect": "ok",
+      "method": "payments.list",
+      "name": "payments.list: includeMembers alone"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": false,
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "expect": "ok",
+      "method": "payments.list",
+      "name": "payments.list: includeMembers false and userUuid"
+    },
+    {
+      "args": {
+        "params": {
+          "createdAfter": "2026-09-01T00:00:00+02:00",
+          "createdBefore": "2026-09-30T00:00:00Z"
+        }
+      },
+      "expect": "ok",
+      "method": "payments.list",
+      "name": "payments.list: times with offsets"
+    },
+    {
+      "args": {
+        "params": {
+          "customerUuid": "x",
+          "includeMembers": true,
+          "productUuid": "y",
+          "userUuid": "z"
+        }
+      },
+      "expect": {
+        "fields": [
+          "customerUuid",
+          "productUuid",
+          "userUuid"
+        ]
+      },
+      "method": "payments.list",
+      "name": "payments.list: several filter errors"
+    },
+    {
+      "args": {
+        "params": {
+          "source": "payment"
+        }
+      },
+      "expect": "ok",
+      "method": "payments.listCombined",
+      "name": "payments.listCombined: source payment"
+    },
+    {
+      "args": {
+        "params": {
+          "source": "subscriptionHistory"
+        }
+      },
+      "expect": "ok",
+      "method": "payments.listCombined",
+      "name": "payments.listCombined: source subscriptionHistory"
+    },
+    {
+      "args": {
+        "params": {
+          "source": "refund"
+        }
+      },
+      "expect": {
+        "fields": [
+          "source"
+        ]
+      },
+      "method": "payments.listCombined",
+      "name": "payments.listCombined: source unknown"
+    },
+    {
+      "args": {
+        "params": {
+          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+        }
+      },
+      "expect": "ok",
+      "method": "payments.listCombined",
+      "name": "payments.listCombined: subscriptionUuid sub@"
+    },
+    {
+      "args": {
+        "params": {
+          "subscriptionUuid": "sub-1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscriptionUuid"
+        ]
+      },
+      "method": "payments.listCombined",
+      "name": "payments.listCombined: subscriptionUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "payments.listCombined",
+      "name": "payments.listCombined: includeMembers and userUuid"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "payments.get",
+      "name": "payments.get: pay@ with includeMembers"
+    },
+    {
+      "args": {
+        "uuid": "order-1043"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "payments.get",
+      "name": "payments.get: id invalid"
+    },
+    {
+      "args": {
+        "reference": ""
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "payments.getByReference",
+      "name": "payments.getByReference: empty"
+    },
+    {
+      "args": {
+        "params": {
+          "kind": "bill"
+        }
+      },
+      "expect": "ok",
+      "method": "failures.list",
+      "name": "failures.list: kind bill"
+    },
+    {
+      "args": {
+        "params": {
+          "kind": "refund"
+        }
+      },
+      "expect": {
+        "fields": [
+          "kind"
+        ]
+      },
+      "method": "failures.list",
+      "name": "failures.list: kind unknown"
+    },
+    {
+      "args": {
+        "params": {
+          "category": "reverted"
+        }
+      },
+      "expect": "ok",
+      "method": "failures.list",
+      "name": "failures.list: category reverted"
+    },
+    {
+      "args": {
+        "params": {
+          "category": "timeout"
+        }
+      },
+      "expect": {
+        "fields": [
+          "category"
+        ]
+      },
+      "method": "failures.list",
+      "name": "failures.list: category unknown"
+    },
+    {
+      "args": {
+        "params": {
+          "subscriptionUuid": "nope"
+        }
+      },
+      "expect": {
+        "fields": [
+          "subscriptionUuid"
+        ]
+      },
+      "method": "failures.list",
+      "name": "failures.list: subscriptionUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "failures.list",
+      "name": "failures.list: includeMembers and userUuid"
+    },
+    {
+      "args": {
+        "params": {
+          "status": "pastDue"
+        }
+      },
+      "expect": "ok",
+      "method": "subscriptions.list",
+      "name": "subscriptions.list: status pastDue"
+    },
+    {
+      "args": {
+        "params": {
+          "status": "frozen"
+        }
+      },
+      "expect": {
+        "fields": [
+          "status"
+        ]
+      },
+      "method": "subscriptions.list",
+      "name": "subscriptions.list: status unknown"
+    },
+    {
+      "args": {
+        "params": {
+          "reference": "customer-7731"
+        }
+      },
+      "expect": "ok",
+      "method": "subscriptions.list",
+      "name": "subscriptions.list: reference filter valid"
+    },
+    {
+      "args": {
+        "params": {
+          "reference": "customer 7731"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "subscriptions.list",
+      "name": "subscriptions.list: reference filter invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "subscriptions.list",
+      "name": "subscriptions.list: includeMembers and userUuid"
+    },
+    {
+      "args": {
+        "uuid": "sub-7731"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "subscriptions.get",
+      "name": "subscriptions.get: id invalid"
+    },
+    {
+      "args": {
+        "reference": ""
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "subscriptions.getByReference",
+      "name": "subscriptions.getByReference: empty"
+    },
+    {
+      "args": {
+        "uuid": "x"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "subscriptions.listBills",
+      "name": "subscriptions.listBills: id invalid"
+    },
+    {
+      "args": {
+        "billUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+      },
+      "expect": "ok",
+      "method": "subscriptions.getBill",
+      "name": "subscriptions.getBill: sub-hist@"
+    },
+    {
+      "args": {
+        "billUuid": "bill-1"
+      },
+      "expect": {
+        "fields": [
+          "billUuid"
+        ]
+      },
+      "method": "subscriptions.getBill",
+      "name": "subscriptions.getBill: id invalid"
+    },
+    {
+      "args": {
+        "subscriptionUuid": "x"
+      },
+      "expect": {
+        "fields": [
+          "subscriptionUuid"
+        ]
+      },
+      "method": "subscriptions.getPublicHistory",
+      "name": "subscriptions.getPublicHistory: id invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "immediate": false
+        },
+        "uuid": "x"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "subscriptions.cancel",
+      "name": "subscriptions.cancel: id invalid"
+    },
+    {
+      "args": {
+        "uuid": ""
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "subscriptions.executeTestBilling",
+      "name": "subscriptions.executeTestBilling: id empty"
+    },
+    {
+      "args": {
+        "params": {
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: valid minimal"
+    },
+    {
+      "args": {
+        "params": {}
+      },
+      "expect": {
+        "fields": [
+          "txUuid"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: txUuid absent"
+    },
+    {
+      "args": {
+        "params": {
+          "txUuid": "order-1043"
+        }
+      },
+      "expect": {
+        "fields": [
+          "txUuid"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: txUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "txUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: txUuid sub-hist@"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": 0,
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent 0"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": 0.01,
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent 0.01"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": 50.5,
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent 50.5"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": 100,
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent 100"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": 100.01,
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent 100.01"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": 33.333,
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent 33.333"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": 0.001,
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent 0.001"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": -5,
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent negative"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "NaN",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent NaN"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "Infinity",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: refundPercent Infinity"
+    },
+    {
+      "args": {
+        "params": {
+          "reason": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: reason 500"
+    },
+    {
+      "args": {
+        "params": {
+          "reason": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reason"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: reason 501"
+    },
+    {
+      "args": {
+        "params": {
+          "reason": "r",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: reason 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "reason": "Damaged\nitem",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: reason multiline"
+    },
+    {
+      "args": {
+        "params": {
+          "reason": "  ",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reason"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: reason blank"
+    },
+    {
+      "args": {
+        "params": {
+          "merchantMessage": "<b>Sorry</b>",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "merchantMessage"
+        ]
+      },
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: merchantMessage with <"
+    },
+    {
+      "args": {
+        "params": {
+          "merchantMessage": "🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.initiate",
+      "name": "refunds.initiate: merchantMessage 500 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "refunds.list",
+      "name": "refunds.list: includeMembers and userUuid"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": false,
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.list",
+      "name": "refunds.list: includeMembers false and userUuid"
+    },
+    {
+      "args": {
+        "params": {
+          "userUuid": "bob"
+        }
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "refunds.list",
+      "name": "refunds.list: userUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "limit": 5,
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "refunds.listInactive",
+      "name": "refunds.listInactive: includeMembers and userUuid"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": 0
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": "ok",
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 0"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": 0.01
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": "ok",
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 0.01"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": 12.5
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": "ok",
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 12.5"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": 12.345
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 12.345"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": 50
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": "ok",
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 50"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": 50.01
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 50.01"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": -1
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent -1"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "Infinity"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent Infinity"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": 5
+        },
+        "userUuid": "alice"
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: userUuid invalid"
+    },
+    {
+      "args": {
+        "userUuid": "alice"
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "members.get",
+      "name": "members.get: userUuid invalid"
+    },
+    {
+      "args": {
+        "userUuid": ""
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "members.remove",
+      "name": "members.remove: userUuid empty"
+    },
+    {
+      "args": {
+        "userUuid": "019ECA82-5680-7B00-8000-0000000000B1"
+      },
+      "expect": "ok",
+      "method": "members.trust",
+      "name": "members.trust: userUuid uppercase"
+    },
+    {
+      "args": {
+        "userUuid": "x"
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "members.getHeldFunds",
+      "name": "members.getHeldFunds: userUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "trustLayer": true
+        }
+      },
+      "expect": "ok",
+      "method": "invitations.create",
+      "name": "invitations.create: valid minimal"
+    },
+    {
+      "args": {
+        "params": {
+          "trustLayer": true
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "invitations.create",
+      "name": "invitations.create: email absent"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example",
+          "trustLayer": true
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "invitations.create",
+      "name": "invitations.create: email invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "organizationFeePercent": 0,
+          "trustLayer": true
+        }
+      },
+      "expect": "ok",
+      "method": "invitations.create",
+      "name": "invitations.create: organizationFeePercent 0"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "organizationFeePercent": 50.5,
+          "trustLayer": true
+        }
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "invitations.create",
+      "name": "invitations.create: organizationFeePercent 50.5"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "organizationFeePercent": 2.555,
+          "trustLayer": true
+        }
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "invitations.create",
+      "name": "invitations.create: organizationFeePercent 2.555"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "redirectUrl": "https://app.example.com/welcome",
+          "trustLayer": true
+        }
+      },
+      "expect": "ok",
+      "method": "invitations.create",
+      "name": "invitations.create: redirectUrl valid"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "redirectUrl": "app.example.com/welcome",
+          "trustLayer": true
+        }
+      },
+      "expect": {
+        "fields": [
+          "redirectUrl"
+        ]
+      },
+      "method": "invitations.create",
+      "name": "invitations.create: redirectUrl invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "status": "pending"
+        }
+      },
+      "expect": "ok",
+      "method": "invitations.list",
+      "name": "invitations.list: status pending"
+    },
+    {
+      "args": {
+        "params": {
+          "status": "declined"
+        }
+      },
+      "expect": {
+        "fields": [
+          "status"
+        ]
+      },
+      "method": "invitations.list",
+      "name": "invitations.list: status unknown"
+    },
+    {
+      "args": {
+        "uuid": "inv-1"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "invitations.revoke",
+      "name": "invitations.revoke: uuid invalid"
+    },
+    {
+      "args": {
+        "userUuid": "x"
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "wallets.listForMember",
+      "name": "wallets.listForMember: userUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "userUuid": "x"
+        }
+      },
+      "expect": {
+        "fields": [
+          "userUuid"
+        ]
+      },
+      "method": "wallets.listSupportedCurrencies",
+      "name": "wallets.listSupportedCurrencies: userUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "expect": "ok",
+      "method": "wallets.listSupportedCurrencies",
+      "name": "wallets.listSupportedCurrencies: userUuid valid"
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: valid quarter"
+    },
+    {
+      "args": {
+        "from": "2026-09-01",
+        "to": "2026-09-01"
+      },
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: same day"
+    },
+    {
+      "args": {
+        "from": "2026-09-02",
+        "to": "2026-09-01"
+      },
+      "expect": {
+        "fields": [
+          "to"
+        ]
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: from after to"
+    },
+    {
+      "args": {
+        "from": "2024-02-29",
+        "to": "2024-03-01"
+      },
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: Feb 29 on a leap year"
+    },
+    {
+      "args": {
+        "from": "2025-02-29",
+        "to": "2025-03-01"
+      },
+      "expect": {
+        "fields": [
+          "from"
+        ]
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: Feb 29 on a non-leap year"
+    },
+    {
+      "args": {
+        "from": "2026-13-01",
+        "to": "2026-12-31"
+      },
+      "expect": {
+        "fields": [
+          "from"
+        ]
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: month 13"
+    },
+    {
+      "args": {
+        "from": "2026-04-01",
+        "to": "2026-04-31"
+      },
+      "expect": {
+        "fields": [
+          "to"
+        ]
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: April 31"
+    },
+    {
+      "args": {
+        "from": "2026-1-01",
+        "to": "2026-12-31"
+      },
+      "expect": {
+        "fields": [
+          "from"
+        ]
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: unpadded month"
+    },
+    {
+      "args": {
+        "from": "2026/01/01",
+        "to": "2026-12-31"
+      },
+      "expect": {
+        "fields": [
+          "from"
+        ]
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: slashes"
+    },
+    {
+      "args": {
+        "from": "2026-01-01T00:00:00Z",
+        "to": "2026-12-31"
+      },
+      "expect": {
+        "fields": [
+          "from"
+        ]
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: datetime instead of date"
+    },
+    {
+      "args": {
+        "from": "",
+        "to": "2026-12-31"
+      },
+      "expect": {
+        "fields": [
+          "from"
+        ]
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: from empty"
+    },
+    {
+      "args": {
+        "from": "yesterday",
+        "to": "today"
+      },
+      "expect": {
+        "fields": [
+          "from",
+          "to"
+        ]
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: both invalid"
+    },
+    {
+      "args": {
+        "from": "2025-01-01",
+        "to": "2026-12-31"
+      },
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: window over 95 days (server-checked)"
+    },
+    {
+      "args": {
+        "from": "2026-12-31",
+        "to": "2026-01-01"
+      },
+      "expect": {
+        "fields": [
+          "to"
+        ]
+      },
+      "method": "accounting.exportCsv",
+      "name": "accounting.exportCsv: from after to"
+    },
+    {
+      "args": {
+        "id": 0
+      },
+      "expect": {
+        "fields": [
+          "id"
+        ]
+      },
+      "method": "currencies.get",
+      "name": "currencies.get: id 0"
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "expect": "ok",
+      "method": "currencies.get",
+      "name": "currencies.get: id 8"
+    },
+    {
+      "args": {
+        "params": {
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: valid minimal"
+    },
+    {
+      "args": {
+        "params": {}
+      },
+      "expect": {
+        "fields": [
+          "url"
+        ]
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: url absent"
+    },
+    {
+      "args": {
+        "params": {
+          "url": "ftp://hooks.example.com"
+        }
+      },
+      "expect": {
+        "fields": [
+          "url"
+        ]
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: url ftp"
+    },
+    {
+      "args": {
+        "params": {
+          "events": [
+            "custom.event0",
+            "custom.event1",
+            "custom.event2",
+            "custom.event3",
+            "custom.event4",
+            "custom.event5",
+            "custom.event6",
+            "custom.event7",
+            "custom.event8",
+            "custom.event9",
+            "custom.event10",
+            "custom.event11",
+            "custom.event12",
+            "custom.event13",
+            "custom.event14",
+            "custom.event15",
+            "custom.event16",
+            "custom.event17",
+            "custom.event18",
+            "custom.event19"
+          ],
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: events 20 (values not checked)"
+    },
+    {
+      "args": {
+        "params": {
+          "events": [
+            "custom.event0",
+            "custom.event1",
+            "custom.event2",
+            "custom.event3",
+            "custom.event4",
+            "custom.event5",
+            "custom.event6",
+            "custom.event7",
+            "custom.event8",
+            "custom.event9",
+            "custom.event10",
+            "custom.event11",
+            "custom.event12",
+            "custom.event13",
+            "custom.event14",
+            "custom.event15",
+            "custom.event16",
+            "custom.event17",
+            "custom.event18",
+            "custom.event19",
+            "payment.completed"
+          ],
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": {
+        "fields": [
+          "events"
+        ]
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: events 21"
+    },
+    {
+      "args": {
+        "params": {
+          "events": [
+            "webhook.test"
+          ],
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": {
+        "fields": [
+          "events[0]"
+        ]
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: events webhook.test"
+    },
+    {
+      "args": {
+        "params": {
+          "events": [
+            "payment.completed",
+            "webhook.test"
+          ],
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": {
+        "fields": [
+          "events[1]"
+        ]
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: events webhook.test second"
+    },
+    {
+      "args": {
+        "params": {
+          "events": [
+            ""
+          ],
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": {
+        "fields": [
+          "events[0]"
+        ]
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: events empty string"
+    },
+    {
+      "args": {
+        "params": {
+          "events": [],
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: events empty list"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: description 200"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: description 201"
+    },
+    {
+      "args": {
+        "params": {
+          "description": "prod|staging",
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": {
+        "fields": [
+          "description"
+        ]
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: description with |"
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create: includeMembers"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update: empty update"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "hook-1"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update: uuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "description": ""
+        },
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update: description empty clears"
+    },
+    {
+      "args": {
+        "params": {
+          "payloadVersion": "v2"
+        },
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update: payloadVersion v2"
+    },
+    {
+      "args": {
+        "params": {
+          "payloadVersion": "v1"
+        },
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "expect": {
+        "fields": [
+          "payloadVersion"
+        ]
+      },
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update: payloadVersion v1"
+    },
+    {
+      "args": {
+        "params": {
+          "events": [
+            "custom.event0",
+            "custom.event1",
+            "custom.event2",
+            "custom.event3",
+            "custom.event4",
+            "custom.event5",
+            "custom.event6",
+            "custom.event7",
+            "custom.event8",
+            "custom.event9",
+            "custom.event10",
+            "custom.event11",
+            "custom.event12",
+            "custom.event13",
+            "custom.event14",
+            "custom.event15",
+            "custom.event16",
+            "custom.event17",
+            "custom.event18",
+            "custom.event19",
+            "payment.completed"
+          ]
+        },
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "expect": {
+        "fields": [
+          "events"
+        ]
+      },
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update: events 21"
+    },
+    {
+      "args": {
+        "params": {
+          "events": [
+            "webhook.test"
+          ]
+        },
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "expect": {
+        "fields": [
+          "events[0]"
+        ]
+      },
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update: events webhook.test"
+    },
+    {
+      "args": {
+        "params": {
+          "url": "hooks.example.com"
+        },
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "expect": {
+        "fields": [
+          "url"
+        ]
+      },
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update: url invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "enabled": false
+        },
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update: enabled false"
+    },
+    {
+      "args": {
+        "uuid": "x"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "webhooks.endpoints.get",
+      "name": "webhooks.endpoints.get: uuid invalid"
+    },
+    {
+      "args": {
+        "uuid": ""
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "webhooks.endpoints.delete",
+      "name": "webhooks.endpoints.delete: uuid empty"
+    },
+    {
+      "args": {
+        "params": {
+          "type": "subscription.billingFailed"
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.events.list",
+      "name": "webhooks.events.list: type known"
+    },
+    {
+      "args": {
+        "params": {
+          "type": "webhook.test"
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.events.list",
+      "name": "webhooks.events.list: type webhook.test (known)"
+    },
+    {
+      "args": {
+        "params": {
+          "type": "invoice.created"
+        }
+      },
+      "expect": {
+        "fields": [
+          "type"
+        ]
+      },
+      "method": "webhooks.events.list",
+      "name": "webhooks.events.list: type unknown"
+    },
+    {
+      "args": {
+        "id": ""
+      },
+      "expect": {
+        "fields": [
+          "id"
+        ]
+      },
+      "method": "webhooks.events.get",
+      "name": "webhooks.events.get: id empty"
+    },
+    {
+      "args": {
+        "id": "evt_whatever"
+      },
+      "expect": "ok",
+      "method": "webhooks.events.get",
+      "name": "webhooks.events.get: any id (not checked)"
+    },
+    {
+      "args": {
+        "endpointUuid": "019eca82-5680-7b00-8000-0000000000e1",
+        "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+        "signatureHeader": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d"
+      },
+      "expect": "ok",
+      "method": "webhooks.verifyRemote",
+      "name": "webhooks.verifyRemote: valid"
+    },
+    {
+      "args": {
+        "endpointUuid": "x",
+        "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+        "signatureHeader": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d"
+      },
+      "expect": {
+        "fields": [
+          "endpointUuid"
+        ]
+      },
+      "method": "webhooks.verifyRemote",
+      "name": "webhooks.verifyRemote: endpointUuid invalid"
+    },
+    {
+      "args": {
+        "endpointUuid": "019eca82-5680-7b00-8000-0000000000e1",
+        "rawBody": "",
+        "signatureHeader": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d"
+      },
+      "expect": {
+        "fields": [
+          "body"
+        ]
+      },
+      "method": "webhooks.verifyRemote",
+      "name": "webhooks.verifyRemote: rawBody empty"
+    },
+    {
+      "args": {
+        "endpointUuid": "019eca82-5680-7b00-8000-0000000000e1",
+        "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+        "signatureHeader": ""
+      },
+      "expect": {
+        "errorClass": "WebhookSignatureError",
+        "reason": "missingHeader"
+      },
+      "method": "webhooks.verifyRemote",
+      "name": "webhooks.verifyRemote: signatureHeader empty"
+    },
+    {
+      "args": {
+        "endpointUuid": "019eca82-5680-7b00-8000-0000000000e1",
+        "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+        "signatureHeader": "garbage"
+      },
+      "expect": "ok",
+      "method": "webhooks.verifyRemote",
+      "name": "webhooks.verifyRemote: malformed header is the server's call"
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.get",
+      "name": "options: requestId valid charset",
+      "options": {
+        "requestId": "req-2026.10.08_abc:1"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.get",
+      "name": "options: requestId 128",
+      "options": {
+        "requestId": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "X-Request-Id"
+        ]
+      },
+      "method": "products.get",
+      "name": "options: requestId 129",
+      "options": {
+        "requestId": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "X-Request-Id"
+        ]
+      },
+      "method": "products.get",
+      "name": "options: requestId with a space",
+      "options": {
+        "requestId": "req 1"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "X-Request-Id"
+        ]
+      },
+      "method": "products.get",
+      "name": "options: requestId with /",
+      "options": {
+        "requestId": "req/1"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "X-Request-Id"
+        ]
+      },
+      "method": "products.get",
+      "name": "options: requestId non-ASCII",
+      "options": {
+        "requestId": "réq"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.get",
+      "name": "options: requestId empty (none sent)",
+      "options": {
+        "requestId": ""
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "options: idempotencyKey printable ASCII",
+      "options": {
+        "idempotencyKey": "order#1043/create?v=1&x=~!"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "options: idempotencyKey 255",
+      "options": {
+        "idempotencyKey": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "Idempotency-Key"
+        ]
+      },
+      "method": "products.create",
+      "name": "options: idempotencyKey 256",
+      "options": {
+        "idempotencyKey": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "Idempotency-Key"
+        ]
+      },
+      "method": "products.create",
+      "name": "options: idempotencyKey with a space",
+      "options": {
+        "idempotencyKey": "order 1043"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": {
+        "fields": [
+          "Idempotency-Key"
+        ]
+      },
+      "method": "products.create",
+      "name": "options: idempotencyKey non-ASCII",
+      "options": {
+        "idempotencyKey": "clé"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "name": "Alice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "Idempotency-Key"
+        ]
+      },
+      "method": "customers.create",
+      "name": "options: idempotencyKey with a tab",
+      "options": {
+        "idempotencyKey": "a\tb"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 10
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "options: idempotencyKey empty (one is generated)",
+      "options": {
+        "idempotencyKey": ""
+      }
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.update",
+      "name": "options: invalid idempotencyKey on a non-idempotent method is ignored",
+      "options": {
+        "idempotencyKey": "has space"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.get",
+      "name": "options: invalid idempotencyKey on a GET is ignored",
+      "options": {
+        "idempotencyKey": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.get",
+      "name": "options: onBehalfOf valid",
+      "options": {
+        "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b1"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.get",
+      "name": "options: onBehalfOf uppercase",
+      "options": {
+        "onBehalfOf": "019ECA82-5680-7B00-8000-0000000000B1"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "onBehalfOf"
+        ]
+      },
+      "method": "products.get",
+      "name": "options: onBehalfOf nil UUID",
+      "options": {
+        "onBehalfOf": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "onBehalfOf"
+        ]
+      },
+      "method": "products.get",
+      "name": "options: onBehalfOf not a UUID",
+      "options": {
+        "onBehalfOf": "alice"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.get",
+      "name": "options: onBehalfOf empty (organization level)",
+      "options": {
+        "onBehalfOf": ""
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "client": {
+        "onBehalfOf": "alice"
+      },
+      "expect": {
+        "fields": [
+          "onBehalfOf"
+        ]
+      },
+      "method": "products.get",
+      "name": "client: onBehalfOf invalid fails every request",
+      "note": "client.onBehalfOf(\"alice\") then the call"
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "client": {
+        "onBehalfOf": "alice"
+      },
+      "expect": {
+        "fields": [
+          "onBehalfOf"
+        ]
+      },
+      "method": "products.get",
+      "name": "client: onBehalfOf invalid wins over a valid request one",
+      "options": {
+        "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b1"
+      }
+    },
+    {
+      "args": {},
+      "client": {
+        "onBehalfOf": "00000000-0000-0000-0000-000000000000"
+      },
+      "expect": {
+        "fields": [
+          "onBehalfOf"
+        ]
+      },
+      "method": "members.list",
+      "name": "client: onBehalfOf nil UUID"
+    },
+    {
+      "args": {},
+      "client": {
+        "onBehalfOf": ""
+      },
+      "expect": "ok",
+      "method": "members.list",
+      "name": "client: onBehalfOf empty is organization level"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "price": 0
+        }
+      },
+      "expect": {
+        "fields": [
+          "price"
+        ]
+      },
+      "method": "products.create",
+      "name": "options: params checked before options",
+      "note": "Go validates the params before the request options: only price is reported",
+      "options": {
+        "requestId": "bad id"
+      }
+    }
+  ],
+  "comment": "Client-side validation (behaviour.md §8, §10): each call must be sent (\"ok\") or fail locally with a ValidationError naming exactly expect.fields (wire names, compared as a set of distinct names), without sending anything.",
+  "generator": ".claude/cross-sdk-checks/v3/gen (cd gen && go run .)",
+  "sdk": "qbitflow-go-sdk 3.0.0"
+}

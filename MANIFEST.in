@@ -1,6 +1,7 @@
 include README.md
 include LICENSE
 include CHANGELOG.md
+include MIGRATION-v3.md
 include COMPLIANCE.md
 include SECURITY.md
 include TRADEMARKS.md
