@@ -2,8 +2,8 @@
 Currency request handlers.
 
 These endpoints are public (no authentication required) and are used to resolve
-the currency IDs returned in ``SessionCheckout.available_currencies`` and on
-payment/subscription records.
+the currency IDs returned in a session's ``available_currencies``. Payments, subscriptions and
+billing records carry their full ``currency`` object.
 """
 
 from typing import List
@@ -23,7 +23,7 @@ class CurrencyRequests(BaseRequest):
         Return all supported currencies, native currencies and tokens alike.
 
         Args:
-            test: When ``True``, list test-network currencies instead of live ones.
+            test: When ``True``, include test-network currencies.
 
         Returns:
             The list of supported currencies.
@@ -34,17 +34,16 @@ class CurrencyRequests(BaseRequest):
             ...     print(f"{currency.id}: {currency.name} ({currency.symbol})")
         """
         params = {"test": str(test).lower()}
-        res = self._make_request(
-            f"{self.BASE_ROUTE}/all-available-currencies", "GET", params=params
-        )  # noqa: E501
-        return [Currency(**item) for item in res]
+        return self._request_list(
+            Currency, f"{self.BASE_ROUTE}/all-available-currencies", params=params
+        )
 
     def get_all_main(self, test: bool = False) -> List[Currency]:
         """
         Return only the main (native / blockchain) currencies, excluding tokens.
 
         Args:
-            test: When ``True``, list test-network currencies instead of live ones.
+            test: When ``True``, include test-network currencies.
 
         Returns:
             The list of main currencies.
@@ -55,5 +54,4 @@ class CurrencyRequests(BaseRequest):
             ...     print(f"{currency.id}: {currency.name} ({currency.symbol})")
         """
         params = {"test": str(test).lower()}
-        res = self._make_request(f"{self.BASE_ROUTE}/all-main-currencies", "GET", params=params)
-        return [Currency(**item) for item in res]
+        return self._request_list(Currency, f"{self.BASE_ROUTE}/all-main-currencies", params=params)

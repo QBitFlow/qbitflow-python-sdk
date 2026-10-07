@@ -7,7 +7,6 @@ This module provides methods for managing users via the QBitFlow API.
 from typing import List
 
 from qbitflow.dto import user as dto
-from qbitflow.exceptions import ValidationError
 
 from .base_request import BaseRequest, SuccessResponse
 
@@ -18,58 +17,74 @@ class UserRequests(BaseRequest):
     BASE_ROUTE = "/user"
 
     def create(self, user: dto.CreateUserDto) -> dto.User:
-        """Create a new user."""
-        res = self._make_request(f"{self.BASE_ROUTE}/", "POST", user.model_dump())
-        return dto.User(**res)
+        """
+        Create a new user in your organization (admin only).
+
+        The created user is *unclaimed*: they cannot log in until they follow a claim
+        request link (see ``client.claims``).
+        """
+        body = self._body(dto.CreateUserDto, user)
+        return self._request_model(dto.User, f"{self.BASE_ROUTE}/", "POST", body)
 
     def get_all(self) -> List[dto.User]:
-        """Get all users."""
-        res = self._make_request(f"{self.BASE_ROUTE}/all", "GET")
-        return [dto.User(**item) for item in res]
+        """Get all users of your organization (admin only)."""
+        return self._request_list(dto.User, f"{self.BASE_ROUTE}/all")
 
     def get(self) -> dto.User:
-        """Get the current user (based on API key)."""
-        res = self._make_request(f"{self.BASE_ROUTE}/", "GET")
-        return dto.User(**res)
+        """Get the current user (the API key's user, or the acted-for user with on_behalf_of)."""
+        return self._request_model(dto.User, f"{self.BASE_ROUTE}/")
 
     def get_by_id(self, user_id: int) -> dto.User:
         """Get a user by their ID.
 
         Requires an admin, and the user must be in the same organization.
-        """
-        if user_id <= 0:
-            raise ValidationError("User ID must be positive")
 
-        res = self._make_request(f"{self.BASE_ROUTE}/id/{user_id}", "GET")
-        return dto.User(**res)
+        Raises:
+            ValidationError: If ``user_id`` is not a positive integer.
+        """
+        self._require_positive_id(user_id, "user_id")
+
+        return self._request_model(dto.User, f"{self.BASE_ROUTE}/id/{user_id}")
 
     def get_by_email(self, email: str) -> dto.User:
         """Get a user by their email.
 
         Requires an admin, and the user must be in the same organization.
-        """
-        if not email:
-            raise ValidationError("Email must not be empty")
 
-        res = self._make_request(f"{self.BASE_ROUTE}/email/{email}", "GET")
-        return dto.User(**res)
+        Raises:
+            ValidationError: If ``email`` is not a valid address.
+        """
+        self._require_email(email)
+
+        return self._request_model(dto.User, f"{self.BASE_ROUTE}/email/{self._escape_path(email)}")
 
     def update(self, user_id: int, user: dto.UpdateUserDto) -> dto.User:
-        """Update an existing user."""
-        if user_id <= 0:
-            raise ValidationError("User ID must be positive")
+        """
+        Update an existing user (partial update).
+
+        A ``user``-role key may update only itself; admins may update any user of the
+        organization except the owner.
+
+        Raises:
+            ValidationError: If ``user_id`` is not a positive integer or the API rejects the
+                data.
+            ForbiddenException: If the caller may not modify that user (or sent
+                ``organization_fee_bps`` without admin authority).
+        """
+        self._require_positive_id(user_id, "user_id")
 
         # Partial update: unset fields must be omitted, not sent as null. In particular
         # organization_fee_bps must never be transmitted unless the caller set it.
-        res = self._make_request(
-            f"{self.BASE_ROUTE}/{user_id}", "PUT", user.model_dump(exclude_none=True)
-        )
-        return dto.User(**res)
+        body = self._body(dto.UpdateUserDto, user)
+        return self._request_model(dto.User, f"{self.BASE_ROUTE}/{user_id}", "PUT", body)
 
     def delete(self, user_id: int) -> SuccessResponse:
-        """Delete a user."""
-        if user_id <= 0:
-            raise ValidationError("User ID must be positive")
+        """
+        Delete a user (admin only, soft delete; cascades to their API keys and wallets).
 
-        res = self._make_request(f"{self.BASE_ROUTE}/{user_id}", "DELETE")
-        return SuccessResponse(**res)
+        Raises:
+            ValidationError: If ``user_id`` is not a positive integer.
+        """
+        self._require_positive_id(user_id, "user_id")
+
+        return self._request_model(SuccessResponse, f"{self.BASE_ROUTE}/{user_id}", "DELETE")

@@ -11,11 +11,17 @@ from __future__ import annotations
 
 import hmac
 import json
+import math
 import re
 import time
 from hashlib import sha256
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Type, TypedDict, TypeVar, Union
 
+import pydantic
+
+from qbitflow.dto.base_model import validation_error_from_pydantic
+from qbitflow.dto.transaction.session import SessionWebhookResponse
+from qbitflow.dto.transaction.subscription import SubscriptionWebhook
 from qbitflow.exceptions.exceptions import ValidationError
 
 #: Header carrying the HMAC signature, formatted ``sha256=<hex>``.
@@ -33,34 +39,136 @@ TEST_WEBHOOK_ID = "test-webhook-id"
 DEFAULT_MAX_TIMESTAMP_AGE_SECONDS = 300
 
 _SIGNATURE_PREFIX = "sha256="
-_INTEGER_RE = re.compile(r"^-?\d+$")
+# Go's strconv.ParseInt: an optional sign and ASCII digits, nothing else (no whitespace).
+_TIMESTAMP_RE = re.compile(r"[+-]?[0-9]+")
+_INT64_MIN, _INT64_MAX = -(2**63), 2**63 - 1
+# A lone UTF-16 surrogate code point (a valid pair is a single code point in a Python str).
+_SURROGATE_RE = re.compile("[\ud800-\udfff]")
 
 
-def _normalise(value: Any) -> Any:
+def _replace_surrogates(value: str) -> str:
+    """Replace lone surrogates with U+FFFD, as Go's JSON decoder does."""
+    return _SURROGATE_RE.sub("\ufffd", value)
+
+
+def normalise_payload(value: Any) -> Any:
     """
-    Recursively prepare a decoded payload for canonical serialization.
-
-    Two things happen here:
-
-    * Nested structures are walked so every mapping can be sorted on the way out.
-    * A float that holds a whole number becomes an int.
-
-    That second rule matters more than it looks. The API is written in Go, which decodes
-    JSON numbers into ``float64`` and re-encodes ``1.0`` as ``1``. Python's ``json`` keeps
-    ``1.0`` a float and would emit ``1.0``, producing a different byte string and therefore
-    a different signature for a payload that is in fact identical.
+    Return a decoded JSON value with every lone surrogate replaced by U+FFFD (in keys and
+    strings, at any depth) — what the Go API sees once it has decoded the same payload.
+    Objects stay dicts and arrays stay lists, so ``{}`` and ``[]`` are preserved.
     """
-    if isinstance(value, bool):
-        # bool is a subclass of int; check it first so True does not become 1.
-        return value
-    if isinstance(value, float) and value.is_integer():
-        return int(value)
+    if isinstance(value, str):
+        return _replace_surrogates(value)
     if isinstance(value, dict):
-        return {key: _normalise(item) for key, item in value.items()}
+        return {_replace_surrogates(str(k)): normalise_payload(v) for k, v in value.items()}
     if isinstance(value, (list, tuple)):
-        # Arrays are ordered by definition: sorting them would change meaning.
-        return [_normalise(item) for item in value]
+        return [normalise_payload(item) for item in value]
     return value
+
+
+def _reject_constant(name: str) -> Any:
+    """Refuse ``NaN`` / ``Infinity``: JSON has no such literals and Go rejects them too."""
+    raise ValidationError(f"webhook payload contains a non-JSON number literal: {name}")
+
+
+def _format_number(value: float) -> str:
+    """
+    Render a float64 exactly the way Go's ``encoding/json`` (and JavaScript) do.
+
+    The QBitFlow API is written in Go and decodes every JSON number into a ``float64`` before
+    re-encoding it for signing. Its output rules are ECMAScript's: the shortest digit string
+    that round-trips, written in plain decimal for exponents in ``[-6, 21)`` and in ``d.ddde±x``
+    form outside that range, with no ``.0`` on whole numbers and no zero-padded exponent.
+
+    Python's ``repr`` picks the same shortest digits but formats them differently (``1e-06``
+    instead of ``0.000001``, ``1.234e-05`` instead of ``0.00001234``, ``1e+16`` instead of
+    ``10000000000000000``), so a payload carrying e.g. a small token price would hash to a
+    different signature. This function re-lays-out ``repr``'s digits under Go's rules.
+    """
+    if math.isnan(value) or math.isinf(value):
+        raise ValidationError("webhook payload contains a non-finite number")
+
+    if value == 0:
+        # Go preserves the sign of a negative zero.
+        return "-0" if math.copysign(1.0, value) < 0 else "0"
+
+    mantissa, _, exponent = repr(abs(value)).partition("e")
+    int_part, _, frac_part = mantissa.partition(".")
+    digits = int_part + frac_part
+    # value == 0.<digits> x 10**position
+    position = len(int_part) + (int(exponent) if exponent else 0)
+
+    stripped = digits.lstrip("0")
+    position -= len(digits) - len(stripped)
+    digits = stripped.rstrip("0")
+    count = len(digits)
+
+    if count <= position <= 21:
+        rendered = digits + "0" * (position - count)
+    elif 0 < position <= 21:
+        rendered = digits[:position] + "." + digits[position:]
+    elif -6 < position <= 0:
+        rendered = "0." + "0" * (-position) + digits
+    else:
+        exp = position - 1
+        rendered = digits[0] + ("." + digits[1:] if count > 1 else "")
+        rendered += "e" + ("+" if exp > 0 else "-") + str(abs(exp))
+
+    return ("-" if value < 0 else "") + rendered
+
+
+def _encode_string(value: str) -> str:
+    """
+    Quote a string the way Go's ``encoding/json`` does.
+
+    ``json.dumps`` already matches Go for quotes, backslashes and control characters
+    (``\\n``, ``\\t``, ``\\u001f`` …) and, with ``ensure_ascii=False``, leaves other Unicode
+    literal. Go additionally escapes ``<``, ``>`` and ``&`` (HTML-safe output) and the line
+    terminators U+2028 / U+2029; those are applied here.
+    """
+    return (
+        json.dumps(_replace_surrogates(value), ensure_ascii=False)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+    )
+
+
+def _encode_canonical(value: Any) -> str:
+    """
+    Serialize an already-decoded payload into its canonical form.
+
+    Objects are emitted with keys in code-point order (identical to Go's UTF-8 byte order once
+    lone surrogates are replaced with U+FFFD, as Go's decoder does; a later duplicate key
+    wins), arrays keep their order, and every number goes through :func:`_format_number`.
+    """
+    if value is None:
+        return "null"
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if isinstance(value, str):
+        return _encode_string(value)
+    if isinstance(value, (int, float)):
+        try:
+            return _format_number(float(value))
+        except OverflowError as exc:
+            raise ValidationError("webhook payload contains a number too large for JSON") from exc
+    if isinstance(value, dict):
+        normalised = {}
+        for key, item in value.items():
+            normalised[_replace_surrogates(str(key))] = item
+        items = sorted(normalised.items())
+        return "{" + ",".join(f"{_encode_string(k)}:{_encode_canonical(v)}" for k, v in items) + "}"
+    if isinstance(value, (list, tuple)):
+        return "[" + ",".join(_encode_canonical(item) for item in value) + "]"
+
+    raise ValidationError(
+        f"webhook payload contains a value that is not JSON: {type(value).__name__}"
+    )
 
 
 def canonical_json(payload: Union[str, bytes, bytearray, Mapping[str, Any], Any]) -> str:
@@ -70,15 +178,17 @@ def canonical_json(payload: Union[str, bytes, bytearray, Mapping[str, Any], Any]
     The signature covers a *canonical* rendering rather than the bytes as they arrived,
     because JSON key order is not significant and intermediaries (proxies, frameworks,
     logging layers) routinely re-serialize a body and reorder keys. Signing raw bytes would
-    make verification fail for a payload that is in fact untouched.
+    make verification fail for a payload that is in fact identical.
 
-    Canonical means: object keys sorted lexicographically at every level, no insignificant
-    whitespace, non-ASCII left as literal UTF-8, and ``<``, ``>`` and ``&`` escaped as
-    ``\\u003c``, ``\\u003e`` and ``\\u0026``.
+    Canonical means: object keys sorted at every level, no insignificant whitespace,
+    non-ASCII left as literal UTF-8, ``<``, ``>``, ``&``, U+2028 and U+2029 escaped as
+    ``\\u003c``, ``\\u003e``, ``\\u0026``, ``\\u2028``, ``\\u2029``, and every number
+    rendered from its float64 value under Go's formatting rules (see :func:`_format_number`).
 
-    That last rule exists because Go's ``encoding/json`` escapes those three characters by
-    default and the API signs with that default. Every QBitFlow SDK reproduces it so all of
-    them compute an identical signature for the same payload.
+    Those rules come from Go: the QBitFlow API is written in Go and its ``encoding/json``
+    behaves exactly so. Every QBitFlow SDK reproduces them, so all four compute an identical
+    signature for the same payload, and each SDK's test suite pins the same Go-generated
+    reference vectors.
 
     Args:
         payload: Raw JSON (``str``/``bytes``) or an already-decoded value.
@@ -94,26 +204,25 @@ def canonical_json(payload: Union[str, bytes, bytearray, Mapping[str, Any], Any]
 
     if isinstance(payload, (bytes, bytearray)):
         try:
-            decoded = json.loads(payload.decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            text = payload.decode("utf-8")
+        except UnicodeDecodeError as exc:
             raise ValidationError(f"webhook payload is not valid JSON: {exc}") from exc
     elif isinstance(payload, str):
+        text = payload
+    else:
+        text = None
+
+    if text is not None:
         try:
-            decoded = json.loads(payload)
+            # Go decodes every JSON number into float64; ``parse_int=float`` reproduces that,
+            # so an integer beyond 2**53 rounds exactly as it does on the server.
+            decoded = json.loads(text, parse_int=float, parse_constant=_reject_constant)
         except json.JSONDecodeError as exc:
             raise ValidationError(f"webhook payload is not valid JSON: {exc}") from exc
     else:
         decoded = payload
 
-    rendered = json.dumps(
-        _normalise(decoded),
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-    )
-
-    # These three only ever appear inside string values in JSON, so a blind replace is safe.
-    return rendered.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+    return _encode_canonical(decoded)
 
 
 def compute_webhook_signature(secret: str, timestamp: str, payload: Any) -> str:
@@ -179,7 +288,8 @@ def verify_webhook_signature(
         timestamp: The ``X-Webhook-Timestamp`` header value.
         signature: The ``X-Webhook-Signature-256`` header value.
         payload: The webhook body, raw or decoded.
-        max_timestamp_age_seconds: Replay window. Must match the server's setting.
+        max_timestamp_age_seconds: Replay window. Must match the server's setting. ``0`` or a
+            negative value means the default (:data:`DEFAULT_MAX_TIMESTAMP_AGE_SECONDS`).
         now_seconds: Override the clock. Test-only.
         skip_timestamp_check: Disable the replay check. Leave this off in production -
             without it a captured webhook can be replayed forever. It exists for replaying
@@ -210,7 +320,7 @@ def verify_webhook_signature(
     expected = compute_webhook_signature(secret, timestamp, payload)
 
     # compare_digest does not leak how many leading bytes matched.
-    if not hmac.compare_digest(expected, signature):
+    if not hmac.compare_digest(expected.encode("utf-8"), signature.encode("utf-8")):
         raise ValidationError("webhook signature mismatch")
 
 
@@ -224,11 +334,18 @@ def _verify_timestamp(timestamp: str, max_age_seconds: int, now_seconds: Optiona
     if not timestamp:
         raise ValidationError("webhook timestamp is required")
 
-    if not _INTEGER_RE.match(timestamp):
+    if not isinstance(timestamp, str) or not _TIMESTAMP_RE.fullmatch(timestamp):
+        raise ValidationError("webhook timestamp is not a unix-seconds integer")
+    sent = int(timestamp)
+    if sent < _INT64_MIN or sent > _INT64_MAX:
         raise ValidationError("webhook timestamp is not a unix-seconds integer")
 
+    if max_age_seconds <= 0:
+        max_age_seconds = DEFAULT_MAX_TIMESTAMP_AGE_SECONDS
+
     now = int(time.time()) if now_seconds is None else now_seconds
-    age = abs(now - int(timestamp))
+    # Python integers do not overflow, so this is safe for any int64 timestamp.
+    age = abs(now - sent)
 
     if age > max_age_seconds:
         raise ValidationError(
@@ -236,7 +353,16 @@ def _verify_timestamp(timestamp: str, max_age_seconds: int, now_seconds: Optiona
         )
 
 
-def extract_webhook_headers(headers: Mapping[str, Any]) -> dict:
+class WebhookHeaders(TypedDict):
+    """The QBitFlow headers of an incoming webhook, as returned by extract_webhook_headers."""
+
+    signature: str
+    timestamp: str
+    webhook_id: str
+    is_test: bool
+
+
+def extract_webhook_headers(headers: Mapping[str, Any]) -> WebhookHeaders:
     """
     Pull the QBitFlow headers out of an incoming request.
 
@@ -272,3 +398,68 @@ def extract_webhook_headers(headers: Mapping[str, Any]) -> dict:
         "webhook_id": webhook_id,
         "is_test": webhook_id == TEST_WEBHOOK_ID,
     }
+
+
+def _decode_webhook_body(body: Any) -> Any:
+    """Parse a raw webhook body (bytes/str) as JSON; an already-decoded value passes through."""
+    if body is None:
+        raise ValidationError("webhook payload is required")
+    if isinstance(body, (bytes, bytearray, str)):
+        try:
+            return json.loads(body, parse_constant=_reject_constant)
+        except (ValueError, TypeError) as exc:
+            raise ValidationError(f"webhook payload is not valid JSON: {exc}") from exc
+    return body
+
+
+def parse_session_webhook(body: Any) -> SessionWebhookResponse:
+    """
+    Parse a transaction webhook delivery into a :class:`SessionWebhookResponse`.
+
+    Verify the signature first (:func:`verify_webhook_signature` or
+    ``client.webhooks.verify``). The payload is decoded with the same policy as API responses:
+    absent or ``null`` non-pointer fields become their zero value, ``session`` is resolved to a
+    :class:`~qbitflow.dto.transaction.session.OneTimePaymentSession` or
+    :class:`~qbitflow.dto.transaction.session.SubscriptionSession` from its ``txType``, and
+    unknown enum values are kept as plain strings.
+
+    Args:
+        body: The raw request body (``bytes``/``str``) or the already-decoded JSON object.
+
+    Raises:
+        ValidationError: If the body is not JSON, or a field has the wrong JSON type.
+    """
+    return _parse_webhook(SessionWebhookResponse, body)
+
+
+def parse_subscription_webhook(body: Any) -> SubscriptionWebhook:
+    """
+    Parse a subscription webhook delivery into a :class:`SubscriptionWebhook`.
+
+    Verify the signature first. ``data`` is resolved from ``type``: a
+    :class:`~qbitflow.dto.transaction.subscription.SubscriptionStatusTransition` for
+    ``status_transition``, a :class:`~qbitflow.dto.transaction.subscription.SubscriptionHistory`
+    for ``billing``, and the raw ``dict`` for a type this SDK does not know yet.
+
+    Args:
+        body: The raw request body (``bytes``/``str``) or the already-decoded JSON object.
+
+    Raises:
+        ValidationError: If the body is not JSON, or a field has the wrong JSON type.
+    """
+    return _parse_webhook(SubscriptionWebhook, body)
+
+
+_WebhookT = TypeVar("_WebhookT", SessionWebhookResponse, SubscriptionWebhook)
+
+
+def _parse_webhook(model: Type[_WebhookT], body: Any) -> _WebhookT:
+    decoded = _decode_webhook_body(body)
+    if not isinstance(decoded, dict):
+        raise ValidationError(
+            f"webhook payload must be a JSON object, got {type(decoded).__name__}"
+        )
+    try:
+        return model.model_validate(decoded)
+    except pydantic.ValidationError as exc:
+        raise validation_error_from_pydantic(exc, "webhook payload does not match") from exc

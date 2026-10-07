@@ -4,43 +4,43 @@ API key-related data models.
 This module contains data models for API key management operations.
 """
 
-from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import Field
 
-from .base_model import BaseModel
+from .base_model import GO_ZERO_TIME, Bool, Int, ResponseModel, Str, Timestamp
 from .user import UserRole
 
 
-class ApiKey(BaseModel):
+class ApiKey(ResponseModel):
     """
     Represents an API key in the QBitFlow system.
 
-    API keys are used to authenticate requests to the QBitFlow API.
+    API keys are used to authenticate requests to the QBitFlow API. The hashed key
+    material is never returned; the plaintext key is shown once, at creation, in the
+    dashboard.
 
     Attributes:
         id: Unique identifier for the API key.
         name: Descriptive name for the API key.
         organization_id: ID of the organization this key belongs to.
-        user_id: ID of the user who created this key.
+        user_id: ID of the user this key is bound to (``0`` for an organization-level key).
         created_at: Timestamp when the key was created.
-        expires_at: Optional expiration timestamp.
-        role: Role associated with this API key.
+        expires_at: Expiration timestamp, or ``None`` when the key never expires.
+        role: Role the key carries (``user`` or ``admin``; a value this SDK does not know
+            yet is kept as a plain string).
         test: Whether this is a test mode API key.
 
     Example:
-        >>> api_key = client.api_keys.get(1)
-        >>> print(f"{api_key.name} - Test: {api_key.test}")
+        >>> for api_key in client.api_keys.get_all():
+        ...     print(f"{api_key.name} - role {api_key.role} - test: {api_key.test}")
     """
 
-    id: int = Field(..., description="Unique identifier for the API key")
-    name: str = Field(..., description="Descriptive name for the API key")
-    organization_id: int = Field(..., description="Organization ID")
-    user_id: int = Field(..., description="User ID who created the key")
-    created_at: datetime = Field(..., description="Creation timestamp")
-    expires_at: Optional[datetime] = Field(
-        default=None, description="Expiration timestamp (null when the key never expires)"
-    )
-    role: UserRole = Field(..., description="Role associated with the key")
-    test: bool = Field(..., description="Whether this is a test mode key")
+    id: Int = 0
+    name: Str = ""
+    organization_id: Int = 0
+    user_id: Int = 0
+    created_at: Timestamp = GO_ZERO_TIME
+    expires_at: Optional[Timestamp] = None
+    role: Union[UserRole, str] = Field(default="", union_mode="left_to_right")
+    test: Bool = False

@@ -5,11 +5,11 @@ This module contains data models for tracking transaction statuses.
 """
 
 import enum
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import Field
 
-from qbitflow.dto.base_model import BaseModel
+from qbitflow.dto.base_model import ResponseModel, Str
 
 from .metadata import PaymentMetadata
 
@@ -27,7 +27,8 @@ class TransactionType(str, enum.Enum):
         CREATE_SUBSCRIPTION: Creating a new recurring subscription.
         CANCEL_SUBSCRIPTION: Cancelling an existing subscription.
         EXECUTE_SUBSCRIPTION_PAYMENT: Executing a scheduled subscription payment.
-        CREATE_PAYG_SUBSCRIPTION: Creating a pay-as-you-go subscription.
+        CREATE_PAYG_SUBSCRIPTION: Creating a pay-as-you-go subscription (a transaction record
+            can still carry this type although PAYG session creation is disabled).
         CANCEL_PAYG_SUBSCRIPTION: Cancelling a pay-as-you-go subscription.
         INCREASE_ALLOWANCE: Increasing the allowance for a subscription.
         UPDATE_MAX_AMOUNT: Updating the maximum amount for a subscription.
@@ -61,7 +62,7 @@ class TransactionShortType(str, enum.Enum):
     Attributes:
         PAYMENT: A one-time payment.
         SUBSCRIPTION: A recurring subscription.
-        PAY_AS_YOU_GO: A pay-as-you-go subscription.
+        PAY_AS_YOU_GO: A pay-as-you-go subscription (kept because records can carry it).
         SUBSCRIPTION_HISTORY: A single subscription billing-cycle record.
         REFUND: A refund.
         TRANSFER: A transfer.
@@ -100,7 +101,7 @@ class TransactionStatusValue(str, enum.Enum):
     EXPIRED = "expired"
 
 
-class TransactionStatus(BaseModel):
+class TransactionStatus(ResponseModel):
     """
     Represents the status of a transaction.
 
@@ -108,56 +109,22 @@ class TransactionStatus(BaseModel):
     of a transaction.
 
     Attributes:
-        type: The type of transaction.
-        status: The current status of the transaction.
-        tx_hash: Optional blockchain transaction hash.
-        message: Optional status message or error description.
+        status: The current status of the transaction. A status value this SDK does not
+            know yet is kept as a plain string rather than rejected.
+        tx_hash: Blockchain transaction hash (``""`` until the transaction is broadcast).
+        message: Status message or error description (``""`` when there is none).
+        settlement_details: Settlement details for finalized, successful transactions, or
+            ``None``.
 
     Example:
-        >>> status = client.transaction_status.get("uuid", TransactionType.ONE_TIME_PAYMENT)
+        >>> status = client.transaction_status.get("pay@...", TransactionType.ONE_TIME_PAYMENT)
         >>> if status.status == TransactionStatusValue.COMPLETED:
         ...     print(f"Transaction completed! Hash: {status.tx_hash}")
         >>> elif status.status == TransactionStatusValue.FAILED:
         ...     print(f"Transaction failed: {status.message}")
     """
 
-    status: TransactionStatusValue = Field(..., description="Current status")
-    tx_hash: str = Field(..., description="Blockchain transaction hash")
-    message: Optional[str] = Field(default=None, description="Status message or error description")
-    settlement_details: Optional[PaymentMetadata] = Field(
-        default=None,
-        description="Settlement details for finalized, successful transactions",
-    )
-
-
-class StatusResponseError(BaseModel):
-    """
-    Represents an error response when checking transaction status.
-
-    Attributes:
-        error: Error type or code.
-        status: HTTP status code.
-        message: Human-readable error message.
-    """
-
-    error: str = Field(..., description="Error type or code")
-    status: int = Field(..., description="HTTP status code")
-    message: str = Field(..., description="Error message")
-
-
-class StatusResponse(BaseModel):
-    """
-    Response containing transaction status information.
-
-    Attributes:
-        transaction_uuid: UUID of the transaction.
-        status: Detailed transaction status information.
-
-    Example:
-        >>> response = client.subscriptions.execute_test_billing_cycle("sub-uuid")
-        >>> print(f"Transaction: {response.transaction_uuid}")
-        >>> print(f"Status: {response.status.status.value}")
-    """
-
-    transaction_uuid: str = Field(..., description="Transaction UUID")
-    status: TransactionStatus = Field(..., description="Transaction status")
+    status: Union[TransactionStatusValue, str] = Field(default="", union_mode="left_to_right")
+    tx_hash: Str = ""
+    message: Str = ""
+    settlement_details: Optional[PaymentMetadata] = None

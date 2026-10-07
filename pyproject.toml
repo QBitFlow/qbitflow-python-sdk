@@ -44,8 +44,8 @@ classifiers=[
 ]
 dependencies = [
     "httpx>=0.24.0,<1.0.0",
-    "pydantic>=2.0.0,<3.0.0",
-	"email-validator>=2.0.0,<3.0.0"
+    # 2.2 is the first release with Field(union_mode=...), used to keep unknown enum values.
+    "pydantic>=2.2.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
@@ -60,7 +60,7 @@ dev = [
 ]
 server = [
     "fastapi>=0.100.0",
-    "uvicorn[standard]>=0.23.0",
+    "uvicorn>=0.23.0",
 ]
 
 [project.urls]
@@ -70,7 +70,7 @@ Repository = "https://github.com/qbitflow/qbitflow-python-sdk"
 "Bug Tracker" = "https://github.com/qbitflow/qbitflow-python-sdk/issues"
 
 [tool.setuptools.dynamic]
-version = {attr = "qbitflow.__version__"}
+version = {attr = "qbitflow._version.__version__"}
 
 [tool.setuptools.packages.find]
 include = ["qbitflow*"]
@@ -78,7 +78,7 @@ exclude = ["tests*", "examples*", "test-internal*"]
 
 [tool.black]
 line-length = 100
-target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(

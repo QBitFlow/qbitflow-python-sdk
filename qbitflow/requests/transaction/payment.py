@@ -2,6 +2,8 @@
 
 from typing import Optional
 
+import httpx
+
 from qbitflow.dto.customer import Customer
 from qbitflow.dto.transaction import payment as dto
 from qbitflow.dto.transaction.session import (
@@ -11,7 +13,7 @@ from qbitflow.dto.transaction.session import (
 )
 from qbitflow.exceptions import ValidationError
 from qbitflow.requests.base_request import BaseRequest
-from qbitflow.requests.transaction.session import SessionRequests
+from qbitflow.requests.transaction.session import SessionRequests, build_session_dto
 from qbitflow.utils.cursor_data import CursorData, cursor_query_builder
 
 
@@ -25,10 +27,34 @@ class PaymentRequests(BaseRequest):
     BASE_ROUTE = "/transaction"
     SESSION_ROUTE = "/transaction/session-checkout"
 
-    def __init__(self, api_key: str, timeout: int | None = None, max_retries: int | None = None):
-        """Initialize the payment request handler."""
-        super().__init__(api_key, timeout=timeout, max_retries=max_retries)
-        self._session = SessionRequests(api_key, timeout=timeout, max_retries=max_retries)
+    def __init__(
+        self,
+        api_key: str,
+        timeout: Optional[float] = None,
+        max_retries: Optional[int] = None,
+        headers: Optional[dict[str, str]] = None,
+        base_url: Optional[str] = None,
+        http_client: Optional[httpx.Client] = None,
+    ):
+        """Initialize the payment request handler (see :class:`BaseRequest` for arguments)."""
+        super().__init__(
+            api_key,
+            timeout=timeout,
+            max_retries=max_retries,
+            headers=headers,
+            base_url=base_url,
+            http_client=http_client,
+        )
+        # The nested handler shares this handler's scope (On-Behalf-Of), base URL and
+        # connection pool, so a scoped copy impersonates on session retrieval too.
+        self._session = SessionRequests(
+            api_key,
+            timeout=timeout,
+            max_retries=max_retries,
+            headers=headers,
+            base_url=base_url,
+            http_client=self._client,
+        )
 
     def create_session(
         self,
@@ -56,7 +82,7 @@ class PaymentRequests(BaseRequest):
             price: Price in USD (if not using product_id/product_reference).
             success_url: URL to redirect on success.
             cancel_url: URL to redirect on cancellation.
-            customer_uuid: UUID of the customer.
+            customer_uuid: Bare UUID of an existing customer (``""`` = not provided).
             reference: Your own reference for the transaction (e.g. an order/invoice ID).
                 Echoed back on the resulting payment and in webhooks, and usable with
                 ``get_by_reference``.
@@ -69,11 +95,17 @@ class PaymentRequests(BaseRequest):
         Returns:
             Link response with the payment URL to send to the customer.
 
+        Raises:
+            ValidationError: If the arguments break the API's rules (no product selected,
+                a price that is not > 0, markup in the product text, a relative redirect URL,
+                a customer_uuid that is not a bare UUID, …) or the API rejects the request
+                (400). Never retried: a session is only ever created once.
+
         Example:
             >>> # Using a product ID
             >>> response = client.one_time_payments.create_session(
             ...     product_id=1,
-            ...     customer_uuid="customer-uuid"
+            ...     customer_uuid="01997c89-d0e9-7c9a-9886-fe7709919695",
             ... )
             >>> print(f"Payment link: {response.link}")
             >>>
@@ -84,7 +116,8 @@ class PaymentRequests(BaseRequest):
             ...     customer_reference="user-42",
             ... )
         """
-        session = CreatePaymentSessionDto(
+        session = build_session_dto(
+            CreatePaymentSessionDto,
             product_id=product_id,
             product_name=product_name,
             description=description,
@@ -96,17 +129,13 @@ class PaymentRequests(BaseRequest):
             product_reference=product_reference,
             customer_reference=customer_reference,
         )
-        session.check()
 
-        res = self._make_request(
-            f"{self.SESSION_ROUTE}/new/payment",
-            "POST",
-            session.model_dump(),
+        return self._request_model(
+            LinkResponse, f"{self.SESSION_ROUTE}/new/payment", "POST", session.to_body()
         )
-        return LinkResponse(**res)
 
     def get_session(
-        self, session_uuid: str, close_to_expire_error: Optional[bool] = False
+        self, session_uuid: str, close_to_expire_error: Optional[bool] = None
     ) -> OneTimePaymentSession:
         """
         Get a payment session by UUID.
@@ -114,39 +143,52 @@ class PaymentRequests(BaseRequest):
         Args:
             session_uuid: UUID of the session.
             close_to_expire_error: Return an error if the session is close to expiry.
+                ``None`` (default) leaves the API default (true) in place.
 
         Returns:
             One-time payment session details.
 
+        Raises:
+            ValidationError: If ``session_uuid`` is empty, or the session is a subscription
+                session (use ``client.subscriptions.get_session`` for those).
+
         Example:
-            >>> session = client.one_time_payments.get_session("session-uuid")
+            >>> session = client.one_time_payments.get_session("pay@...")
             >>> print(f"Product: {session.product_name}")
             >>> print(f"Price: ${session.price}")
         """
-        from typing import cast
-
-        return cast(OneTimePaymentSession, self._session.get(session_uuid, close_to_expire_error))
+        session = self._session.get(session_uuid, close_to_expire_error)
+        if not isinstance(session, OneTimePaymentSession):
+            raise ValidationError(
+                f"session {session_uuid} is a subscription session (txType "
+                f"{session.tx_type!s}); use client.subscriptions.get_session() for it"
+            )
+        return session
 
     def get(self, payment_uuid: str) -> dto.Payment:
         """
         Get a completed payment by UUID.
 
         Args:
-            payment_uuid: UUID of the payment.
+            payment_uuid: UUID of the payment (``pay@…`` prefixed or bare).
 
         Returns:
             Payment details.
+
+        Raises:
+            ValidationError: If ``payment_uuid`` is empty.
+            NotFoundException: If the payment does not exist or is not yours.
 
         Example:
             >>> payment = client.one_time_payments.get("payment-uuid")
             >>> print(f"Amount: ${payment.amount}")
             >>> print(f"Tx Hash: {payment.transaction_hash}")
         """
-        if not payment_uuid:
-            raise ValidationError("Payment UUID cannot be empty")
+        self._require_identifier(payment_uuid, "payment_uuid")
 
-        res = self._make_request(f"{self.BASE_ROUTE}/payment/{payment_uuid}", "GET")
-        return dto.Payment(**res)
+        return self._request_model(
+            dto.Payment, f"{self.BASE_ROUTE}/payment/{self._escape_path(payment_uuid)}"
+        )
 
     def get_by_reference(self, reference: str) -> dto.Payment:
         """
@@ -161,15 +203,19 @@ class PaymentRequests(BaseRequest):
         Returns:
             Payment details.
 
+        Raises:
+            ValidationError: If ``reference`` is empty.
+            NotFoundException: If no payment with that reference is yours.
+
         Example:
             >>> payment = client.one_time_payments.get_by_reference("order-1234")
             >>> print(payment.uuid, payment.amount)
         """
-        if not reference:
-            raise ValidationError("Payment reference cannot be empty")
+        self._require_identifier(reference, "reference")
 
-        res = self._make_request(f"{self.BASE_ROUTE}/payment/reference/{reference}", "GET")
-        return dto.Payment(**res)
+        return self._request_model(
+            dto.Payment, f"{self.BASE_ROUTE}/payment/reference/{self._escape_path(reference)}"
+        )
 
     def get_all(
         self,
@@ -196,8 +242,9 @@ class PaymentRequests(BaseRequest):
             ...     )
         """
         params = cursor_query_builder(limit=limit, cursor=cursor)
-        res = self._make_request(f"{self.BASE_ROUTE}/payments", "GET", params=params)
-        return CursorData[dto.Payment, str](**res)
+        return self._request_model(
+            CursorData[dto.Payment, str], f"{self.BASE_ROUTE}/payments", params=params
+        )
 
     def get_all_combined(
         self,
@@ -220,25 +267,32 @@ class PaymentRequests(BaseRequest):
             ...     print(f"{item.source}: {item.uuid}")
         """
         params = cursor_query_builder(limit=limit, cursor=cursor)
-        res = self._make_request(f"{self.BASE_ROUTE}/payments/combined", "GET", params=params)
-        return CursorData[dto.CombinedPaymentItem, str](**res)
+        return self._request_model(
+            CursorData[dto.CombinedPaymentItem, str],
+            f"{self.BASE_ROUTE}/payments/combined",
+            params=params,
+        )
 
     def get_customer_for_transaction(self, transaction_uuid: str) -> Customer:
         """
-        Get the customer associated with a transaction.
+        Get the customer associated with a transaction (payment or subscription).
 
         Args:
-            transaction_uuid: UUID of the transaction.
+            transaction_uuid: Prefixed id of the transaction (``pay@…`` or ``sub@…``).
 
         Returns:
             Customer information.
 
+        Raises:
+            ValidationError: If ``transaction_uuid`` is empty or malformed (400).
+            NotFoundException: If the transaction is unknown or not yours.
+
         Example:
-            >>> customer = client.one_time_payments.get_customer_for_transaction("tx-uuid")
+            >>> customer = client.one_time_payments.get_customer_for_transaction("pay@...")
             >>> print(f"Customer: {customer.name} ({customer.email})")
         """
-        if not transaction_uuid:
-            raise ValidationError("Transaction UUID cannot be empty")
+        self._require_identifier(transaction_uuid, "transaction_uuid")
 
-        res = self._make_request(f"{self.BASE_ROUTE}/customer/{transaction_uuid}", "GET")
-        return Customer(**res)
+        return self._request_model(
+            Customer, f"{self.BASE_ROUTE}/customer/{self._escape_path(transaction_uuid)}"
+        )

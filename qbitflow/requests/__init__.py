@@ -14,6 +14,7 @@ from .customer import CustomerRequests
 from .product import ProductRequests
 from .refund import RefundRequests
 from .user import UserRequests
+from .webhook import WebhookRequests
 
 __all__ = [
     "BaseRequest",
@@ -27,5 +28,6 @@ __all__ = [
     "RefundRequests",
     "AccountingRequests",
     "ClaimRequests",
+    "WebhookRequests",
     "transaction",
 ]

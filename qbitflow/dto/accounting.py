@@ -1,70 +1,66 @@
 """Accounting export data models."""
 
-from datetime import datetime
+from qbitflow.dto.base_model import GO_ZERO_TIME, Float, Int, ResponseModel, Str, Timestamp
 
-from pydantic import Field
+#: Known values of :attr:`AccountingEvent.type`. The subscription-billing value is spelled
+#: ``subscriptionHistory`` by the API's Go constant and ``subHistory`` in its prose; both are
+#: listed so either is recognised. The field itself stays a plain string.
+ACCOUNTING_EVENT_TYPES = (
+    "payment",
+    "subscriptionHistory",
+    "subHistory",
+    "refund",
+    "organizationFee",
+    "referralFee",
+)
 
-from qbitflow.dto.base_model import BaseModel
 
-
-class AccountingEvent(BaseModel):
+class AccountingEvent(ResponseModel):
     """
-    Represents a single accounting event (payment, subscription cycle, or refund).
+    Represents a single accounting event (payment, subscription cycle, refund or fee).
 
     Decimal values (gross_amount, fees, net_amount, etc.) are returned as strings
     to preserve full precision.
 
     Example:
-        >>> events = client.accounting.export("2025-01-01", "2025-12-31", "json")
+        >>> events = client.accounting.export("2025-01-01", "2025-01-31", "json")
         >>> for event in events:
         ...     print(f"{event.payment_id} | {event.type} | ${event.gross_amount_usd}")
     """
 
-    payment_id: str = Field(..., description="Payment identifier")
-    payment_reference: str = Field(..., description="Payment reference, if available")
-    type: str = Field(
-        ...,
-        description="Event type: payment | subscriptionHistory | refund | organizationFee | referralFee",  # noqa: E501
-    )
-    tx_time_utc: datetime = Field(..., description="Transaction time in UTC")
-    receipt_url: str = Field(..., description="Receipt URL")
-    related_payment_id: str = Field(..., description="For refunds: original payment ID")
-    related_payment_reference: str = Field(
-        ..., description="For refunds: original payment reference"
-    )
-
-    product_id: int = Field(..., description="Product ID")
-    product_reference: str = Field(..., description="Product reference")
-    product_name: str = Field(..., description="Product name")
-    product_description: str = Field(..., description="Product description")
-    customer_uuid: str = Field(..., description="Customer UUID")
-    customer_reference: str = Field(..., description="Customer reference")
-
-    chain: str = Field(..., description="Blockchain network")
-    block_number_or_slot: str = Field(..., description="Block number or slot")
-    tx_hash: str = Field(..., description="Transaction hash")
-    from_address: str = Field(..., description="Sender address")
-    to_address: str = Field(..., description="Recipient address")
-
-    token_symbol: str = Field(..., description="Token symbol")
-    currency_decimals: int = Field(..., description="Token decimal places")
-    token_contract_or_mint: str = Field(..., description="Token contract or mint address")
-
-    explorer_url: str = Field(..., description="Blockchain explorer URL")
-
-    gross_amount: str = Field(..., description="Gross amount (decimal string)")
-    gross_amount_usd: float = Field(..., description="Gross amount in USD")
-
-    platform_fee_percent: float = Field(..., description="Platform fee percentage")
-    platform_fee_usd: float = Field(..., description="Platform fee in USD")
-    platform_fee: str = Field(..., description="Platform fee (decimal string)")
-
-    organization_fee_percent: float = Field(..., description="Organization fee percentage")
-    organization_fee_usd: float = Field(..., description="Organization fee in USD")
-    organization_fee: str = Field(..., description="Organization fee (decimal string)")
-
-    network_fees_usd: float = Field(..., description="Network fees in USD (paid by merchant)")
-    network_fees: str = Field(..., description="Network fees (decimal string)")
-
-    net_amount_usd: float = Field(..., description="Net amount received in USD")
-    net_amount: str = Field(..., description="Net amount received (decimal string)")
+    payment_id: Str = ""
+    payment_reference: Str = ""
+    #: ``payment``, ``subscriptionHistory``/``subHistory``, ``refund``, ``organizationFee`` or
+    #: ``referralFee`` (see :data:`ACCOUNTING_EVENT_TYPES`); an unknown value is kept as is.
+    type: Str = ""
+    tx_time_utc: Timestamp = GO_ZERO_TIME
+    receipt_url: Str = ""
+    related_payment_id: Str = ""
+    related_payment_reference: Str = ""
+    product_id: Int = 0
+    product_reference: Str = ""
+    product_name: Str = ""
+    product_description: Str = ""
+    customer_uuid: Str = ""
+    customer_reference: Str = ""
+    chain: Str = ""
+    block_number_or_slot: Str = ""
+    tx_hash: Str = ""
+    from_address: Str = ""
+    to_address: Str = ""
+    token_symbol: Str = ""
+    currency_decimals: Int = 0
+    token_contract_or_mint: Str = ""
+    explorer_url: Str = ""
+    gross_amount: Str = ""
+    gross_amount_usd: Float = 0.0
+    platform_fee_percent: Float = 0.0
+    platform_fee_usd: Float = 0.0
+    platform_fee: Str = ""
+    organization_fee_percent: Float = 0.0
+    organization_fee_usd: Float = 0.0
+    organization_fee: Str = ""
+    network_fees_usd: Float = 0.0
+    network_fees: Str = ""
+    net_amount_usd: Float = 0.0
+    net_amount: Str = ""

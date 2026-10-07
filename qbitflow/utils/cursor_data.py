@@ -6,23 +6,25 @@ This module provides a generic CursorData class for handling paginated API respo
 
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
+from qbitflow.dto.base_model import ResponseModel
 from qbitflow.exceptions.exceptions import ValidationError
 
 T = TypeVar("T")  # Type of items in the list
 V = TypeVar("V")  # Type of cursor value
 
 
-class CursorData(BaseModel, Generic[T, V]):
+class CursorData(ResponseModel, Generic[T, V]):
     """
     Generic container for cursor-based paginated data.
 
-    This class represents a page of results with a cursor for fetching the next page.
+    This class represents a page of results with a cursor for fetching the next page. An
+    ``items`` the API sends as ``null`` (or omits) is an empty list.
 
     Type Parameters:
         T: The type of items in the list.
-        V: The type of the cursor value (typically str or int).
+        V: The type of the cursor value (typically str).
 
     Attributes:
         items: List of items in the current page.
@@ -47,11 +49,6 @@ class CursorData(BaseModel, Generic[T, V]):
         alias="nextCursor",
     )
 
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-    )
-
     def has_more(self) -> bool:
         """
         Check if there are more pages available.
@@ -66,23 +63,29 @@ class CursorData(BaseModel, Generic[T, V]):
         return len(self.items)
 
 
-def cursor_query_builder(limit: Optional[int] = None, cursor: Optional[V] = None) -> Dict[str, Any]:
+def cursor_query_builder(
+    limit: Optional[int] = None, cursor: Optional[Any] = None
+) -> Dict[str, Any]:
     """
-    Build a query string for cursor-based pagination.
+    Build the query parameters for cursor-based pagination.
 
     Args:
-        limit: Maximum number of results per page.
-        cursor: Pagination cursor from previous response.
+        limit: Maximum number of results per page (a positive integer).
+        cursor: Pagination cursor from a previous response. ``None`` or ``""`` starts from the
+            first page.
 
     Returns:
         A dictionary containing the query parameters for the request.
+
+    Raises:
+        ValidationError: If ``limit`` is not a positive integer.
     """
     params: Dict[str, Any] = {}
     if limit is not None:
-        if limit <= 0:
-            raise ValidationError("Limit must be positive")
+        if isinstance(limit, bool) or not isinstance(limit, int) or limit <= 0:
+            raise ValidationError("limit must be a positive integer")
         params["limit"] = limit
-    if cursor is not None:
+    if cursor is not None and cursor != "":
         params["cursor"] = cursor
 
     return params

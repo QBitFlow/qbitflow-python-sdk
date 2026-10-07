@@ -7,59 +7,113 @@ This module provides methods for managing products via the QBitFlow API.
 from typing import List
 
 from qbitflow.dto import product as dto
-from qbitflow.exceptions import ValidationError
 
 from .base_request import BaseRequest, SuccessResponse
 
 
 class ProductRequests(BaseRequest):
-    """Handler for product-related API requests."""
+    """
+    Handler for product-related API requests.
+
+    Examples:
+        >>> product = client.products.create(
+        ...     CreateProductDto(name="Premium", description="All features", price=29.99)
+        ... )
+        >>> client.products.update(product.id, UpdateProductDto(price=39.99))
+    """
 
     BASE_ROUTE = "/product"
 
     def create(self, data: dto.CreateProductDto) -> dto.Product:
-        """Create a new product."""
-        res = self._make_request(f"{self.BASE_ROUTE}/", "POST", data.model_dump())
-        return dto.Product(**res)
+        """
+        Create a new product.
+
+        Args:
+            data: Product creation data.
+
+        Returns:
+            The created product.
+
+        Raises:
+            ValidationError: If the API rejects the data (400), e.g. a duplicate reference.
+        """
+        return self._request_model(
+            dto.Product, f"{self.BASE_ROUTE}/", "POST", self._body(dto.CreateProductDto, data)
+        )
 
     def get(self, product_id: int) -> dto.Product:
-        """Get a product by ID."""
-        if product_id <= 0:
-            raise ValidationError("Product ID must be positive")
+        """
+        Get a product by ID (active or hidden).
 
-        endpoint = f"{self.BASE_ROUTE}/id/{product_id}"
-        res = self._make_request(endpoint, "GET")
-        return dto.Product(**res)
+        Args:
+            product_id: Numeric product ID.
+
+        Raises:
+            ValidationError: If ``product_id`` is not a positive integer.
+            NotFoundException: If the product does not exist or is not yours.
+        """
+        self._require_positive_id(product_id, "product_id")
+
+        return self._request_model(dto.Product, f"{self.BASE_ROUTE}/id/{product_id}")
 
     def get_all(self) -> List[dto.Product]:
-        """Get all products."""
-        res = self._make_request(f"{self.BASE_ROUTE}/", "GET")
-        return [dto.Product(**product) for product in res]
+        """
+        Get all active products in the caller's scope.
+
+        Hidden ("ghost") products created by session checkouts are excluded; fetch them by
+        id or reference instead.
+        """
+        return self._request_list(dto.Product, f"{self.BASE_ROUTE}/")
 
     def get_by_reference(self, reference: str) -> dto.Product:
-        """Get a product by reference code."""
-        if not reference:
-            raise ValidationError("Reference cannot be empty")
+        """
+        Get a product by reference code.
 
-        endpoint = f"{self.BASE_ROUTE}/reference/{reference}"
-        res = self._make_request(endpoint, "GET")
-        return dto.Product(**res)
+        Args:
+            reference: Your own product reference.
+
+        Raises:
+            ValidationError: If ``reference`` is empty.
+            NotFoundException: If no product with that reference is yours. The API currently
+                cannot route a reference containing ``/`` (it is escaped correctly, but the
+                lookup answers 404).
+        """
+        self._require_identifier(reference, "reference")
+
+        endpoint = f"{self.BASE_ROUTE}/reference/{self._escape_path(reference)}"
+        return self._request_model(dto.Product, endpoint)
 
     def update(self, product_id: int, data: dto.UpdateProductDto) -> dto.Product:
-        """Update an existing product."""
-        if product_id <= 0:
-            raise ValidationError("Product ID must be positive")
+        """
+        Update an existing product (partial update).
+
+        Args:
+            product_id: Numeric product ID.
+            data: Fields to change; unset fields are left unchanged.
+
+        Raises:
+            ValidationError: If ``product_id`` is not a positive integer or the API rejects
+                the data.
+            NotFoundException: If the product does not exist or is not yours.
+        """
+        self._require_positive_id(product_id, "product_id")
 
         endpoint = f"{self.BASE_ROUTE}/{product_id}"
         # Partial update: unset fields must be omitted, not sent as null.
-        res = self._make_request(endpoint, "PUT", data.model_dump(exclude_none=True))
-        return dto.Product(**res)
+        body = self._body(dto.UpdateProductDto, data)
+        return self._request_model(dto.Product, endpoint, "PUT", body)
 
     def delete(self, product_id: int) -> SuccessResponse:
-        """Delete a product."""
-        if product_id <= 0:
-            raise ValidationError("Product ID must be positive")
+        """
+        Delete a product (soft delete).
 
-        endpoint = f"{self.BASE_ROUTE}/{product_id}"
-        res = self._make_request(endpoint, "DELETE")
-        return SuccessResponse(**res)
+        Args:
+            product_id: Numeric product ID.
+
+        Raises:
+            ValidationError: If ``product_id`` is not a positive integer.
+            NotFoundException: If the product does not exist or is not yours.
+        """
+        self._require_positive_id(product_id, "product_id")
+
+        return self._request_model(SuccessResponse, f"{self.BASE_ROUTE}/{product_id}", "DELETE")
