@@ -9,15 +9,14 @@ All decimal amounts expressed in the smallest currency units ("min units") are
 returned as strings to preserve full precision, while USD amounts are floats.
 """
 
-from datetime import datetime
 from typing import Optional
 
 from pydantic import Field
 
-from qbitflow.dto.base_model import BaseModel
+from qbitflow.dto.base_model import GO_ZERO_TIME, Float, Int, ResponseModel, Str, Timestamp
 
 
-class OrganizationFee(BaseModel):
+class OrganizationFee(ResponseModel):
     """
     An additional fee kept by the organization, on top of the QBitFlow platform fee.
 
@@ -27,12 +26,12 @@ class OrganizationFee(BaseModel):
         fee_bps: Fee in basis points (1% = 100 bps).
     """
 
-    organization_id: int = Field(..., description="ID of the organization receiving the fee")
-    organization: str = Field(..., description="On-chain address receiving the fee")
-    fee_bps: int = Field(..., description="Fee in basis points (1% = 100 bps)")
+    organization_id: Int = 0
+    organization: Str = ""
+    fee_bps: Int = 0
 
 
-class ReferralFee(BaseModel):
+class ReferralFee(ResponseModel):
     """
     An optional fee paid to a referrer.
 
@@ -43,13 +42,13 @@ class ReferralFee(BaseModel):
         deadline: Deadline until which the referral fee is valid.
     """
 
-    referral_id: int = Field(..., description="ID of the referral receiving the fee")
-    referrer: str = Field(..., description="On-chain address of the referrer")
-    fee_bps: int = Field(..., description="Fee in basis points (1% = 100 bps)")
-    deadline: datetime = Field(..., description="Deadline until which the referral fee is valid")
+    referral_id: Int = 0
+    referrer: Str = ""
+    fee_bps: Int = 0
+    deadline: Timestamp = GO_ZERO_TIME
 
 
-class NetworkFees(BaseModel):
+class NetworkFees(ResponseModel):
     """
     On-chain network fees, expressed in the smallest native-currency units.
 
@@ -58,11 +57,11 @@ class NetworkFees(BaseModel):
         units_consumed: Units of gas (or equivalent) consumed by the transaction.
     """
 
-    amount: str = Field(..., description="Network fees (decimal string, native min units)")
-    units_consumed: int = Field(..., description="Units of gas consumed by the transaction")
+    amount: Str = ""
+    units_consumed: Int = 0
 
 
-class BlockData(BaseModel):
+class BlockData(ResponseModel):
     """
     Identifies the block in which a transaction was included.
 
@@ -71,50 +70,45 @@ class BlockData(BaseModel):
         timestamp: Unix timestamp of the block.
     """
 
-    number: str = Field(..., description="Block number or slot")
-    timestamp: int = Field(..., description="Unix timestamp of the block")
+    number: Str = ""
+    timestamp: Int = 0
 
 
-class TxMetadata(BaseModel):
+class TxMetadata(ResponseModel):
     """
     On-chain details parsed from a settled transaction.
 
     Attributes:
         network_fees: Network fees of the transaction.
         block_data: Block data (number and timestamp) of the transaction.
-        main_currency_price_usd: Native-currency USD price at transaction time. Used for
-            accounting on refunds or when the merchant pays the network fees.
+        main_currency_price_usd: Native-currency USD price at transaction time (``0.0`` when
+            not recorded). Used for accounting on refunds or when the merchant pays the
+            network fees.
     """
 
-    network_fees: NetworkFees = Field(..., description="Network fees of the transaction")
-    block_data: BlockData = Field(..., description="Block data of the transaction")
-    main_currency_price_usd: Optional[float] = Field(
-        default=None,
-        alias="mainCurrencyPriceUSD",
-        description="Native-currency USD price at transaction time",
-    )
+    network_fees: NetworkFees = Field(default_factory=NetworkFees)
+    block_data: BlockData = Field(default_factory=BlockData)
+    main_currency_price_usd: Float = Field(default=0.0, alias="mainCurrencyPriceUSD")
 
 
-class TxAmountsUSD(BaseModel):
+class TxAmountsUSD(ResponseModel):
     """
     Per-party transaction amounts in USD.
 
     Attributes:
         platform: Platform (QBitFlow) fee amount in USD.
-        organization: Organization fee amount in USD (optional).
-        referral: Referral fee amount in USD (optional).
+        organization: Organization fee amount in USD (``0.0`` when there is none).
+        referral: Referral fee amount in USD (``0.0`` when there is none).
         merchant: Merchant net amount in USD.
     """
 
-    platform: float = Field(..., description="Platform fee amount in USD")
-    organization: Optional[float] = Field(
-        default=None, description="Organization fee amount in USD"
-    )  # noqa: E501
-    referral: Optional[float] = Field(default=None, description="Referral fee amount in USD")
-    merchant: float = Field(..., description="Merchant net amount in USD")
+    platform: Float = 0.0
+    organization: Float = 0.0
+    referral: Float = 0.0
+    merchant: Float = 0.0
 
 
-class TxAmountsMinUnits(BaseModel):
+class TxAmountsMinUnits(ResponseModel):
     """
     Per-party transaction amounts in the smallest currency units (decimal strings).
 
@@ -125,15 +119,13 @@ class TxAmountsMinUnits(BaseModel):
         merchant: Merchant net amount in min units.
     """
 
-    platform: str = Field(..., description="Platform fee amount (decimal string, min units)")
-    organization: str = Field(
-        ..., description="Organization fee amount (decimal string, min units)"
-    )  # noqa: E501
-    referral: str = Field(..., description="Referral fee amount (decimal string, min units)")
-    merchant: str = Field(..., description="Merchant net amount (decimal string, min units)")
+    platform: Str = ""
+    organization: Str = ""
+    referral: Str = ""
+    merchant: Str = ""
 
 
-class TxAmountsFull(BaseModel):
+class TxAmountsFull(ResponseModel):
     """
     Computed per-party transaction amounts, in both USD and min units.
 
@@ -142,11 +134,11 @@ class TxAmountsFull(BaseModel):
         min_units: Per-party amounts in the smallest currency units.
     """
 
-    usd: TxAmountsUSD = Field(..., description="Per-party amounts in USD")
-    min_units: TxAmountsMinUnits = Field(..., description="Per-party amounts in min units")
+    usd: TxAmountsUSD = Field(default_factory=TxAmountsUSD)
+    min_units: TxAmountsMinUnits = Field(default_factory=TxAmountsMinUnits)
 
 
-class PaymentMetadata(BaseModel):
+class PaymentMetadata(ResponseModel):
     """
     Structured metadata attached to a payment or subscription-billing record.
 
@@ -156,18 +148,14 @@ class PaymentMetadata(BaseModel):
     Attributes:
         fee_bps: QBitFlow platform fee in basis points (1% = 100 bps), deducted from
             the amount paid; the merchant receives amount - platform fee - organization fee.
-        organization_fee: Optional additional fee kept by the organization.
-        referral_fee: Optional fee paid to a referrer.
+        organization_fee: Additional fee kept by the organization, or ``None``.
+        referral_fee: Fee paid to a referrer, or ``None``.
         tx_metadata: On-chain metadata (populated after confirmation).
         tx_amounts: Computed fee/merchant amounts.
     """
 
-    fee_bps: int = Field(..., description="Platform fee in basis points (1% = 100 bps)")
-    organization_fee: Optional[OrganizationFee] = Field(
-        default=None, description="Optional additional fee kept by the organization"
-    )
-    referral_fee: Optional[ReferralFee] = Field(
-        default=None, description="Optional fee paid to a referrer"
-    )
-    tx_metadata: TxMetadata = Field(..., description="On-chain metadata (after confirmation)")
-    tx_amounts: TxAmountsFull = Field(..., description="Computed fee/merchant amounts")
+    fee_bps: Int = 0
+    organization_fee: Optional[OrganizationFee] = None
+    referral_fee: Optional[ReferralFee] = None
+    tx_metadata: TxMetadata = Field(default_factory=TxMetadata)
+    tx_amounts: TxAmountsFull = Field(default_factory=TxAmountsFull)

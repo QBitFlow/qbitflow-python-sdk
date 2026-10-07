@@ -7,7 +7,6 @@ This module provides methods for managing customers via the QBitFlow API.
 from typing import Optional
 
 from qbitflow.dto.customer import CreateCustomerDto, Customer, UpdateCustomerDto
-from qbitflow.exceptions import ValidationError
 from qbitflow.utils.cursor_data import CursorData, cursor_query_builder
 
 from .base_request import BaseRequest, SuccessResponse
@@ -48,8 +47,8 @@ class CustomerRequests(BaseRequest):
             The created customer.
 
         Raises:
-            ValidationError: If the provided data is invalid.
-            APIError: If the API returns an error.
+            ValidationError: If a field breaks the API's rules (checked locally) or the API
+                rejects the data (400), e.g. a duplicate email or reference.
 
         Example:
             >>> customer_data = CreateCustomerDto(
@@ -61,8 +60,9 @@ class CustomerRequests(BaseRequest):
             >>> customer = client.customers.create(customer_data)
             >>> print(f"Created customer: {customer.uuid}")
         """
-        res = self._make_request(f"{self.BASE_ROUTE}/", "POST", data.model_dump())
-        return Customer(**res)
+        return self._request_model(
+            Customer, f"{self.BASE_ROUTE}/", "POST", self._body(CreateCustomerDto, data)
+        )
 
     def get(self, customer_uuid: str) -> Customer:
         """
@@ -76,18 +76,16 @@ class CustomerRequests(BaseRequest):
 
         Raises:
             NotFoundException: If the customer is not found.
-            ValidationError: If the UUID format is invalid.
+            ValidationError: If the UUID is empty.
 
         Example:
             >>> customer = client.customers.get("01997c89-d0e9-7c9a-9886-fe7709919695")
             >>> print(f"{customer.name} {customer.last_name}")
         """
-        if not customer_uuid:
-            raise ValidationError("Customer UUID cannot be empty")
+        self._require_identifier(customer_uuid, "customer_uuid")
 
-        endpoint = f"{self.BASE_ROUTE}/uuid/{customer_uuid}"
-        res = self._make_request(endpoint, "GET")
-        return Customer(**res)
+        endpoint = f"{self.BASE_ROUTE}/uuid/{self._escape_path(customer_uuid)}"
+        return self._request_model(Customer, endpoint)
 
     def get_by_reference(self, reference: str) -> Customer:
         """
@@ -110,12 +108,10 @@ class CustomerRequests(BaseRequest):
             >>> customer = client.customers.get_by_reference("CRM-12345")
             >>> print(f"Customer UUID: {customer.uuid}")
         """
-        if not reference:
-            raise ValidationError("Customer reference cannot be empty")
+        self._require_identifier(reference, "reference")
 
-        endpoint = f"{self.BASE_ROUTE}/reference/{reference}"
-        res = self._make_request(endpoint, "GET")
-        return Customer(**res)
+        endpoint = f"{self.BASE_ROUTE}/reference/{self._escape_path(reference)}"
+        return self._request_model(Customer, endpoint)
 
     def get_by_email(self, email: str) -> Customer:
         """
@@ -135,24 +131,26 @@ class CustomerRequests(BaseRequest):
             >>> customer = client.customers.get_by_email("john@example.com")
             >>> print(f"Customer UUID: {customer.uuid}")
         """
-        if not email or "@" not in email:
-            raise ValidationError("Invalid email address")
+        self._require_email(email)
 
-        endpoint = f"{self.BASE_ROUTE}/email/{email}"
-        res = self._make_request(endpoint, "GET")
-        return Customer(**res)
+        endpoint = f"{self.BASE_ROUTE}/email/{self._escape_path(email)}"
+        return self._request_model(Customer, endpoint)
 
     def get_all(
         self, limit: Optional[int] = None, cursor: Optional[str] = None
     ) -> CursorData[Customer, str]:
         """
-        Get all customers.
+        Get all customers (cursor-paginated).
+
+        Args:
+            limit: Maximum number of results per page.
+            cursor: Pagination cursor from a previous response.
 
         Returns:
-            List of all customers.
+            One page of customers.
 
         Raises:
-            APIError: If the API returns an error.
+            ValidationError: If ``limit`` is not a positive integer.
 
         Example:
             >>> customers = client.customers.get_all()
@@ -162,24 +160,24 @@ class CustomerRequests(BaseRequest):
         """
         params = cursor_query_builder(limit=limit, cursor=cursor)
 
-        # Returns a CursorData object for pagination
-        res = self._make_request(f"{self.BASE_ROUTE}/all", "GET", params=params)
-        return CursorData[Customer, str](**res)
+        return self._request_model(
+            CursorData[Customer, str], f"{self.BASE_ROUTE}/all", params=params
+        )
 
     def update(self, customer_uuid: str, data: UpdateCustomerDto) -> Customer:
         """
-        Update an existing customer.
+        Update an existing customer (partial update).
 
         Args:
             customer_uuid: The UUID of the customer to update.
-            data: Customer update data.
+            data: Customer update data; unset fields are left unchanged.
 
         Returns:
             The updated customer.
 
         Raises:
             NotFoundException: If the customer is not found.
-            ValidationError: If the provided data is invalid.
+            ValidationError: If the UUID is empty or the API rejects the data.
 
         Example:
             >>> update_data = UpdateCustomerDto(
@@ -189,17 +187,18 @@ class CustomerRequests(BaseRequest):
             >>> customer = client.customers.update("customer-uuid", update_data)
             >>> print(f"Updated customer: {customer.email}")
         """
-        if not customer_uuid:
-            raise ValidationError("Customer UUID cannot be empty")
+        self._require_identifier(customer_uuid, "customer_uuid")
 
-        json_data = data.model_dump(exclude_none=True)
+        # Partial update: unset (and "") fields are omitted, not sent as null.
+        json_data = self._body(UpdateCustomerDto, data)
 
-        res = self._make_request(f"{self.BASE_ROUTE}/{customer_uuid}", "PUT", json_data)
-        return Customer(**res)
+        return self._request_model(
+            Customer, f"{self.BASE_ROUTE}/{self._escape_path(customer_uuid)}", "PUT", json_data
+        )
 
     def delete(self, customer_uuid: str) -> SuccessResponse:
         """
-        Delete a customer.
+        Delete a customer (soft delete).
 
         Args:
             customer_uuid: The UUID of the customer to delete.
@@ -209,15 +208,13 @@ class CustomerRequests(BaseRequest):
 
         Raises:
             NotFoundException: If the customer is not found.
-            ValidationError: If the UUID format is invalid.
+            ValidationError: If the UUID is empty.
 
         Example:
             >>> response = client.customers.delete("customer-uuid")
             >>> print(response.message)
         """
-        if not customer_uuid:
-            raise ValidationError("Customer UUID cannot be empty")
+        self._require_identifier(customer_uuid, "customer_uuid")
 
-        endpoint = f"{self.BASE_ROUTE}/uuid/{customer_uuid}"
-        res = self._make_request(endpoint, "DELETE")
-        return SuccessResponse(**res)
+        endpoint = f"{self.BASE_ROUTE}/uuid/{self._escape_path(customer_uuid)}"
+        return self._request_model(SuccessResponse, endpoint, "DELETE")

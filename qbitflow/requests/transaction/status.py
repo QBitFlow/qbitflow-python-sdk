@@ -1,6 +1,7 @@
 """Transaction status request handlers."""
 
-from qbitflow import config
+from typing import Union
+
 from qbitflow.dto.transaction.status import TransactionStatus, TransactionType
 from qbitflow.exceptions import ValidationError
 from qbitflow.requests.base_request import BaseRequest
@@ -8,15 +9,10 @@ from qbitflow.requests.base_request import BaseRequest
 
 class TransactionStatusRequests(BaseRequest):
     """
-    Check where a transaction stands.
+    Check where a transaction stands (``GET /transaction/status``).
 
-    This endpoint is public. The API also exposes a WebSocket at
-    ``/transaction/status/ws`` carrying the same query parameters. This SDK does not open
-    the socket for you - that would pull in a WebSocket dependency every user pays for, and
-    the right client differs between asyncio, threads and a WSGI worker. Use
-    :meth:`get_websocket_url` to build the URL and connect with the client of your choice,
-    poll :meth:`get`, or rely on webhooks, which are the recommended way to learn that a
-    payment settled.
+    To learn that a payment or subscription settled, use webhooks (recommended — QBitFlow
+    notifies your endpoint, see :mod:`qbitflow.webhooks`), or poll :meth:`get`.
     """
 
     BASE_ROUTE = "/transaction/status"
@@ -26,11 +22,17 @@ class TransactionStatusRequests(BaseRequest):
         Get the status of a transaction.
 
         Args:
-            transaction_uuid: UUID of the transaction.
+            transaction_uuid: UUID of the transaction (``pay@…``/``sub@…`` prefixed or bare).
             transaction_type: Type of the transaction.
 
         Returns:
             Current transaction status.
+
+        Raises:
+            ValidationError: If ``transaction_uuid`` is empty or ``transaction_type`` is not
+                a :class:`TransactionType`.
+            NotFoundException: If the transaction is unknown, or exists but has not been
+                processed yet (checkout created, customer has not paid).
 
         Example:
             >>> status = client.transaction_status.get(
@@ -40,50 +42,21 @@ class TransactionStatusRequests(BaseRequest):
             >>> if status.status == TransactionStatusValue.COMPLETED:
             ...     print("Transaction completed!")
         """
-        if not transaction_uuid:
-            raise ValidationError("Transaction UUID cannot be empty")
+        self._require_identifier(transaction_uuid, "transaction_uuid")
+        tx_type = self._require_transaction_type(transaction_type)
 
-        params = {
-            "txUUID": transaction_uuid,
-            "txType": transaction_type.value,
-        }
+        params = {"txUUID": transaction_uuid, "txType": tx_type}
 
-        res = self._make_request(self.BASE_ROUTE, "GET", params=params)
-        return TransactionStatus(**res)
+        return self._request_model(TransactionStatus, self.BASE_ROUTE, params=params)
 
-    def get_websocket_url(self, transaction_uuid: str, transaction_type: TransactionType) -> str:
-        """
-        Build the WebSocket URL for real-time status updates on a transaction.
-
-        The SDK does not manage the connection - connect with whichever WebSocket client
-        suits your runtime (``websockets`` for asyncio, ``websocket-client`` for threads).
-        The scheme is derived from the configured base URL, so an ``https`` API becomes
-        ``wss`` and a local ``http`` one becomes ``ws``.
-
-        Args:
-            transaction_uuid: UUID of the transaction, with or without its prefix.
-            transaction_type: Type of the transaction.
-
-        Returns:
-            The full ``ws(s)://`` URL, query parameters included.
-
-        Raises:
-            ValidationError: If the transaction UUID is empty.
-
-        Example:
-            >>> url = client.transaction_status.get_websocket_url(
-            ...     "pay@uuid", TransactionType.ONE_TIME_PAYMENT
-            ... )
-            >>> # then, with the websockets package:
-            >>> # async with websockets.connect(url) as ws: ...
-        """
-        if not transaction_uuid:
-            raise ValidationError("Transaction UUID cannot be empty")
-
-        base = config.get_base_url()
-        ws_base = base.replace("https://", "wss://", 1).replace("http://", "ws://", 1)
-
-        return (
-            f"{ws_base}{self.BASE_ROUTE}/ws"
-            f"?txUUID={transaction_uuid}&txType={transaction_type.value}"
-        )
+    @staticmethod
+    def _require_transaction_type(transaction_type: Union[TransactionType, str]) -> str:
+        """Accept a :class:`TransactionType` (or one of its exact string values)."""
+        if isinstance(transaction_type, TransactionType):
+            return transaction_type.value
+        try:
+            return TransactionType(transaction_type).value
+        except ValueError:
+            raise ValidationError(
+                "transaction_type must be a TransactionType, e.g. TransactionType.ONE_TIME_PAYMENT"
+            ) from None

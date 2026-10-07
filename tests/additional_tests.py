@@ -10,14 +10,21 @@ from qbitflow.dto.transaction.status import (  # noqa: E402
 )
 from qbitflow.utils.duration import Duration  # noqa: E402
 
-CUSTOMER_UUID = "<your_test_customer_uuid>"  # Replace with your test customer UUID
+# Optional: a bare customer UUID to pre-fill the checkout (omitted when unset — a placeholder
+# value would be rejected by the API with a 400).
+CUSTOMER_UUID = os.getenv("QBITFLOW_CUSTOMER_UUID") or None
 
 if __name__ == "__main__":
     key = os.getenv("QBITFLOW_API_KEY")
+    base_url = os.getenv("QBITFLOW_BASE_URL")
     if not key:
         raise EnvironmentError("QBITFLOW_API_KEY environment variable not set")
+    if not base_url:
+        raise EnvironmentError(
+            "QBITFLOW_BASE_URL environment variable not set (never defaults to production)"
+        )
 
-    client = QBitFlow(api_key=key)
+    client = QBitFlow(api_key=key, base_url=base_url)
 
     # --- One-Time Payment ---
 
@@ -80,12 +87,3 @@ if __name__ == "__main__":
         print(f"Subscription Status: {subscription_details.subscription_status}")
     except Exception as e:
         print(f"Error retrieving subscription: {e}")
-
-    # --- Pay-as-you-go ---
-    #
-    # NOTE: creating PAYG sessions is currently disabled on the API, so there is no
-    # client.pay_as_you_go.create_session(). Existing PAYG subscriptions can still be
-    # retrieved and managed:
-    #   client.pay_as_you_go.get(subscription_uuid)
-    #   client.pay_as_you_go.get_payment_history(subscription_uuid)
-    #   client.pay_as_you_go.force_cancel(subscription_uuid)

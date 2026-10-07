@@ -1,24 +1,25 @@
 """
 Integration tests for QBitFlow SDK.
 
-These tests run against the actual QBitFlow test API.
-Make sure to set QBITFLOW_API_KEY environment variable.
+These tests run against the live QBitFlow server named by ``QBITFLOW_BASE_URL`` with the key
+in ``QBITFLOW_API_KEY`` (see ``tests/conftest.py`` for the skip/fail rules: key without base
+URL fails, neither skips).
 
 Run with:
-    export QBITFLOW_API_KEY="your_test_api_key"
+    set -a; . ../.local.env; set +a
     pytest tests/test_integration.py -v
 """
 
 import os
+from datetime import date, timedelta
 from typing import Optional
 
-import pydantic
 import pytest
 
 from qbitflow import Duration, QBitFlow
 from qbitflow.dto.customer import UpdateCustomerDto
 from qbitflow.dto.product import CreateProductDto, Product, UpdateProductDto
-from qbitflow.dto.transaction.status import TransactionType
+from qbitflow.dto.transaction.status import TransactionStatusValue, TransactionType
 from qbitflow.dto.user import CreateUserDto, UpdateUserDto, User, UserRole
 from qbitflow.exceptions import NotFoundException, QBitFlowError, ValidationError
 from qbitflow.exceptions.exceptions import InvalidRequestError
@@ -31,18 +32,20 @@ created_customer_uuid: Optional[str] = None
 class TestClient:
     """Test QBitFlow client initialization."""
 
-    def test_client_initialization(self, api_key):
+    def test_client_initialization(self, api_key, base_url):
         """Test that client can be initialized with API key."""
-        client = QBitFlow(api_key=api_key)
-        assert client.api_key == api_key
-        assert client.customers is not None
-        assert client.products is not None
-        assert client.one_time_payments is not None
-        assert client.subscriptions is not None
-        assert client.refunds is not None
-        assert client.accounting is not None
-        assert client.claim is not None
-        assert client.currencies is not None
+        client = QBitFlow(api_key=api_key, base_url=base_url)
+        try:
+            assert client.api_key == api_key
+            assert client.base_url == base_url.rstrip("/")
+            assert client.customers is not None
+            assert client.claims is not None
+        finally:
+            client.close()
+
+    def test_client_level_on_behalf_of_zero_is_organization_level(self, client):
+        """`on_behalf_of(0)` sends no header, so it reads the same org-level user."""
+        assert client.on_behalf_of(0).users.get().id == client.users.get().id
 
     def test_client_requires_api_key(self):
         """Test that client raises error without API key."""
@@ -57,11 +60,13 @@ class TestCustomers:
         """Test creating a new customer."""
         customer = client.customers.create(test_customer_data)
 
-        assert customer.uuid is not None
+        assert customer.uuid
         assert customer.name == test_customer_data.name
         assert customer.last_name == test_customer_data.last_name
         assert customer.email == test_customer_data.email
-        assert customer.created_at is not None
+        assert customer.created_at.year > 2000
+        assert customer.organization_id > 0
+        assert customer.address == ""  # omitted by the API → zero value
 
         global created_customer_uuid
         created_customer_uuid = customer.uuid
@@ -139,7 +144,7 @@ class TestUsers:
     def test_create_user(self, client, test_user_data):
         """Test creating a new user."""
         user = client.users.create(test_user_data)
-        assert user.id is not None
+        assert user.id > 0
         assert user.name == test_user_data.name
         assert user.email == test_user_data.email
         assert user.created_at is not None
@@ -203,7 +208,9 @@ class TestProducts:
     def test_create_product(self, client, test_product_data):
         """Test creating a new product."""
         product = client.products.create(test_product_data)
-        assert product.id is not None
+        assert product.id > 0
+        assert product.reference == test_product_data.reference
+        assert product.organization_id > 0
         assert product.name == test_product_data.name
         assert product.price == test_product_data.price
         assert product.is_active is True
@@ -351,6 +358,9 @@ class TestPayments:
         assert session.uuid == created.uuid
         assert session.price > 0
         assert len(session.available_currencies) > 0
+        # The public route honours the API key, so the authenticated fields are present.
+        assert session.organization_id > 0
+        assert session.customer_uuid == created_customer_uuid
 
     def test_get_all_payments(self, client):
         """Test retrieving all payments with pagination."""
@@ -358,6 +368,9 @@ class TestPayments:
 
         assert isinstance(page.items, list)
         assert len(page.items) <= 2
+        for payment in page.items:
+            assert payment.currency.id == payment.currency_id
+            assert payment.organization_id > 0
 
     def test_get_all_combined_payments(self, client):
         """Test retrieving combined payments (one-time + subscription) with pagination."""
@@ -373,6 +386,9 @@ class TestPayments:
         # Pagination must return well-formed pages; the test account may legitimately have
         # no completed payments, so assert shape rather than presence of data.
         assert isinstance(all_payments, list)
+        for item in all_payments:
+            assert item.source in ("payment", "subscription_history")
+            assert item.currency.id == item.currency_id
 
 
 class TestSubscriptions:
@@ -425,6 +441,7 @@ class TestSubscriptions:
 
         assert session.uuid == created.uuid
         assert session.price > 0
+        assert session.frequency > 0
         assert len(session.available_currencies) > 0
 
 
@@ -445,18 +462,25 @@ class TestRefunds:
 class TestAccounting:
     """Test accounting data export."""
 
+    @staticmethod
+    def _last_month():
+        today = date.today()
+        return (today - timedelta(days=30)).isoformat(), today.isoformat()
+
     def test_export_json(self, client):
         """Test exporting accounting data as JSON."""
         from qbitflow.dto.accounting import AccountingEvent
 
-        events = client.accounting.export("2024-11-01", "2024-12-31", "json")
+        start, end = self._last_month()
+        events = client.accounting.export(start, end, "json")
         assert isinstance(events, list)
         for event in events:
             assert isinstance(event, AccountingEvent)
 
     def test_export_csv(self, client):
         """Test exporting accounting data as CSV."""
-        csv_data = client.accounting.export("2024-11-01", "2024-12-31", "csv")
+        start, end = self._last_month()
+        csv_data = client.accounting.export(start, end, "csv")
         assert isinstance(csv_data, str)
         assert len(csv_data) > 0
 
@@ -468,7 +492,7 @@ class TestClaim:
         """Test retrieving pending claim fund entries."""
         from qbitflow.dto.claim import ClaimFund
 
-        funds = client.claim.get_funds()
+        funds = client.claims.get_funds()
         assert isinstance(funds, list)
         for fund in funds:
             assert isinstance(fund, ClaimFund)
@@ -477,16 +501,16 @@ class TestClaim:
         """Test creating a claim request for a user."""
         assert created_user is not None, "Create user test must run first"
 
-        result = client.claim.create_request(user_id=created_user.id)
+        result = client.claims.create_request(user_id=created_user.id)
         assert result.message is not None
         assert result.link is not None
         assert "http" in result.link
 
     def test_get_claim_request(self, client):
-        """Test retrieving a claim request via the public endpoint."""
+        """Test retrieving the claim request created above."""
         assert created_user is not None, "Create user test must run first"
 
-        result = client.claim.get_request(user_id=created_user.id)
+        result = client.claims.get_request_by_user(user_id=created_user.id)
         assert result.message is not None
         assert result.link is not None
         assert "http" in result.link
@@ -507,7 +531,7 @@ class TestTransactionStatus:
 
         try:
             status = client.transaction_status.get(session.uuid, TransactionType.ONE_TIME_PAYMENT)
-            assert status.type == TransactionType.ONE_TIME_PAYMENT
+            assert isinstance(status.status, (TransactionStatusValue, str))
         except NotFoundException:
             pass  # Expected if payment hasn't been initiated yet
         except InvalidRequestError as e:
@@ -529,24 +553,24 @@ class TestValidation:
             client.products.get(-1)
 
     def test_negative_price(self):
-        """Test that negative price raises a pydantic validation error."""
-        with pytest.raises(pydantic.ValidationError):
+        """A negative price raises the SDK's ValidationError before any request."""
+        with pytest.raises(ValidationError, match="price"):
             CreateProductDto(name="Test", description="Test", price=-10.0)
 
     def test_payment_session_requires_product_info(self, client):
         """Test that create_session raises when neither product_id nor details are given."""
-        with pytest.raises((ValueError, ValidationError)):
+        with pytest.raises(ValidationError):
             client.one_time_payments.create_session()
 
-    def test_subscription_session_requires_product_id(self):
-        """A subscription session must reference an existing product (product_id or
-        product_reference); check() enforces this at request time."""
+    def test_subscription_session_requires_some_product(self):
+        """A subscription session needs a stored product (product_id / product_reference)
+        or a complete inline one (product_name + description + price); check() enforces
+        this before any request."""
         from qbitflow import Duration
         from qbitflow.dto.transaction.session import CreateSubscriptionSessionDto
 
-        dto = CreateSubscriptionSessionDto(
-            frequency=Duration(value=1, unit="months")
-            # product_id / product_reference intentionally omitted
-        )
-        with pytest.raises(ValueError):
-            dto.check()
+        with pytest.raises(ValidationError, match="product_id"):
+            CreateSubscriptionSessionDto(
+                frequency=Duration(value=1, unit="months")
+                # product selection intentionally omitted
+            )

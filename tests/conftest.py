@@ -1,36 +1,57 @@
 """
 Pytest configuration and fixtures for QBitFlow SDK tests.
 
-Set the QBITFLOW_API_KEY environment variable to run integration tests:
-    export QBITFLOW_API_KEY="your_test_api_key"
+The offline suites need nothing. The live integration suite (``tests/test_integration.py``)
+runs against the server named by ``QBITFLOW_BASE_URL`` — typically loaded from the workspace's
+``.local.env`` — and never falls back to localhost or production:
+
+* neither ``QBITFLOW_API_KEY`` nor ``QBITFLOW_BASE_URL`` set → the live tests are skipped;
+* ``QBITFLOW_API_KEY`` set but ``QBITFLOW_BASE_URL`` missing → the live tests fail with a clear
+  message;
+* both set → the live tests run against that base URL::
+
+    set -a; . ../.local.env; set +a
+    pytest tests/test_integration.py -v
 """
 
 import os
 
 import pytest
 
-from qbitflow import QBitFlow, config
+from qbitflow import QBitFlow
 from qbitflow.dto.user import UserRole
 
 
 @pytest.fixture(scope="session")
-def api_key():
-    """Get API key from environment variable."""
-    key = os.getenv("QBITFLOW_API_KEY")
+def base_url():
+    """The live server's base URL (``QBITFLOW_BASE_URL``); see the module docstring."""
+    key = os.getenv("QBITFLOW_API_KEY", "").strip()
+    url = os.getenv("QBITFLOW_BASE_URL", "").strip()
+    if not key and not url:
+        pytest.skip("live suite: QBITFLOW_API_KEY and QBITFLOW_BASE_URL are not set")
+    if key and not url:
+        pytest.fail(
+            "QBITFLOW_API_KEY is set but QBITFLOW_BASE_URL is not: the live suite never "
+            "defaults to localhost or production. Export QBITFLOW_BASE_URL (e.g. from "
+            ".local.env) or unset QBITFLOW_API_KEY to skip the live tests."
+        )
     if not key:
-        pytest.skip("QBITFLOW_API_KEY environment variable not set")
-    return key
+        pytest.skip("live suite: QBITFLOW_API_KEY is not set")
+    return url
 
 
 @pytest.fixture(scope="session")
-def client(api_key):
-    """Create QBitFlow client with test API key."""
-    # Optionally set test base URL
-    test_url = os.getenv("QBITFLOW_BASE_URL")
-    if test_url:
-        config.set_base_url(test_url)
+def api_key(base_url):
+    """The live API key (``QBITFLOW_API_KEY``); requires ``QBITFLOW_BASE_URL`` too."""
+    return os.environ["QBITFLOW_API_KEY"].strip()
 
-    return QBitFlow(api_key=api_key)
+
+@pytest.fixture(scope="session")
+def client(api_key, base_url):
+    """A client bound to the live server named by QBITFLOW_BASE_URL."""
+    client = QBitFlow(api_key=api_key, base_url=base_url)
+    yield client
+    client.close()
 
 
 @pytest.fixture

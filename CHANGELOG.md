@@ -6,6 +6,218 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.5.0] - 2026-09-23
+
+Aligns the SDK with docs revision `5e7d5a5` and with the behavioural contract shared by the Go,
+JavaScript, Python and PHP SDKs: one retry policy, one error taxonomy, one client-side
+validation rule set and one response-typing contract.
+
+> **⚠️ Breaking changes in a minor release.** They are listed under **Removed** and
+> **Changed (breaking)** below. Semver-aware resolvers treat `2.5.0` as a safe upgrade
+> from any `2.x`, so `^2` / `~2.1` constraints will pick it up automatically — review
+> before updating, or pin.
+
+**Headline:** response models are now typed exactly as the Go API serializes them, and they
+never raise on a response the API legitimately sends. Several 2.1.0 methods could not succeed
+against the real API — `subscriptions.execute_test_billing_cycle()` expected a `statusLink` the
+API never sends, `refunds.get_by_transaction()`, `api_keys.get_all()` (organization-level keys)
+and `transaction_status.get()` (before a transaction is broadcast) raised on valid responses,
+and `one_time_payments.on_behalf_of(...)` raised `TypeError` before sending anything. All of
+them work now.
+
+### Removed
+
+-   **Pay-as-you-go** — `PayAsYouGoSubscriptionRequests`, `PayAsYouGoSubscription`,
+    `PaygSubscriptionSession`, and the PAYG arm of the session discriminator. The API has no
+    PAYG routes. The PAYG members of `TransactionType` and `TransactionShortType` are **kept** —
+    a transaction record can still carry them.
+-   **`LinkResponse.expires_at`** — the API's `LinkResponse` is exactly `{link, uuid}`.
+-   **`ClaimRequest`**, **`StatusLinkResponse`**, **`StatusResponse`** and
+    **`SubscriptionStatusTransitionWebhook`** — types no route returns (the subscription webhook
+    is now `SubscriptionWebhook`, see below).
+-   **The `email-validator` dependency.** Request DTOs no longer use pydantic's `EmailStr`
+    (see *Client-side validation*).
+-   **WebSocket status URL helper removed** — `transaction_status.get_websocket_url()` (added
+    in 2.1.0). `/transaction/status/ws` is an internal endpoint for the QBitFlow checkout page
+    (it rejects non-frontend origins). Use webhooks, or poll `transaction_status.get()`. The
+    unused `StatusResponseError` model, which described no REST response, is removed with it.
+-   **The local three-month limit on `accounting.export()`.** The API decides how long a window
+    it accepts (the documented three-month rule does not match the server); a refused window is
+    the API's `400`, raised as `ValidationError`.
+
+### Changed (breaking)
+
+-   **Response typing follows the Go server types.** Every response model derives from the new
+    `qbitflow.dto.ResponseModel` and decodes the way Go's `encoding/json` does:
+    -   a non-pointer field that is absent or `null` decodes to its zero value (`0`, `""`,
+        `False`, `[]`, a zero-valued nested object, or `GO_ZERO_TIME` = `0001-01-01T00:00:00Z`)
+        instead of raising or being `None`;
+    -   only pointer fields are `Optional`;
+    -   a field present with the wrong JSON type raises `ServerError` carrying the HTTP status;
+        numeric widening (an integer into a float field, an integral float into an int field)
+        is accepted; unknown keys are ignored;
+    -   response-side range constraints (`ge`/`gt`) are gone — values are reported as sent.
+
+    Field changes against 2.1.0:
+    -   now **non-null with a zero default** (were `Optional`): `Payment.amount_min_units`,
+        `.product_id` (`0` for an inline product), `.organization_id`, `.user_id`, `.metadata`;
+        `CombinedPaymentItem.amount_min_units`; `Subscription.last_billing_date` (`GO_ZERO_TIME`
+        before the first billing), `.organization_id`, `.user_id`;
+        `SubscriptionHistory.amount_min_units`, `.product_id`, `.organization_id`, `.user_id`,
+        `.metadata`; `RefundEntry.merchant_message` and `.tx_hash` (`""` until set),
+        `.amount_min_units`; `TransactionStatus.message`; `TxMetadata.main_currency_price_usd`;
+        `TxAmountsUSD.organization` / `.referral`; `Customer.phone_number`, `.address`,
+        `.reference` (`""`), `.organization_id`, `.user_id` (`0` for organization-level
+        customers); `Product.reference`; the session fields `reference`, `product_id`,
+        `product_reference`, `success_url`, `cancel_url`, `organization_id`, `fee_bps`,
+        `organization_fee_bps`, `user_id`, `user_name`, `customer_reference`, and
+        `SubscriptionSession.trial_period` / `.min_periods`.
+    -   now **`Optional`** (pointers in the API; were required): `Payment.customer_uuid`,
+        `Subscription.customer_uuid`, `SubscriptionHistory.customer_uuid`,
+        `SessionWebhookResponse.status`.
+    -   **`currency` is a `Currency` object** on `Payment`, `CombinedPaymentItem` (was
+        `Optional`), `Subscription` and `SubscriptionHistory`; `Currency.main_currency` stays
+        `Optional`.
+    -   **defaults instead of raising when absent:** `ApiKey.user_id` (`0` for an
+        organization-level key), `TransactionStatus.tx_hash` (`""` until broadcast),
+        `SessionWebhookResponse.management_page_link` and
+        `SubscriptionWebhook.subscription_reference` (`""`), the session's product fields.
+    -   **unknown enum values are preserved:** `TransactionStatus.status`,
+        `Subscription.subscription_status`, `User.role`, `ApiKey.role`, `RefundEntry.status`,
+        session/webhook `tx_type`, `SubscriptionWebhook.type` and the transition statuses are
+        `Union[<Enum>, str]` — a value this SDK does not know yet stays a plain `str`.
+    -   response `email` fields are plain `str`.
+-   **HTTP status mapping.** `400`/`422` raise `ValidationError` — the same type as client-side
+    validation; `401` `AuthenticationError`; `403` `ForbiddenException`; `404`
+    `NotFoundException`; `409` the new `ConflictError`; `429` `RateLimitError` with
+    `retry_after`; other 4xx `InvalidRequestError`; `5xx`, a `3xx`, an empty or non-JSON `2xx`
+    body (a `204` is not an error) and a response of the wrong shape raise the new
+    `ServerError` (a subclass of `APIError`). Every exception carries `status_code` (whenever a
+    response was involved) and `fields`. A CSV export's JSON error body is parsed the same way.
+-   **Retry policy.** Only `GET` is retried — on any transport failure (connection,
+    read/write, timeout, and protocol errors such as "server disconnected") and on `5xx` —
+    with exponential backoff (1s, 2s, 4s). `POST`/`PUT`/`DELETE` are never retried; the action
+    `GET`s `force_cancel()`, `execute_test_billing_cycle()` and `trigger_test_claim_funds()`
+    are non-retriable; `4xx`, `429`, `3xx` and configuration errors (a `base_url` without a
+    scheme) are never retried. 2.1.0 retried every verb on timeouts and never retried `5xx`.
+    Redirects are never followed.
+-   **Client settings.** `max_retries=0` and `timeout=0` are honoured (2.1.0 replaced them with
+    the defaults); a negative or non-numeric value raises `ValidationError`, validated before
+    the connection pool is opened. A blank or whitespace-only API key raises `ValueError`.
+    `config.set_base_url("")` raises `ValidationError`.
+-   **Client-side validation mirrors the API's `binding` rules, and always raises the SDK's
+    `ValidationError`** (with `fields`) — including when a request DTO is constructed; 2.1.0
+    raised `pydantic.ValidationError` from DTOs. DTOs are validated again when handed to a
+    request method, and request methods also accept a plain mapping of the DTO's fields.
+    -   names (`CreateCustomerDto` / `UpdateCustomerDto` / `CreateUserDto` / `UpdateUserDto`)
+        follow `alphanumspace`: Unicode letters, decimal digits only (`²`, `Ⅻ` are rejected),
+        spaces and `- _ ' .`, 2–100 characters (2.1.0: minimum 1, anything allowed);
+        a whitespace-only name is accepted, as the API accepts it;
+    -   product name/description follow `producttext` (not blank, no markup or control
+        characters, 2–100 / 2–500 code points); a price must be a finite number greater than 0;
+        an empty `name` or `description` on update is rejected;
+    -   email addresses use one structural rule everywhere and are sent exactly as given (2.1.0's
+        `EmailStr` lower-cased the domain and rejected valid addresses such as `a@shop.test`);
+    -   session creation: an inline `price` must be greater than 0; `customer_uuid` must be a
+        bare UUID; redirect URLs must be absolute `http(s)` URLs (scheme case-insensitive, host
+        required); an empty optional string means "not provided" and is omitted;
+    -   subscriptions: `frequency.value` is an integer from 1 to 4294967295 with a known unit;
+        `trial_period.value` may be 0; `min_periods` is an integer from 0 to 4294967295 (0 is
+        omitted). `Duration` itself now accepts a value of 0 (for trial periods);
+    -   `CreateUserDto.role` accepts only `admin` or `user`; `organization_fee_bps` is an
+        integer from 0 to 5000;
+    -   `""` for `name` / `last_name` / `email` on the update DTOs means "not provided";
+    -   `accounting.export()` checks real `YYYY-MM-DD` dates, `from <= to` and the format;
+    -   identifiers must be non-empty strings / positive integers; a cursor `limit` must be a
+        positive integer; an empty `cursor` is omitted.
+-   **`subscriptions.execute_test_billing_cycle()` returns `SuccessResponse`** (the API's
+    `{message}`), like `force_cancel()`. A subscription that is not yet due raises
+    `ConflictError`.
+-   **Session getters.** `get_session(...)` no longer sends `closeToExpireError=false` by
+    default (pass the argument to opt in either way). `one_time_payments.get_session()` raises
+    `ValidationError` for a subscription session and `subscriptions.get_session()` for a
+    one-time session, instead of returning the other type under the wrong annotation.
+-   **Subscription webhooks use the documented envelope.** `SubscriptionWebhook` carries
+    `subscription_uuid`, `subscription_reference`, a `type`, and the payload in `data` — a
+    `SubscriptionStatusTransition`, a `SubscriptionHistory`, or the raw `dict` for an unknown
+    `type`.
+-   **`on_behalf_of()`** accepts only a non-negative integer (a negative id, `True`, a float or
+    a string raises `ValidationError`); `0` means "act at the organization level" (no header).
+-   **`webhooks.verify()`** accepts the raw body (`bytes`/`str`) or an already-decoded JSON
+    value; invalid JSON and `NaN`/`Infinity` raise `ValidationError`; it returns `False` only
+    for the API's `400` and lets every other failure propagate as its own type.
+-   **Local webhook verification** parses the timestamp like Go's `strconv.ParseInt` (ASCII
+    digits with an optional sign, no whitespace, within int64); a replay window of `0` or less
+    means the default 300 seconds; lone surrogates in the payload become U+FFFD, as the Go
+    server decodes them.
+-   **`pydantic>=2.2`** is required (2.2 is the first release with `Field(union_mode=...)`,
+    which keeps unknown enum values).
+
+### Deprecated
+
+-   `client.claim` → **`client.claims`** and `claims.get_request()` →
+    **`claims.get_request_by_user()`**. The old names are aliases (the same object / the same
+    behaviour) that emit a `DeprecationWarning`.
+
+### Added
+
+-   **Client-level On-Behalf-Of:** `client.on_behalf_of(user_id)` returns a client whose every
+    service sends `On-Behalf-Of`, sharing the root client's connection pool and settings (close
+    only the root client). The per-service `on_behalf_of()` remains.
+-   **`base_url` on the client**: `QBitFlow(api_key, base_url=...)`, threaded to every
+    handler, the nested session handlers and scoped copies; a trailing slash is stripped.
+    `client.base_url` exposes the effective value.
+-   **One shared `httpx.Client`** per `QBitFlow` instance (was: a new client per request),
+    with `close()` and context-manager support.
+-   **`User-Agent: qbitflow-python/<version>`** on every request.
+-   **`ConflictError`**, **`ServerError`**, **`ForbiddenException`**, **`FieldError`** and
+    `error.fields` on every error type; **`RateLimitError.retry_after`** in seconds, from either
+    a delta-seconds or an HTTP-date `Retry-After` (`None` when absent).
+-   **Webhook payload parsing:** `parse_session_webhook(body)` and
+    `parse_subscription_webhook(body)` decode a verified delivery with the response policy and
+    raise `ValidationError` for a malformed body. `extract_webhook_headers()` now returns a
+    `WebhookHeaders` `TypedDict`.
+-   **Typing:** `on_behalf_of()` returns the handler's own type; `accounting.export()` is
+    overloaded (`List[AccountingEvent]` for `"json"`, `str` for `"csv"`); `model_dump()` /
+    `model_dump_json()` are typed and emit camelCase keys by default.
+-   `GO_ZERO_TIME`, `qbitflow.dto.RequestModel` / `ResponseModel`,
+    `qbitflow.dto.accounting.ACCOUNTING_EVENT_TYPES` (both spellings of the subscription-billing
+    event type: `subscriptionHistory` and `subHistory`), and `WebhookRequests` in
+    `qbitflow.requests`.
+-   **`UserRole.HANDLE`**, **`RefundEntry.user_id`**, **`SubscriptionSession.upgrading_from_trial`**.
+-   **Inline ghost products on subscription sessions:** `subscriptions.create_session()` accepts
+    `product_name` / `description` / `price`.
+-   `HEADER_SIGNATURE`, `HEADER_TIMESTAMP`, `HEADER_WEBHOOK_ID`, `TEST_WEBHOOK_ID` and
+    `DEFAULT_MAX_TIMESTAMP_AGE_SECONDS` are exported from the package root.
+
+### Fixed
+
+-   **`on_behalf_of()` raised `TypeError` on payments and subscriptions**; the scoped header
+    now also reaches the nested session handler, so `get_session` is impersonated too.
+-   **`validate_url` rejected URLs the API accepts** (a TLD longer than 6 characters, an
+    internal host without a dot). It now mirrors the API's `http_url` rule.
+-   **Only the first validation failure was reported**; every field now appears in the message
+    and in `error.fields`.
+-   **`webhooks.verify()` flattened error types** into `APIError`; a non-JSON payload raised a
+    bare `json.JSONDecodeError`.
+-   **User-supplied path segments were not escaped** — uuids, references and emails are now
+    percent-encoded, so `?`, `#` or `%` in a reference no longer change the request. The API
+    currently cannot route a reference containing `/` even when it is escaped (404).
+-   **Request bodies that cannot be encoded** (`NaN`, a lone surrogate) raise `ValidationError`
+    instead of an untyped exception; unset optional fields are omitted instead of sent as
+    `null`.
+-   **Error-message extraction** prefers `error`, then the joined `errors[]`, then `message`,
+    then the raw non-JSON body, then the HTTP status text.
+
+### Documentation
+
+-   README: response-typing section, client-level `on_behalf_of`, retry list including the
+    claim-funds test trigger, base-URL precedence, validation rules, webhook examples that
+    verify the signature before short-circuiting the dashboard probe and parse with the new
+    helpers, error table, live-test environment rules.
+-   Examples read the API key (and an optional customer UUID) from the environment, use a
+    one-month accounting window, and the example server never echoes query input.
+
 ## [2.1.0] - 2026-09-21
 
 Aligns the SDK with docs revision `c3c8831`. Fixes a bug that made subscription-session

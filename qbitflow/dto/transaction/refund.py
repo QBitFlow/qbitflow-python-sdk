@@ -1,12 +1,11 @@
 """Refund-related data models."""
 
 import enum
-from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import Field
 
-from qbitflow.dto.base_model import BaseModel
+from qbitflow.dto.base_model import GO_ZERO_TIME, Bool, Int, ResponseModel, Str, Timestamp
 
 from .metadata import TxMetadata
 
@@ -20,43 +19,42 @@ class RefundStatus(str, enum.Enum):
     FAILED = "failed"
 
 
-class RefundEntry(BaseModel):
+class RefundEntry(ResponseModel):
     """
     Represents a refund entry.
 
     Attributes:
-        uuid: Unique identifier for the refund.
+        uuid: Unique identifier for the refund (``refund@``-prefixed).
         tx_id: Transaction ID associated with the refund (e.g. "pay@<uuid>").
         test: Whether this is a test refund.
         reason: Reason for the refund.
-        status: Current status of the refund.
+        status: Current status of the refund (a value this SDK does not know yet is kept
+            as a plain string).
         created_at: Timestamp when the refund was created.
-        merchant_message: Optional message from the merchant.
-        responded_at: Timestamp when the refund was processed (null if pending).
-        organization_id: ID of the organization that issued the refund.
-        tx_hash: On-chain transaction hash of the refund (null if not yet processed).
+        merchant_message: Message from the merchant (``""`` until answered).
+        responded_at: When the merchant responded, or ``None`` while pending.
+        user_id: User that owns the refund (``0`` for organization-level refunds).
+        organization_id: Organization that owns the refund.
+        tx_hash: On-chain transaction hash of the refund (``""`` until processed).
         amount_min_units: Refund amount in smallest currency units (decimal string).
-        metadata: Optional additional metadata.
+        metadata: On-chain transaction metadata for the refund, or ``None``.
 
     Example:
         >>> refunds = client.refunds.get_all()
         >>> for refund in refunds:
-        ...     print(f"{refund.uuid}: {refund.status.value}")
+        ...     print(f"{refund.uuid}: {refund.status}")
     """
 
-    uuid: str = Field(..., description="Refund UUID")
-    tx_id: str = Field(..., description="Transaction ID (e.g. pay@<uuid>)")
-    test: bool = Field(..., description="Test mode flag")
-    reason: str = Field(..., description="Reason for the refund")
-    status: RefundStatus = Field(..., description="Current refund status")
-    created_at: datetime = Field(..., description="Creation timestamp")
-    merchant_message: Optional[str] = Field(default=None, description="Optional merchant message")
-    responded_at: Optional[datetime] = Field(default=None, description="Processing timestamp")
-    organization_id: int = Field(..., description="Organization ID")
-    tx_hash: Optional[str] = Field(default=None, description="On-chain transaction hash")
-    amount_min_units: Optional[str] = Field(
-        default=None, description="Refund amount in smallest units"
-    )  # noqa: E501
-    metadata: Optional[TxMetadata] = Field(
-        default=None, description="On-chain transaction metadata for the refund"
-    )
+    uuid: Str = ""
+    tx_id: Str = ""
+    test: Bool = False
+    reason: Str = ""
+    status: Union[RefundStatus, str] = Field(default="", union_mode="left_to_right")
+    created_at: Timestamp = GO_ZERO_TIME
+    merchant_message: Str = ""
+    responded_at: Optional[Timestamp] = None
+    user_id: Int = 0
+    organization_id: Int = 0
+    tx_hash: Str = ""
+    amount_min_units: Str = ""
+    metadata: Optional[TxMetadata] = None

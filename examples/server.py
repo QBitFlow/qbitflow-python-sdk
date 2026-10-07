@@ -10,50 +10,47 @@ Run with: uvicorn server:app --reload --port 8001
 """
 
 import os
-from typing import Annotated
 
-from fastapi import FastAPI, Header, HTTPException, Request
-from pydantic_core import ValidationError
+from fastapi import FastAPI, HTTPException, Request
 
-from qbitflow import QBitFlow, extract_webhook_headers, verify_webhook_signature
-from qbitflow.exceptions.exceptions import ValidationError as QBitFlowValidationError
-from qbitflow.dto.transaction.session import SessionWebhookResponse
-from qbitflow.dto.transaction.status import (
-    TransactionStatusValue,
-    TransactionType
+from qbitflow import (
+    QBitFlow,
+    extract_webhook_headers,
+    parse_session_webhook,
+    verify_webhook_signature,
 )
-from qbitflow.requests.webhook import TEST_WEBHOOK_ID
+from qbitflow.dto.transaction.session import SubscriptionSession
+from qbitflow.dto.transaction.status import TransactionStatusValue, TransactionType
+from qbitflow.exceptions import QBitFlowError
+from qbitflow.exceptions import ValidationError as QBitFlowValidationError
 
 # Initialize FastAPI application
 app = FastAPI(
     title="QBitFlow Webhook Handler",
     description="Example webhook and redirect handler for QBitFlow payments",
-    version="1.0.0"
+    version="1.0.0",
 )
 
-# Initialize QBitFlow client
-# In production, use environment variables for the API key
-qbitflow_client = QBitFlow(api_key="<your_api_key_here>")
+# Initialize QBitFlow client from the environment (never hardcode the key).
+# QBITFLOW_BASE_URL, when set, selects the API server.
+qbitflow_client = QBitFlow(
+    api_key=os.environ["QBITFLOW_API_KEY"], base_url=os.getenv("QBITFLOW_BASE_URL")
+)
+
 
 @app.post("/webhook")
-async def handle_webhook(
-    request: Request,
-    x_webhook_id: Annotated[str, Header()],
-    x_webhook_signature_256: Annotated[str, Header()],
-    x_webhook_timestamp: Annotated[str, Header()]
-):
+async def handle_webhook(request: Request):
     """
     Handle webhook events from QBitFlow.
-    
+
     This endpoint receives notifications when:
     - A payment is completed
     - A subscription is created
-    
+
     Args:
-        request: The incoming HTTP request containing the webhook payload.
-        x_webhook_signature_256: Signature header for verifying authenticity.
-        x_webhook_timestamp: Timestamp header for verifying authenticity.
-    
+        request: The incoming HTTP request containing the webhook payload and the
+            X-Webhook-Signature-256 / X-Webhook-Timestamp / X-Webhook-Id headers.
+
     Returns:
         Acknowledgment of receipt
     """
@@ -68,12 +65,6 @@ async def handle_webhook(
     # extract_webhook_headers does a case-insensitive lookup and works with Starlette /
     # FastAPI, Flask, Django or a plain dict.
     headers = extract_webhook_headers(request.headers)
-
-    # The dashboard's "Test webhook" button sends a fake event just to check the endpoint
-    # is reachable. Acknowledge it and stop - there is no transaction behind it.
-    if headers["is_test"]:
-        print("✅ Received test webhook event")
-        return {"status": "received", "message": "Test webhook event acknowledged"}
 
     if not headers["signature"] or not headers["timestamp"]:
         raise HTTPException(status_code=400, detail="Missing webhook signature headers")
@@ -91,9 +82,7 @@ async def handle_webhook(
             # The replay window defaults to 5 minutes
             # (DEFAULT_MAX_TIMESTAMP_AGE_SECONDS) and must match the server's setting.
             # Override with max_timestamp_age_seconds=...
-            verify_webhook_signature(
-                secret, headers["timestamp"], headers["signature"], body
-            )
+            verify_webhook_signature(secret, headers["timestamp"], headers["signature"], body)
             print("🔐 Verified locally (no API round-trip)")
         except QBitFlowValidationError as exc:
             print(f"❌ Local webhook verification failed: {exc}")
@@ -109,42 +98,52 @@ async def handle_webhook(
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
         print("🔐 Verified via the QBitFlow API")
 
-    
+    # The dashboard's "Test webhook" button sends a fake event just to check the endpoint
+    # is reachable. It is checked *after* verification on purpose: the test delivery is
+    # signed like any other, so putting it through the same path proves your whole
+    # verification setup works end to end. Short-circuiting before the signature check
+    # would make the button pass even with a broken or missing secret.
+    if headers["is_test"]:
+        print("✅ Received test webhook event (signature verified)")
+        return {"status": "received", "message": "Test webhook event acknowledged"}
+
     # Parse payload after verification
     try:
-        event = SessionWebhookResponse.model_validate_json(body)
-    except ValidationError as e:
+        event = parse_session_webhook(body)
+    except QBitFlowValidationError as e:
         print(f"❌ Failed to parse webhook payload: {e}")
-        raise HTTPException(status_code=401, detail="Invalid webhook payload")
-    
-    # Extract event details
+        raise HTTPException(status_code=400, detail="Invalid webhook payload")
+
+    # Extract event details. `status` is nullable on the wire; treat "no status" as pending.
     session_uuid = event.uuid
-    transaction_status = event.status.status
-    transaction_hash = event.status.tx_hash
+    transaction_status = event.status.status if event.status else TransactionStatusValue.PENDING
+    transaction_hash = event.status.tx_hash if event.status else ""
     session = event.session
-    
+
     print(f"Session UUID: {session_uuid}")
     print(f"Transaction Hash: {transaction_hash}")
-    print(f"Transaction Status: {transaction_status.value}")
+    print(f"Transaction Status: {transaction_status}")
     print(f"Product: {session.product_name}")
     print(f"Price: ${session.price} USD")
-    print(f"Customer UUID: {session.customer_uuid}")
-    
+    print(f"Customer UUID: {session.customer_uuid or '(collected at checkout)'}")
+    if isinstance(session, SubscriptionSession):
+        print(f"Billing every {session.frequency} seconds")
+
     # Handle different transaction statuses
     if transaction_status == TransactionStatusValue.COMPLETED:
         print("\n✅ PAYMENT COMPLETED SUCCESSFULLY")
-        
+
         # Payment completed - grant access to product/service
         customer_uuid = session.customer_uuid
         product_name = session.product_name
         price = session.price
-        
-        print(f"\n🎉 Action Items:")
+
+        print("\n🎉 Action Items:")
         print(f"  1. Grant access to '{product_name}' for customer {customer_uuid}")
-        print(f"  2. Update database with transaction details")
-        print(f"  3. Send confirmation email to customer")
+        print("  2. Update database with transaction details")
+        print("  3. Send confirmation email to customer")
         print(f"  4. Log successful payment of ${price}")
-        
+
         # Example: Grant access (implement your business logic here)
         try:
             grant_product_access(customer_uuid, product_name)
@@ -152,166 +151,143 @@ async def handle_webhook(
             log_successful_payment(session_uuid, price)
         except Exception as e:
             print(f"❌ Error processing completed payment: {e}")
-        
+
     elif transaction_status == TransactionStatusValue.FAILED:
         print("\n❌ PAYMENT FAILED")
-        
-        error_message = event.status.message or "Unknown error"
+
+        error_message = (event.status.message if event.status else "") or "Unknown error"
         print(f"  Error: {error_message}")
-        print(f"\n⚠️ Action Items:")
-        print(f"  1. Notify customer about failed payment")
-        print(f"  2. Log failed transaction for review")
-        print(f"  3. Potentially retry or offer alternative payment method")
-        
+        print("\n⚠️ Action Items:")
+        print("  1. Notify customer about failed payment")
+        print("  2. Log failed transaction for review")
+        print("  3. Potentially retry or offer alternative payment method")
+
         # Handle failed payment
         try:
             notify_payment_failure(session.customer_uuid, error_message)
             log_failed_payment(session_uuid, error_message)
         except Exception as e:
             print(f"❌ Error handling failed payment: {e}")
-    
+
     elif transaction_status == TransactionStatusValue.CANCELLED:
         print("\n🚫 PAYMENT CANCELLED BY USER")
-        print(f"\n📝 Action Items:")
-        print(f"  1. Log cancelled transaction")
-        print(f"  2. Optionally send reminder email")
-        
+        print("\n📝 Action Items:")
+        print("  1. Log cancelled transaction")
+        print("  2. Optionally send reminder email")
+
         try:
             log_cancelled_payment(session_uuid)
         except Exception as e:
             print(f"❌ Error handling cancelled payment: {e}")
-    
+
     elif transaction_status == TransactionStatusValue.PENDING:
         print("\n⏳ PAYMENT PENDING")
-        print(f"  Waiting for blockchain confirmation...")
-    
+        print("  Waiting for blockchain confirmation...")
+
     elif transaction_status == TransactionStatusValue.WAITING_CONFIRMATION:
         print("\n⌛ WAITING FOR CONFIRMATION")
-        print(f"  Transaction submitted, awaiting confirmation...")
-    
+        print("  Transaction submitted, awaiting confirmation...")
+
     print("=" * 60)
-    
+
     # Return acknowledgment
     return {
         "status": "received",
         "session_uuid": session_uuid,
-        "transaction_status": transaction_status.value
+        "transaction_status": getattr(transaction_status, "value", transaction_status),
     }
 
 
 @app.get("/success")
-async def handle_success(uuid: str, transaction_type: TransactionType):
+async def handle_success(uuid: str, transaction_type: str = ""):
     """
     Handle success redirect from QBitFlow payment page.
-    
-    This endpoint is called when a customer completes a payment
-    and is redirected back to your application.
-    
+
+    This endpoint is called when a customer completes a payment and is redirected back to
+    your application (the success_url is built with ``{{UUID}}`` and
+    ``{{TRANSACTION_TYPE}}`` placeholders, see examples/main.py).
+
     Args:
-        uuid: The session or transaction UUID
-        transaction_type: The type of transaction (payment, subscription, etc.)
-    
+        uuid: The session or transaction UUID.
+        transaction_type: The type of transaction, when the redirect URL carries it.
+
     Returns:
-        Success page data or redirect
+        Success page data. Nothing from the query string is echoed back unvalidated.
     """
     print("=" * 60)
     print("✅ Success redirect received")
     print("=" * 60)
-    
-    print(f"UUID: {uuid}")
-    print(f"Transaction Type: {transaction_type.value}")
-    
+
+    try:
+        tx_type = TransactionType(transaction_type or "payment")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Unknown transaction type")
+
     try:
         # Fetch the current transaction status
         transaction_status = qbitflow_client.transaction_status.get(
-            transaction_uuid=uuid,
-            transaction_type=transaction_type
+            transaction_uuid=uuid, transaction_type=tx_type
         )
-        
-        print(f"Current Status: {transaction_status.status.value}")
-        
-        # Check if the transaction is completed
-        if transaction_status.status == TransactionStatusValue.COMPLETED:
-            print("\n🎉 Transaction is confirmed!")
-            
-            # Get session/payment details based on transaction type
-            if transaction_type == TransactionType.ONE_TIME_PAYMENT:
-                session = qbitflow_client.one_time_payments.get_session(uuid)
-                print(f"Payment for: {session.product_name}")
-                print(f"Amount: ${session.price} USD")
-                
-                return {
-                    "status": "success",
-                    "message": "Payment completed successfully!",
-                    "transaction_uuid": uuid,
-                    "product": session.product_name,
-                    "amount": session.price,
-                    "customer_uuid": session.customer_uuid
-                }
-            
-            elif transaction_type == TransactionType.CREATE_SUBSCRIPTION:
-                session = qbitflow_client.subscriptions.get_session(uuid)
-                print(f"Subscription for: {session.product_name}")
-                print(f"Amount: ${session.price} USD")
-                
-                return {
-                    "status": "success",
-                    "message": "Subscription created successfully!",
-                    "transaction_uuid": uuid,
-                    "product": session.product_name,
-                    "amount": session.price,
-                    "customer_uuid": session.customer_uuid
-                }
-        
-        elif transaction_status.status == TransactionStatusValue.PENDING:
-            print("\n⏳ Transaction is still pending...")
-            return {
-                "status": "pending",
-                "message": "Your transaction is being processed. You'll receive a confirmation soon.",
-                "transaction_uuid": uuid
-            }
-        
-        else:
-            print(f"\n⚠️ Transaction status: {transaction_status.status.value}")
-            return {
-                "status": transaction_status.status.value,
-                "message": f"Transaction is {transaction_status.status.value}",
-                "transaction_uuid": uuid
-            }
-    
-    except Exception as e:
+    except QBitFlowError as e:
         print(f"\n❌ Error fetching transaction status: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error processing success redirect: {str(e)}"
-        )
+        raise HTTPException(status_code=502, detail="Could not fetch the transaction status")
+
+    print(f"Current Status: {transaction_status.status}")
+
+    if transaction_status.status == TransactionStatusValue.COMPLETED:
+        print("\n🎉 Transaction is confirmed!")
+        if tx_type == TransactionType.CREATE_SUBSCRIPTION:
+            session = qbitflow_client.subscriptions.get_session(uuid)
+            message = "Subscription created successfully!"
+        else:
+            session = qbitflow_client.one_time_payments.get_session(uuid)
+            message = "Payment completed successfully!"
+
+        return {
+            "status": "success",
+            "message": message,
+            "transaction_uuid": session.uuid,
+            "product": session.product_name,
+            "amount": session.price,
+        }
+
+    if transaction_status.status == TransactionStatusValue.PENDING:
+        print("\n⏳ Transaction is still pending...")
+        return {
+            "status": "pending",
+            "message": "Your transaction is being processed. You'll receive a confirmation soon.",
+        }
+
+    print(f"\n⚠️ Transaction status: {transaction_status.status}")
+    # `status` is a str enum (or a plain str for a value this SDK does not know yet).
+    return {"status": getattr(transaction_status.status, "value", transaction_status.status)}
 
 
 @app.get("/cancel")
 async def handle_cancel():
     """
     Handle cancel redirect from QBitFlow payment page.
-    
+
     This endpoint is called when a customer cancels the payment
     and is redirected back to your application.
-    
+
     Returns:
         Cancel page data or redirect
     """
     print("=" * 60)
     print("🚫 Cancel redirect received")
     print("=" * 60)
-    
+
     print("User cancelled the payment")
-    
+
     # Log the cancellation
     # Optionally send reminder email
     # Display cancellation page to user
-    
+
     return {
         "status": "cancelled",
         "message": "Payment was cancelled. You can try again anytime.",
-        "action": "redirect_to_pricing"  # Or show retry button
+        "action": "redirect_to_pricing",  # Or show retry button
     }
 
 
@@ -324,8 +300,8 @@ async def root():
         "endpoints": {
             "webhook": "/webhook (POST)",
             "success": "/success (GET)",
-            "cancel": "/cancel (GET)"
-        }
+            "cancel": "/cancel (GET)",
+        },
     }
 
 
@@ -338,6 +314,7 @@ async def health_check():
 # =============================================================================
 # Helper Functions (Implement your business logic here)
 # =============================================================================
+
 
 def grant_product_access(customer_uuid: str, product_name: str):
     """Grant customer access to the purchased product."""
@@ -403,7 +380,7 @@ def log_cancelled_payment(session_uuid: str):
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     print("🚀 Starting QBitFlow webhook handler...")
     print("📡 Listening on http://localhost:8001")
     print("\nEndpoints:")
@@ -412,5 +389,5 @@ if __name__ == "__main__":
     print("  - GET  /cancel  - Handle cancelled payments")
     print("\n💡 Make sure to configure these URLs in your QBitFlow dashboard!")
     print("=" * 60)
-    
+
     uvicorn.run(app, host="0.0.0.0", port=8001)

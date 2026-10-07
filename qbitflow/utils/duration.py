@@ -5,23 +5,31 @@ This module provides a Duration class for specifying time periods in various uni
 commonly used for subscription frequencies and trial periods.
 """
 
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import field_validator
+
+from qbitflow.dto.base_model import RequestModel
+from qbitflow.utils.helpers import MAX_UINT32, validate_integer
 
 TimeUnit = Literal["seconds", "minutes", "hours", "days", "weeks", "months", "years"]
 
 
-class Duration(BaseModel):
+class Duration(RequestModel):
     """
     Represents a duration of time with a value and unit.
 
-    This class is used throughout the SDK to specify time periods,
-    particularly for subscription frequencies and trial periods.
+    This class is used throughout the SDK to specify time periods, particularly for
+    subscription frequencies and trial periods.
 
     Attributes:
-        value: The numeric value of the duration (must be positive).
-        unit: The unit of time (seconds, minutes, hours, days, weeks, or months).
+        value: The numeric value of the duration, an integer from 0 to 4294967295. A
+            subscription ``frequency`` must be at least 1; a ``trial_period`` may be 0.
+        unit: The unit of time (seconds, minutes, hours, days, weeks, months or years).
+
+    Raises:
+        ValidationError: (the SDK's) if ``value`` is not an integer in range or ``unit`` is
+            not one of the supported units.
 
     Examples:
         >>> # One month duration
@@ -34,28 +42,16 @@ class Duration(BaseModel):
         >>> daily = Duration(value=1, unit="days")
     """
 
-    value: int = Field(
-        ..., gt=0, description="The numeric value of the duration (must be positive)"
-    )
-    unit: TimeUnit = Field(..., description="The unit of time")
+    value: int
+    unit: TimeUnit
 
-    @field_validator("value")
+    @field_validator("value", mode="before")
     @classmethod
-    def validate_value(cls, v: int) -> int:
-        """
-        Validate that the duration value is positive.
-
-        Args:
-            v: The value to validate.
-
-        Returns:
-            The validated value.
-
-        Raises:
-            ValueError: If the value is not positive.
-        """
-        if v <= 0:
-            raise ValueError("Duration value must be positive")
+    def validate_value(cls, v: Any) -> Any:
+        """Accept only integers from 0 to 4294967295 (the API's ``uint32``)."""
+        problem = validate_integer(v, 0, MAX_UINT32)
+        if problem is not None:
+            raise ValueError(f"Duration value {problem}")
         return v
 
     def __str__(self) -> str:
