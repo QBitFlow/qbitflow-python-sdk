@@ -1,0 +1,39 @@
+{
+  "createdAt": "2026-10-01T12:00:00Z",
+  "data": {
+    "amountMinUnits": "5002100",
+    "amountUsd": 5.0021,
+    "chain": "BASE",
+    "createdAt": "2026-09-29T08:15:00Z",
+    "currencyId": 8,
+    "explorerUrl": "https://basescan.org/tx/0x4444444444444444444444444444444444444444444444444444444444444444",
+    "held": false,
+    "initiatedBy": "customer",
+    "merchantMessage": "",
+    "metadata": {
+      "blockData": {
+        "number": "52468103",
+        "timestamp": 1790855998
+      },
+      "mainCurrencyPriceUsd": 4512.37,
+      "networkFees": {
+        "amount": "1140000000000",
+        "unitsConsumed": 95000
+      }
+    },
+    "paidMinUnits": "10004200",
+    "paidUsd": 10.0042,
+    "reason": "I was charged twice for the same order",
+    "refundPercent": 50,
+    "respondedAt": "2026-10-01T12:00:00Z",
+    "status": "approved",
+    "test": false,
+    "txHash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+    "txUuid": "pay@01a0f755-f200-7000-8000-000000000001",
+    "uuid": "refund@01a0ec3b-3ba0-7000-8000-000000000006"
+  },
+  "id": "evt_952693cf-2ec5-5094-a79b-234165e388aa",
+  "test": false,
+  "type": "refund.completed",
+  "version": "v2"
+}

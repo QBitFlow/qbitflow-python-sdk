@@ -2,1238 +2,963 @@
 
 [![PyPI version](https://badge.fury.io/py/qbitflow.svg)](https://badge.fury.io/py/qbitflow)
 [![Python Support](https://img.shields.io/pypi/pyversions/qbitflow.svg)](https://pypi.org/project/qbitflow/)
-[![License: MPL-2.0](https://img.shields.io/pypi/l/qtwebview2)](https://opensource.org/licenses/MPL-2.0)
+[![License: MPL-2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 
-Official Python SDK for [QBitFlow](https://qbitflow.app) - a comprehensive cryptocurrency payment processing platform that enables seamless integration of crypto payments and recurring subscriptions into your applications.
+The official Python SDK for [QBitFlow](https://qbitflow.app), non-custodial crypto payments: hosted
+checkouts, one-time payments, subscriptions, refunds, marketplaces with commissions and held
+funds, accounting exports and signed webhooks. Customers pay from their own wallets, on Ethereum,
+Base and Solana, straight to yours.
 
-## Features
+- **API v2**, every integrator route: 13 services, 60 routes, one `QBitFlow` client.
+- **Typed**: pydantic v2 models with snake_case attributes, enums, `py.typed`; keyword-only
+  arguments checked before anything is sent.
+- **Typed errors**, one class per condition, each carrying the API's code, request id and field
+  errors.
+- **Safe retries**: reads and creates are retried on network errors, 5xx and 429, and every create
+  sends an `Idempotency-Key`, so a retry never charges or creates twice.
+- **Iterators**: `for payment in client.payments.iterate(): ...` walks every page lazily.
+- **Webhooks** verified locally (`QBitFlow-Signature`, secret rotation included) and parsed into
+  typed events.
 
--   🔐 **Type-Safe**: Full type hints; response fields are typed exactly as the API sends them
--   🚀 **Easy to Use**: Simple, intuitive API design
--   🔄 **Automatic Retries**: Idempotent (GET) requests are retried on network errors and 5xx
--   🧪 **Well Tested**: Comprehensive test coverage
--   📚 **Great Documentation**: Detailed docs with examples
--   🔌 **Webhook Support**: Handle payment notifications easily
--   💳 **One-Time Payments**: Accept cryptocurrency payments with ease
--   🔄 **Recurring Subscriptions**: Automated recurring billing in cryptocurrency
--   👥 **Customer Management**: Create and manage customer profiles
--   🛍️ **Product Management**: Organize your products and pricing
--   📈 **Transaction Tracking**: Webhooks (recommended) or polling `transaction_status.get()`
--   💸 **Refund Tracking**: Monitor refund status
--   📊 **Accounting Export**: Export transaction data as JSON or CSV
--   🔑 **Account Claims**: Invite unclaimed users to set up their wallets
+> Coming from 2.x? Read [MIGRATION-v3.md](MIGRATION-v3.md): 3.0.0 targets API v2 and changes the
+> client and most names.
 
-## Table of Contents
+## Contents
 
-- [QBitFlow Python SDK](#qbitflow-python-sdk)
-	- [Features](#features)
-	- [Table of Contents](#table-of-contents)
-	- [Installation](#installation)
-	- [Quick Start](#quick-start)
-		- [1. Get Your API Key](#1-get-your-api-key)
-		- [2. Initialize the Client](#2-initialize-the-client)
-		- [3. Create a One-Time Payment](#3-create-a-one-time-payment)
-		- [4. Create a Recurring Subscription](#4-create-a-recurring-subscription)
-		- [5. Check Transaction Status](#5-check-transaction-status)
-	- [Configuration](#configuration)
-		- [Configuration Options](#configuration-options)
-		- [Retry Policy](#retry-policy)
-	- [Acting on Behalf of a User](#acting-on-behalf-of-a-user)
-	- [Response Typing](#response-typing)
-	- [One-Time Payments](#one-time-payments)
-		- [Create a Payment Session](#create-a-payment-session)
-			- [Using your own references](#using-your-own-references)
-		- [With Redirect URLs](#with-redirect-urls)
-		- [Get Payment Session](#get-payment-session)
-		- [Get Completed Payment](#get-completed-payment)
-		- [Get Payment by Reference](#get-payment-by-reference)
-		- [List All Payments](#list-all-payments)
-		- [List Combined Payments](#list-combined-payments)
-		- [Get Customer for Transaction](#get-customer-for-transaction)
-	- [Subscriptions](#subscriptions)
-		- [Create a Subscription](#create-a-subscription)
-		- [Frequency Units](#frequency-units)
-		- [Get Subscription](#get-subscription)
-		- [Get Subscription by Reference](#get-subscription-by-reference)
-		- [Get Payment History](#get-payment-history)
-		- [Force Cancel](#force-cancel)
-		- [Execute Test Billing Cycle](#execute-test-billing-cycle)
-	- [Refunds](#refunds)
-		- [List Active Refunds](#list-active-refunds)
-		- [List Inactive Refunds](#list-inactive-refunds)
-		- [Get Refund by Transaction](#get-refund-by-transaction)
-	- [Accounting Export](#accounting-export)
-	- [Account Claims](#account-claims)
-		- [Get a Claim Request](#get-a-claim-request)
-		- [Create a Claim Request](#create-a-claim-request)
-		- [Get Claim Funds](#get-claim-funds)
-		- [Trigger Test Claim Funds](#trigger-test-claim-funds)
-	- [Transaction Status](#transaction-status)
-		- [Check Status](#check-status)
-		- [Transaction Types](#transaction-types)
-		- [Status Values](#status-values)
-	- [Customer Management](#customer-management)
-	- [Product Management](#product-management)
-	- [User Management](#user-management)
-	- [API Key Management](#api-key-management)
-	- [Currencies](#currencies)
-		- [Typed payment metadata](#typed-payment-metadata)
-	- [Webhook Handling](#webhook-handling)
-		- [Verifying a webhook signature](#verifying-a-webhook-signature)
-		- [Configuring Webhooks](#configuring-webhooks)
-			- [Test Webhook Reachability](#test-webhook-reachability)
-		- [Transaction Webhook](#transaction-webhook)
-		- [Subscription Status Webhook](#subscription-status-webhook)
-	- [Error Handling](#error-handling)
-	- [API Reference](#api-reference)
-		- [QBitFlow](#qbitflow)
-			- [Constructor](#constructor)
-			- [Properties](#properties)
-	- [Testing](#testing)
-	- [License](#license)
-	- [Support](#support)
-	- [Changelog](#changelog)
-	- [Security](#security)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Authentication and acting for a member](#authentication-and-acting-for-a-member)
+- [Checkout sessions](#checkout-sessions)
+- [Products and customers](#products-and-customers)
+- [Payments and failures](#payments-and-failures)
+- [Subscriptions](#subscriptions)
+- [Refunds](#refunds)
+- [Marketplaces](#marketplaces)
+- [Wallets](#wallets)
+- [Accounting export](#accounting-export)
+- [Webhooks](#webhooks)
+- [Currencies](#currencies)
+- [Pagination and iterators](#pagination-and-iterators)
+- [Errors](#errors)
+- [Retries and idempotency](#retries-and-idempotency)
+- [Configuration](#configuration)
+- [Migrating from 2.x](#migrating-from-2x)
+- [Examples](#examples) · [Testing](#testing) · [License](#license) · [Support](#support) · [Security](#security)
 
 ## Installation
-
-Install the SDK using pip:
 
 ```bash
 pip install qbitflow
 ```
 
-Or install from source:
+**Requires Python 3.10 or later.** Dependencies: `httpx` and `pydantic` (v2).
 
-```bash
-git clone https://github.com/qbitflow/qbitflow-python-sdk.git
-cd qbitflow-python-sdk
-pip install -e .
-```
-
-## Quick Start
-
-### 1. Get Your API Key
-
-Sign up at [QBitFlow](https://qbitflow.app) and obtain your API key from the dashboard.
-
-### 2. Initialize the Client
-
-```python
-from qbitflow import QBitFlow
-
-client = QBitFlow(api_key="your_api_key_here")
-```
-
-All handlers share one HTTP connection pool. Close it when you are done (or use the client
-as a context manager):
-
-```python
-with QBitFlow(api_key="your_api_key_here") as client:
-    ...
-```
-
-### 3. Create a One-Time Payment
-
-```python
-response = client.one_time_payments.create_session(
-    product_id=1,
-    success_url="https://your-domain.com/success",
-    cancel_url="https://your-domain.com/cancel"
-)
-
-print(f"Payment link: {response.link}")
-# Send this link to your customer
-```
-
-To pre-fill the checkout with a known customer, pass `customer_uuid=customer.uuid` (a bare
-UUID, as returned by `client.customers`) or `customer_reference="your-own-id"`.
-
-### 4. Create a Recurring Subscription
-
-```python
-from qbitflow import Duration
-
-response = client.subscriptions.create_session(
-    product_id=1,
-    frequency=Duration(value=1, unit="months"),
-    trial_period=Duration(value=7, unit="days"),  # Optional 7-day trial
-)
-
-print(f"Subscription link: {response.link}")
-```
-
-### 5. Check Transaction Status
-
-```python
-from qbitflow.dto.transaction.status import TransactionType, TransactionStatusValue
-
-status = client.transaction_status.get(
-    transaction_uuid=response.uuid,  # e.g. "pay@..." from create_session
-    transaction_type=TransactionType.ONE_TIME_PAYMENT
-)
-
-if status.status == TransactionStatusValue.COMPLETED:
-    print(f"Payment completed! Transaction hash: {status.tx_hash}")
-elif status.status == TransactionStatusValue.FAILED:
-    print(f"Payment failed: {status.message}")
-```
-
-## Configuration
-
-### Configuration Options
-
-| Option        | Type   | Default                       | Description                                                              |
-| ------------- | ------ | ----------------------------- | ------------------------------------------------------------------------ |
-| `api_key`     | string | (required)                    | Your QBitFlow API key                                                    |
-| `base_url`    | string | `https://api.qbitflow.app/v1` | API base URL (trailing slash stripped). Also `QBITFLOW_BASE_URL` env var |
-| `timeout`     | float  | `30`                          | Request timeout in seconds; `0` disables it                              |
-| `max_retries` | int    | `3`                           | Retry attempts for idempotent (GET) requests; `0` disables retries       |
-
-A blank API key raises `ValueError`; a negative or non-numeric `timeout` / `max_retries`, or a
-blank `base_url`, raises `ValidationError` — before any connection is opened.
-
-```python
-client = QBitFlow(
-    api_key="your_api_key_here",
-    base_url="https://staging.example.com/v1",  # e.g. a staging API
-    timeout=60,
-    max_retries=5,
-)
-```
-
-Base URL precedence, highest first:
-
-1. `QBitFlow(api_key, base_url=...)` — per client.
-2. `qbitflow.config.set_base_url(url)` — process-wide; clients created without `base_url`
-   follow it, even if they were created before the call.
-3. The `QBITFLOW_BASE_URL` environment variable, **read once when `qbitflow` is imported**.
-4. The default, `https://api.qbitflow.app/v1`.
-
-### Retry Policy
-
-The policy is identical across every QBitFlow SDK:
-
--   Only **idempotent requests are retried: HTTP `GET`**. `POST`, `PUT` and `DELETE` are
-    never retried, so a timed-out session creation is never silently sent twice.
--   Three `GET` routes perform an action and are explicitly non-retriable:
-    `subscriptions.force_cancel()`, `subscriptions.execute_test_billing_cycle()` and
-    `claims.trigger_test_claim_funds()`.
--   A retry is triggered by any transport failure — connection, read/write, timeout, or a
-    protocol error such as "server disconnected without sending a response" — or by any `5xx`
-    response. `4xx`, `429`, `3xx` and configuration errors (a `base_url` without `http://` /
-    `https://`) are never retried.
--   Backoff is exponential: 1s, 2s, 4s. `max_retries=0` disables retries.
--   Redirects are never followed: a `3xx` reaching the SDK is reported as a `ServerError` —
-    it almost always means a misconfigured `base_url`.
-
-## Acting on Behalf of a User
-
-If you hold an **organization (admin) API key**, you can perform any request as one of the users in your organization, without needing that user's own API key. This is useful for admin-level tooling, dashboards, and back-office automation where your server acts for a specific user (e.g. listing _their_ products, creating a payment session _for them_, or reading _their_ subscriptions).
-
-`client.on_behalf_of(user_id)` returns a scoped client: **every** service on it adds an
-`On-Behalf-Of` header to each request. Every service also exposes its own
-`on_behalf_of(user_id)`, returning a scoped copy of just that service. Either way the original
-client is left untouched, so you can freely mix org-level and per-user calls.
-`on_behalf_of(0)` acts at the organization level (no header); anything other than a
-non-negative integer (a negative id, `True`, `1.5`, `"5"`) raises `ValidationError`.
-
-```python
-user_id = 123
-
-# Every service, scoped to user 123
-as_user = client.on_behalf_of(user_id)
-products = as_user.products.get_all()
-user_payments = as_user.one_time_payments.get_all()
-
-# Or scope a single service
-products = client.products.on_behalf_of(user_id).get_all()
-
-# The base client is unaffected — this call still runs at the organization level
-all_org_products = client.products.get_all()
-```
-
-A scoped client shares the root client's connection pool and settings. **Close only the root
-client** (closing a scoped copy is a no-op); once the root is closed, its scoped copies can no
-longer be used.
-
-> **Note:** `on_behalf_of` requires an organization-level admin/owner API key. Acting for a
-> user outside your organization answers `404`; acting for a regular user on an admin-only
-> route answers `403` (`ForbiddenException`).
-
-## Response Typing
-
-Response models are typed exactly as the Go API serializes them, so you never have to
-null-check a field the API always sends:
-
--   A field the API always sends — or omits only when it is empty — is **non-nullable** and
-    decodes to its zero value when absent or `null`: `0`, `""`, `False`, `[]`, an empty nested
-    object, or `qbitflow.GO_ZERO_TIME` (`0001-01-01T00:00:00Z`, Go's zero time) for a
-    timestamp. For example `payment.product_id` is `0` for an inline product,
-    `customer.phone_number` is `""` when none was given, and `subscription.last_billing_date`
-    is `GO_ZERO_TIME` before the first billing.
--   Only fields that are pointers in the API are `Optional`, e.g. `payment.customer_uuid`,
-    `payment.reference`, `refund.responded_at`, `user.claimed_at`, `api_key.expires_at`,
-    `currency.main_currency`, `payment.metadata.organization_fee`.
--   `payment.currency`, `subscription.currency` and each billing record's / combined
-    payment's `currency` are full `Currency` objects.
--   A field that arrives with the **wrong JSON type** (a string where a number is expected, an
-    object where a string is expected, …) raises `ServerError` with the HTTP status; unknown
-    keys are ignored and unknown enum values are kept as plain strings.
-
-`GO_ZERO_TIME` compares equal to the decoded zero time; converting it to a local time zone west
-of UTC (`.astimezone()`) raises `OverflowError`, so compare against it before converting.
-
-## One-Time Payments
-
-### Create a Payment Session
-
-Provide either a `product_id` for an existing product, or `product_name` + `description` + `price` for an ad-hoc charge:
-
-```python
-# From an existing product
-response = client.one_time_payments.create_session(product_id=1)
-
-# Ad-hoc payment
-response = client.one_time_payments.create_session(
-    product_name="Custom Product",
-    description="Product description",
-    price=99.99,  # USD, must be greater than 0
-)
-
-print(response.uuid)  # Session UUID ("pay@...")
-print(response.link)  # Payment link for customer
-```
-
-The SDK checks the API's rules before sending and raises `ValidationError` otherwise: an inline
-`price` must be a finite number greater than 0; `customer_uuid`, when given, must be a bare UUID
-(not `pay@…`-prefixed); redirect URLs must be absolute `http(s)` URLs. An empty string for an
-optional argument means "not provided" and is left out of the request.
-
-#### Using your own references
-
-Instead of storing QBitFlow's internal UUIDs, pass your own identifiers. Set `reference` to your
-order/invoice ID, and use `product_reference` / `customer_reference` to select an existing product
-or customer by your own reference:
-
-```python
-response = client.one_time_payments.create_session(
-    reference="order-1234",            # your own transaction reference
-    product_reference="PROD-PREMIUM",  # use a product by your reference (instead of product_id)
-    customer_reference="user-42",      # use a customer by your reference (instead of customer_uuid)
-)
-```
-
-The `reference` is echoed back on the resulting `Payment` and in webhook payloads, and you can look
-the payment up later with [`get_by_reference()`](#get-payment-by-reference). If no customer matches
-`customer_reference`, one is created during checkout.
-
-### With Redirect URLs
-
-```python
-response = client.one_time_payments.create_session(
-    product_id=1,
-    success_url="https://your-domain.com/success?uuid={{UUID}}&transaction_type={{TRANSACTION_TYPE}}",
-    cancel_url="https://your-domain.com/cancel",
-)
-```
-
-**Available Placeholders:**
-
--   `{{UUID}}`: The session UUID
--   `{{TRANSACTION_TYPE}}`: The transaction type of the session
-
-### Get Payment Session
-
-Returns a `OneTimePaymentSession`. Asking `one_time_payments.get_session()` for a
-subscription session raises `ValidationError` (use `subscriptions.get_session()`), and vice
-versa.
-
-```python
-session = client.one_time_payments.get_session(response.uuid)
-print(session.product_name, session.price, session.organization_name)
-```
-
-### Get Completed Payment
-
-```python
-payment = client.one_time_payments.get("pay@...")
-print(payment.transaction_hash, payment.amount, payment.currency.symbol)
-```
-
-### Get Payment by Reference
-
-Look a payment up by the `reference` you assigned when creating the session — no need to store
-QBitFlow's UUID:
-
-```python
-payment = client.one_time_payments.get_by_reference("order-1234")
-print(payment.uuid, payment.amount)
-```
-
-### List All Payments
-
-```python
-page = client.one_time_payments.get_all(limit=10)
-
-print(page.items)      # List of Payment objects
-print(page.has_more()) # Whether there are more pages
-print(page.next_cursor)
-
-if page.has_more():
-    next_page = client.one_time_payments.get_all(limit=10, cursor=page.next_cursor)
-```
-
-### List Combined Payments
-
-Get all payments from both one-time and subscription sources in a single paginated list:
-
-```python
-page = client.one_time_payments.get_all_combined(limit=20)
-for item in page.items:
-    print(item.source)  # "payment" or "subscription_history"
-    print(item.amount)
-    if item.subscription_uuid:
-        print(f"Subscription: {item.subscription_uuid}")
-```
-
-### Get Customer for Transaction
-
-```python
-customer = client.one_time_payments.get_customer_for_transaction("pay@...")  # or "sub@..."
-print(f"{customer.name} {customer.last_name} — {customer.email}")
-```
-
-## Subscriptions
-
-A subscription session takes the same product forms as a one-time payment: an existing
-product (`product_id` or `product_reference`) **or** an inline ghost product
-(`product_name` + `description` + `price`).
-
-### Create a Subscription
-
-```python
-from qbitflow import Duration
-
-response = client.subscriptions.create_session(
-    product_id=1,
-    frequency=Duration(value=1, unit="months"),
-    trial_period=Duration(value=7, unit="days"),  # Optional
-    min_periods=3,                                 # Optional: minimum billing periods
-)
-
-print(response.link)  # Send to customer
-```
-
-`frequency` is required and its value must be an integer from 1 to 4294967295.
-`trial_period` may have a value of 0, and `min_periods` is an integer from 0 to 4294967295
-(0 means no minimum and is not sent).
-
-Like one-time payments, subscription sessions accept your own `reference`, `product_reference`,
-and `customer_reference` instead of QBitFlow's internal IDs, or an inline product:
-
-```python
-response = client.subscriptions.create_session(
-    reference="sub-1234",            # your own subscription reference
-    product_reference="PLAN-PRO",    # select a product by your reference
-    customer_reference="user-42",    # select a customer by your reference
-    frequency=Duration(value=1, unit="months"),
-)
-
-# Inline ghost product — no stored product needed
-response = client.subscriptions.create_session(
-    product_name="Pro plan",
-    description="Monthly Pro subscription",
-    price=29.0,
-    frequency=Duration(value=1, unit="months"),
-)
-```
-
-### Frequency Units
-
-Available units for `frequency` and `trial_period`:
-
--   `seconds`
--   `minutes`
--   `hours`
--   `days`
--   `weeks`
--   `months`
--   `years`
-
-### Get Subscription
-
-```python
-subscription = client.subscriptions.get("sub@...")
-print(subscription.subscription_status, subscription.next_billing_date)
-print(subscription.allowance, subscription.currency.symbol)
-```
-
-### Get Subscription by Reference
-
-Look a subscription up by the `reference` you assigned when creating the session:
-
-```python
-subscription = client.subscriptions.get_by_reference("sub-1234")
-print(subscription.uuid, subscription.subscription_status)
-```
-
-> **Tracking status changes:** You no longer need to poll `get()` on a schedule
-> (e.g. a cron job) to detect subscription lifecycle changes. Enable the
-> **Subscription status webhook** in your QBitFlow dashboard settings and you will
-> receive a notification on every status transition. See
-> [Subscription Status Webhook](#subscription-status-webhook).
-
-### Get Payment History
-
-```python
-history = client.subscriptions.get_payment_history("sub@...")
-for record in history:
-    print(record.uuid, record.amount, record.created_at)
-```
-
-### Force Cancel
-
-Force cancel a subscription immediately, bypassing the normal user-signed cancellation flow:
-
-```python
-response = client.subscriptions.force_cancel("sub@...")
-print(response.message)
-```
-
-### Execute Test Billing Cycle
-
-**Test Mode Only**: Manually trigger a billing cycle to test webhook behaviour. Returns the
-API's `{message}` envelope; a subscription that is not yet due raises `ConflictError` (409).
-
-```python
-from qbitflow.exceptions import ConflictError
-
-try:
-    result = client.subscriptions.execute_test_billing_cycle("sub@...")
-    print(result.message)
-except ConflictError as e:
-    print("Not due yet:", e.message)
-```
-
-## Refunds
-
-### List Active Refunds
-
-```python
-refunds = client.refunds.get_all()
-for refund in refunds:
-    # `status` is a RefundStatus (a str enum) or, for a value this SDK does not know, a str
-    print(f"{refund.uuid}: {refund.status} — {refund.reason}")
-```
-
-### List Inactive Refunds
-
-Returns processed (approved/refused/failed) refunds with pagination:
-
-```python
-page = client.refunds.get_all_inactive(limit=10)
-for refund in page.items:
-    print(f"{refund.uuid}: {refund.status} (responded {refund.responded_at})")
-
-if page.has_more():
-    next_page = client.refunds.get_all_inactive(limit=10, cursor=page.next_cursor)
-```
-
-### Get Refund by Transaction
-
-The route is public, but the API honours your API key, so the refund comes back complete:
-
-```python
-refund = client.refunds.get_by_transaction("pay@...")
-print(refund.status, refund.tx_hash or "not processed yet")
-```
-
-## Accounting Export
-
-Export transaction data for a date range. Dates must be real `YYYY-MM-DD` calendar dates and
-`from` must not be after `to` — the SDK checks this before sending, raising `ValidationError`.
-The length of the window is decided by the API (a window it refuses answers `400`, also a
-`ValidationError`).
-
-```python
-# JSON export — returns List[AccountingEvent]
-events = client.accounting.export("2025-01-01", "2025-01-31", "json")
-for event in events:
-    print(f"{event.payment_id} | {event.type} | ${event.gross_amount_usd}")
-
-# CSV export — returns raw CSV string
-csv_data = client.accounting.export("2025-01-01", "2025-01-31", "csv")
-with open("accounting_2025_01.csv", "w") as f:
-    f.write(csv_data)
-```
-
-`event.type` is a plain string: `payment`, `refund`, `organizationFee`, `referralFee`, or the
-subscription-billing value (spelled `subscriptionHistory` or `subHistory` in the API
-reference; `qbitflow.dto.accounting.ACCOUNTING_EVENT_TYPES` lists both).
-
-`AccountingEvent` fields include: `payment_id`, `type`, `tx_time_utc`, `receipt_url`, `product_id`, `customer_uuid`, `chain`, `tx_hash`, `token_symbol`, `gross_amount_usd`, `platform_fee_usd`, `organization_fee_usd`, `net_amount_usd`, and more.
-
-## Account Claims
-
-QBitFlow lets organizations create users whose payments are held by the organization. When the organization is ready, they create a **claim request** — a one-time link that the user follows to set up their wallet and receive their accumulated funds. These operations live on `client.claims` (`client.claim` and `claims.get_request()` remain as deprecated aliases that emit a `DeprecationWarning`).
-
-### Get a Claim Request
-
-Retrieve the existing claim link for a user without creating a new one:
-
-```python
-result = client.claims.get_request_by_user(user_id=42)
-print(f"Claim link: {result.link}")
-```
-
-### Create a Claim Request
-
-Create a claim request for a user. A user may have only one active request: a second
-`create_request()` raises `ValidationError` (400) — use `get_request_by_user()` to fetch the
-existing link.
-
-```python
-result = client.claims.create_request(user_id=42)
-print(f"Claim link: {result.link}")
-# Send result.link to the user by email
-```
-
-### Get Claim Funds
-
-List the amounts your organization owes its provisioned users:
-
-```python
-funds = client.claims.get_funds()
-for fund in funds:
-    if not fund.funded:
-        print(f"Pending: ${fund.total_amount_owed} → user {fund.user_id}")
-```
-
-### Trigger Test Claim Funds
-
-**Test Mode Only**: Manually compute ledger totals for a user without waiting for the hourly
-job. It is an action, so it is never retried automatically:
-
-```python
-client.claims.trigger_test_claim_funds(user_id=42)
-```
-
-## Transaction Status
-
-To learn that a payment or subscription settled, use [webhooks](#webhook-handling)
-(recommended — QBitFlow notifies your endpoint), or poll `transaction_status.get()`.
-
-### Check Status
-
-```python
-from qbitflow.dto.transaction.status import TransactionType
-
-status = client.transaction_status.get(
-    "pay@...",
-    TransactionType.ONE_TIME_PAYMENT
-)
-
-print(status.status)   # TransactionStatusValue enum (or a str for an unknown value)
-print(status.tx_hash)  # Blockchain transaction hash ("" until broadcast)
-```
-
-### Transaction Types
-
-```python
-class TransactionType:
-    ONE_TIME_PAYMENT = 'payment'
-    TRANSFER = 'transfer'
-    TOKEN_TRANSFER = 'tokenTransfer'
-    CREATE_SUBSCRIPTION = 'createSubscription'
-    CANCEL_SUBSCRIPTION = 'cancelSubscription'
-    EXECUTE_SUBSCRIPTION_PAYMENT = 'executeSubscription'
-    CREATE_PAYG_SUBSCRIPTION = 'createPAYGSubscription'  # records only; no PAYG routes
-    CANCEL_PAYG_SUBSCRIPTION = 'cancelPAYGSubscription'
-    INCREASE_ALLOWANCE = 'increaseAllowance'
-    UPDATE_MAX_AMOUNT = 'updateMaxAmount'
-    REFUND = 'refund'
-    FAUCET = 'faucet'
-    CLAIM_FUNDS = 'claimFunds'
-```
-
-### Status Values
-
-```python
-class TransactionStatusValue:
-    CREATED = 'created'
-    WAITING_CONFIRMATION = 'waitingConfirmation'
-    PENDING = 'pending'
-    COMPLETED = 'completed'
-    FAILED = 'failed'
-    CANCELLED = 'cancelled'
-    EXPIRED = 'expired'
-```
-
-> **Unknown enum values.** Enum-typed fields on *responses* (`status`, `subscription_status`,
-> `role`, `tx_type`, refund `status`, webhook `type`) never fail to parse: a value this SDK
-> version does not know yet is kept as a plain `str`. Known values hydrate to the enum
-> member, and because the enums subclass `str`, `status == "completed"` and
-> `status == TransactionStatusValue.COMPLETED` both keep working. Request DTOs stay strict.
-
-## Customer Management
-
-```python
-from qbitflow.dto.customer import CreateCustomerDto, UpdateCustomerDto
-
-# Create
-customer = client.customers.create(CreateCustomerDto(
-    name="John", last_name="Doe",
-    email="john@example.com",
-    phone_number="+1234567890",
-    reference="CRM-12345"
-))
-
-# Get
-customer = client.customers.get(customer.uuid)  # a bare UUID
-customer = client.customers.get_by_email("john@example.com")
-customer = client.customers.get_by_reference("CRM-12345")
-
-# List (paginated)
-page = client.customers.get_all(limit=10)
-
-# Update - partial: send only what changes, everything else is left untouched
-updated = client.customers.update(customer.uuid, UpdateCustomerDto(name="John"))
-
-updated = client.customers.update(customer.uuid, UpdateCustomerDto(
-    name="John", last_name="Doe", email="john.doe@example.com"
-))
-
-# Note: `reference` is immutable and cannot be updated.
-
-# Delete
-client.customers.delete(customer.uuid)
-```
-
-`name` / `last_name` follow the API's `alphanumspace` rule (Unicode letters, decimal digits,
-spaces and `- _ ' .`, 2–100 characters — `²` or `Ⅻ` are rejected, as the API rejects them) and
-`email` must be a structurally valid address, which is sent exactly as given (case preserved).
-Violations raise `qbitflow.exceptions.ValidationError` when the DTO is built, before any
-request. On `UpdateCustomerDto`, an empty string means "not provided" and is left out of the
-request. Every identifier argument (`uuid`, `reference`, `email`) is checked for emptiness and
-every numeric id for positivity.
-
-References are escaped correctly in the URL, but the API currently cannot route a reference
-containing `/` (it answers 404).
-
-## Product Management
-
-```python
-from qbitflow.dto.product import CreateProductDto, UpdateProductDto
-
-# Create
-product = client.products.create(CreateProductDto(
-    name="Premium Subscription",
-    description="Access to all premium features",
-    price=29.99,
-    reference="PROD-PREMIUM"
-))
-
-# Get
-product = client.products.get(1)
-product = client.products.get_by_reference("PROD-PREMIUM")
-
-# List all
-products = client.products.get_all()
-
-# Update - partial: omitted fields keep their current value
-updated = client.products.update(1, UpdateProductDto(price=39.99))
-
-updated = client.products.update(1, UpdateProductDto(
-    name="Premium Plus",
-    description="Enhanced premium features",
-    price=39.99
-))
-
-# Delete
-client.products.delete(1)
-```
-
-`name` (2–100) and `description` (2–500) follow the API's `producttext` rule: no markup
-characters (`< > { } [ ] \` \\ | ; " ~ ^`), no control characters and not blank; `price` must
-be a finite number greater than 0. Length is counted in characters, as the server counts runes.
-An empty `reference` on create means "generate one"; an empty `name` or `description` on update
-is rejected. Violations raise `ValidationError`.
-
-## User Management
-
-```python
-from qbitflow.dto.user import CreateUserDto, UpdateUserDto
-
-# Create (admin only)
-user = client.users.create(CreateUserDto(
-    name="Alice",
-    last_name="Smith",
-    email="alice@example.com",
-    role="user",              # "user" or "admin"
-    organization_fee_bps=100  # optional integer 0-5000, 1% fee
-))
-
-# Get current user (identified by API key)
-me = client.users.get()
-
-# Get by ID or list all (admin only)
-user = client.users.get_by_id(42)
-users = client.users.get_all()
-
-# Get by email (admin only for other users in the organization)
-user = client.users.get_by_email("alice@example.com")
-
-# Update - partial: omitted fields keep their current value
-updated = client.users.update(user.id, UpdateUserDto(name="Alicia"))
-
-# organization_fee_bps requires admin authority (an admin/owner key, or an
-# organization-level key via on_behalf_of). A non-admin caller sending it gets a 403.
-updated = client.users.update(user.id, UpdateUserDto(organization_fee_bps=250))  # 2.5%
-
-# Note: passwords cannot be changed through this SDK. It is a JWT-only, self-service
-# operation on the API, so the field is intentionally absent from UpdateUserDto.
-
-# Delete (admin only)
-client.users.delete(user.id)
-```
-
-## API Key Management
-
-API-key **creation and deletion are JWT-only** API operations and cannot be performed
-with an API key, so the SDK exposes **read-only** access. Create and revoke keys from the
-QBitFlow dashboard.
-
-```python
-# List API keys for the current user
-keys = client.api_keys.get_all()
-
-# List API keys for a specific user (admin only)
-keys = client.api_keys.get_for_user(user_id)
-```
-
-## Currencies
-
-Sessions reference the accepted currencies by **ID** (`session.available_currencies` is a
-`list[int]`); payments, combined payments, subscriptions and billing records carry the full
-`currency` object (with `main_currency` for a token). Use the public currency lookups to resolve
-IDs to `Currency` details.
-
-```python
-# All supported currencies (native currencies and tokens)
-currencies = client.currencies.get_all_available()
-
-# Only the main (native / blockchain) currencies, excluding tokens
-main_currencies = client.currencies.get_all_main()
-
-by_id = {c.id: c for c in currencies}
-session = client.one_time_payments.get_session("pay@...")
-for currency_id in session.available_currencies:
-    currency = by_id[currency_id]
-    print(f"{currency.name} ({currency.symbol})")
-```
-
-### Typed payment metadata
-
-Payment metadata is fully typed. `Payment.metadata` and `SubscriptionHistory.metadata` are
-`PaymentMetadata` (always present); `CombinedPaymentItem.metadata` is
-`Optional[PaymentMetadata]` and `RefundEntry.metadata` is `Optional[TxMetadata]`.
-`PaymentMetadata` exposes the fee breakdown (`fee_bps`, and the optional `organization_fee` /
-`referral_fee`), on-chain details (`tx_metadata`), and the computed per-party amounts
-(`tx_amounts`, in both USD and smallest currency units).
-
-## Webhook Handling
-
-### Verifying a webhook signature
-
-Every webhook QBitFlow sends carries three headers:
-
-| Header | Meaning |
-|---|---|
-| `X-Webhook-Signature-256` | HMAC signature, formatted `sha256=<hex>` |
-| `X-Webhook-Timestamp` | Send time, in unix seconds |
-| `X-Webhook-Id` | Transaction id, e.g. `pay@<uuid>` |
-
-There are two ways to check a webhook is genuine, and you can use either:
-
-| | Needs the secret | Network call | Use when |
-|---|---|---|---|
-| **Local** | yes | none | Default. Faster, and keeps working if the API is unreachable. |
-| **Remote** | no | one per webhook | You would rather not hold the secret at all. |
-
-Local verification performs the same three checks the server does: the timestamp is within
-a replay window (5 minutes by default), the HMAC matches, and the comparison is
-constant-time so a timing side channel cannot be used to guess the signature.
-
-**Why the signature covers a canonical rendering, not the raw bytes.** JSON object key
-order is not significant, and proxies, frameworks and logging layers routinely re-serialize
-a body and reorder keys. Signing raw bytes would reject a payload that is in fact
-untouched. So both sides sign `<timestamp>.<canonical-json>`, where canonical means keys
-sorted at every level and no insignificant whitespace. You do not have to do anything for
-this — pass the body you received and the SDK handles it.
-
-Get your webhook secret from the QBitFlow dashboard. Treat it like a password: keep it in
-your environment or secret manager, never in source control.
+## Quick start
 
 ```python
 import os
 
-from flask import Flask, request
-from qbitflow import extract_webhook_headers, parse_session_webhook, verify_webhook_signature
-from qbitflow.exceptions import ValidationError
+from qbitflow import QBitFlow
 
-app = Flask(__name__)
+# One client per API key, shared by the whole program. `with` closes its connections.
+with QBitFlow(os.environ["QBITFLOW_API_KEY"]) as client:  # ValidationError: not an sk_… key
+    # The recommended start-up check: what is this key, and which mode is it in?
+    me = client.me()  # AuthenticationError for an unknown or revoked key
+    if me.space is not None:
+        print(f"{me.space.organization_name}, role {me.role}, test mode {me.space.test}")
 
-
-@app.post("/webhooks")
-def handle_webhook():
-    headers = extract_webhook_headers(request.headers)
-
-    try:
-        verify_webhook_signature(
-            os.environ["QBITFLOW_WEBHOOK_SECRET"],
-            headers["timestamp"],
-            headers["signature"],
-            request.get_data(),  # raw bytes
-        )
-    except ValidationError:
-        return "invalid webhook", 400
-
-    if headers["is_test"]:
-        return "", 200  # verified connectivity check, nothing to process
-
-    event = parse_session_webhook(request.get_data())
-    return "", 200
+    # A hosted checkout for a one-time payment of 4.99 USD.
+    session = client.checkout_sessions.create_payment(
+        product_name="Premium access",
+        price=4.99,
+        reference="order-1042",
+        success_url="https://shop.example.com/thanks?session={{UUID}}",
+        cancel_url="https://shop.example.com/cart",
+    )
+    print("Send the customer to", session.link)
 ```
 
-`extract_webhook_headers` takes any mapping, so it works with Flask, Django,
-FastAPI/Starlette or a plain dict. Lookup is case-insensitive and a repeated header yields
-its first value.
+Then fulfil the order when the [`payment.completed` webhook](#webhooks) arrives for
+`session.uuid`, never on the customer's redirect to your success page.
 
-Pass the **raw body**: it is canonicalised exactly as the Go server does (a payload you have
-already decoded also works, but a stdlib-decoded `-0` loses its sign). The timestamp must be an
-ASCII integer (an optional sign, no whitespace), as Go's `strconv.ParseInt` requires. To widen
-or narrow the replay window (it must match the server's setting; `0` or less means the default
-of 300 seconds):
+### Conventions
+
+- **Services are attributes** of the client (`client.checkout_sessions`, `client.webhooks.endpoints`);
+  methods are snake_case. Every argument except a path id is **keyword-only**, and every method
+  takes `options=RequestOptions(...)` last ([configuration](#configuration)).
+- **Ids are strings.** Resources are named by UUIDs; transactions by prefixed ids (`pay@…` a
+  payment, `sub@…` a subscription, `sub-hist@…` a bill, `refund@…` a refund) that you pass back
+  verbatim. Only currencies keep numeric ids (`int`).
+- **Models** are pydantic v2 models with snake_case attributes; `model.to_dict()` gives the wire
+  form (camelCase). A field the API always sends is never `None`: an absent value decodes to its
+  zero value (`""`, `0`, `False`, `[]`, `ZERO_TIME`). Optional fields are `Optional[...]`, `None`
+  when absent. The wire's `from` is `from_`.
+- **Amounts:** USD amounts are `float` (`amount`, `amount_usd`); exact amounts in a token's
+  smallest unit, and a few USD prices, are decimal strings (`amount_min_units`, `price_usd`,
+  `allowance`), never rounded. Fee rates are percents: `fee_percent == 1.5` is 1.5 %.
+- **Enums** are `StrEnum`s (`SubscriptionStatus.ACTIVE`). A value this SDK does not know yet is
+  kept as the raw `str`: compare with `==`, and give every `match` a default case.
+- **Times** are timezone-aware `datetime`s, with the offset the API sent.
+
+## Authentication and acting for a member
+
+Every request sends your API key in `X-API-Key`. Keys are created in the QBitFlow dashboard; each
+belongs to one **space** (your organization's, or one of its members') and one **mode** (test or
+live). `QBitFlow(...)` only checks the key's shape (non-blank, starting with `sk_`) and sends
+nothing: call `me()` to check it online.
 
 ```python
-verify_webhook_signature(secret, timestamp, signature, body, max_timestamp_age_seconds=600)
+me = client.me()
+if me.space is None or not me.space.test:
+    raise SystemExit("this job must run with a test-mode key")
+print("acting as", me.role, "in", me.space.organization_name)  # admin: an organization key
 ```
 
-To verify through the API instead, with no secret in your process — the payload may be the raw
-body or an already-decoded value; only a `400` from the API returns `False`, every other
-failure raises:
+Keep the key in a secret store or an environment variable, never in code. Keys issued before API v2
+(`sk_<digits>_…`) still work; rotate them in the dashboard to the `sk_<uuid>_…` format.
+
+### `On-Behalf-Of`: acting in a member's space
+
+A marketplace's **organization key** can act in any of its members' spaces: create their products
+and checkouts, read their payments. Name the member by their **user UUID** (`Member.user_uuid`,
+also in the `member.joined` webhook). A non-member, an owner or admin of the team, or a member of
+the other mode answers 404.
 
 ```python
-ok = client.webhooks.verify(payload, signature, timestamp)
+from qbitflow import RequestOptions
+
+member_uuid = "0192f1c2-7b3a-7c4d-9e5f-6a7b8c9d0e1f"  # Member.user_uuid
+
+# A client acting in the member's space. It shares the connections and settings of client.
+seller = client.on_behalf_of(member_uuid)
+print(len(seller.products.list()), "products in the seller's space")
+
+# One request only: the request option wins over the client's.
+page = client.payments.list(options=RequestOptions(on_behalf_of=member_uuid))
+print(len(page.items), "payments of the seller")
+
+# "" forces the organization's own space for one request of the seller's client.
+own = seller.products.list(options=RequestOptions(on_behalf_of=""))
+print(len(own), "products of the organization")
 ```
 
-After verification, parse the body with `parse_session_webhook(body)` (transaction webhook) or
-`parse_subscription_webhook(body)` (subscription webhook). They decode with the same policy as
-API responses and raise `ValidationError` for a body that is not JSON or has a field of the
-wrong type.
+`QBitFlow(key, on_behalf_of=uuid)` sets it for every request of a client. A value that is not a
+UUID (or the nil UUID) is a `ValidationError`, raised at once, and nothing is sent.
 
-### Configuring Webhooks
+## Checkout sessions
 
-Webhook URLs are **no longer set per session**. Instead, configure them once in your
-QBitFlow dashboard settings, and they apply consistently to every transaction:
+A checkout session is a hosted payment page. Create it, send your customer to its `link`, and act
+on the webhook. The session's id (`pay@…` or `sub@…`) is also the id of the payment or the
+subscription it creates once the customer's transaction is confirmed.
 
--   **Transaction webhook** — receives notifications when a payment or subscription
-    session changes status (e.g. completed, failed). Payload: `SessionWebhookResponse`.
--   **Subscription status webhook** — receives notifications on every subscription
-    lifecycle transition (e.g. `trial → active`, `active → past_due`,
-    `active → cancelled`), and on each successful renewal. Payload: `SubscriptionWebhook`.
-
-> **Migration note:** Previous versions accepted a `webhook_url` argument on
-> `one_time_payments.create_session()` and `subscriptions.create_session()`. That
-> parameter has been removed — set the **Transaction webhook** in the dashboard instead.
-> Likewise, the **Subscription status webhook** replaces the old pattern of running a
-> cron job that periodically calls `subscriptions.get()` to detect status changes.
-
-A complete, runnable FastAPI example lives in [`examples/server.py`](examples/server.py).
-
-#### Test Webhook Reachability
-
-The dashboard's **Test webhook** action lets you confirm your endpoint is reachable
-before going live. It sends a request with a **fake payload** that will not parse like a
-real webhook — so your handler must short-circuit it. The request carries the webhook ID
-in the `X-Webhook-Id` header; when that value equals `TEST_WEBHOOK_ID`, return HTTP `200`
-immediately and skip normal payload processing:
+Name the product with **exactly one** of `product_uuid`, `product_reference`, or an inline
+product (`product_name` + `price`, `description` optional):
 
 ```python
-from qbitflow import TEST_WEBHOOK_ID
-
-# ...inside your handler, after verifying the signature:
-if x_webhook_id == TEST_WEBHOOK_ID:
-    return {"status": "received", "message": "Test webhook acknowledged"}
-```
-
-Perform this check **after** signature verification but **before** parsing the payload.
-
-Verifying first is deliberate: running the probe through your verification path is what
-makes the dashboard button a genuine end-to-end test of your setup — secret, headers and
-replay window included. Short-circuiting before the signature check would make the button
-report success even with a broken or missing secret. Checking before *parsing* still
-matters, because the fake payload will not validate as a real event. Both examples below
-follow this order.
-
-> **Note:** this assumes the dashboard's probe is signed like a normal delivery. If your
-> probe is rejected with a signature mismatch, confirm that with QBitFlow before relaxing
-> the check.
-
-### Transaction Webhook
-
-Handles payment and subscription session status changes. Always verify the signature
-before trusting the payload:
-
-```python
-from typing import Annotated
-from fastapi import FastAPI, Request, Header, HTTPException
-from qbitflow import QBitFlow, TEST_WEBHOOK_ID, parse_session_webhook
-from qbitflow.dto.transaction.status import TransactionStatusValue
-
-app = FastAPI()
-client = QBitFlow(api_key="your_api_key")
-
-@app.post("/webhook")
-async def handle_webhook(
-    request: Request,
-    x_webhook_id: Annotated[str, Header()],
-    x_webhook_signature_256: Annotated[str, Header()],
-    x_webhook_timestamp: Annotated[str, Header()]
-):
-    body = await request.body()
-
-    if not client.webhooks.verify(
-        payload=body,
-        signature=x_webhook_signature_256,
-        timestamp=x_webhook_timestamp
-    ):
-        # Returning a >= 400 status causes QBitFlow to retry the webhook
-        raise HTTPException(status_code=401, detail="Invalid webhook signature")
-
-    # Reachability test from the dashboard — acknowledge and skip processing
-    if x_webhook_id == TEST_WEBHOOK_ID:
-        return {"status": "received", "message": "Test webhook acknowledged"}
-
-    event = parse_session_webhook(body)
-
-    # event.session is automatically resolved to the correct session type:
-    # OneTimePaymentSession or SubscriptionSession. event.status may be None.
-    if event.status and event.status.status == TransactionStatusValue.COMPLETED:
-        print(f"Payment completed: {event.session.product_name}")
-        print(f"Customer: {event.session.customer_uuid}")
-        print(f"Amount: ${event.session.price}")
-        # `reference` echoes back the value you set when creating the session, so you can
-        # match the transaction to your own order/invoice without storing our UUID.
-        print(f"Your reference: {event.session.reference}")
-
-        from qbitflow.dto.transaction.session import SubscriptionSession
-        if isinstance(event.session, SubscriptionSession):
-            print(f"Frequency: {event.session.frequency}s")
-    elif event.status and event.status.status == TransactionStatusValue.FAILED:
-        print(f"Payment failed: {event.status.message}")
-
-    return {"received": True}
-```
-
-### Subscription Status Webhook
-
-Once the **Subscription status webhook** is enabled in the dashboard, QBitFlow POSTs a
-`SubscriptionWebhook` payload whenever a subscription changes status — no polling
-required. The same endpoint also receives a delivery on each successful renewal, so the
-envelope carries `subscription_uuid`, `subscription_reference` (your own reference, if
-set), a `type` discriminator, and the event-specific payload in `data`:
-
-- `type == SubscriptionWebhookType.STATUS_TRANSITION` → `data` is a
-  `SubscriptionStatusTransition` (`previous_status`, `current_status`, `updated_at`)
-- `type == SubscriptionWebhookType.BILLING` → `data` is a `SubscriptionHistory`
-
-```python
-from typing import Annotated
-from fastapi import FastAPI, Request, Header, HTTPException
-from qbitflow import QBitFlow, TEST_WEBHOOK_ID, parse_subscription_webhook
-from qbitflow.dto.transaction.subscription import SubscriptionStatus, SubscriptionWebhookType
-
-app = FastAPI()
-client = QBitFlow(api_key="your_api_key")
-
-@app.post("/subscription-webhook")
-async def handle_subscription_webhook(
-    request: Request,
-    x_webhook_id: Annotated[str, Header()],
-    x_webhook_signature_256: Annotated[str, Header()],
-    x_webhook_timestamp: Annotated[str, Header()]
-):
-    body = await request.body()
-
-    if not client.webhooks.verify(
-        payload=body,
-        signature=x_webhook_signature_256,
-        timestamp=x_webhook_timestamp
-    ):
-        raise HTTPException(status_code=401, detail="Invalid webhook signature")
-
-    # Reachability test from the dashboard — acknowledge and skip processing
-    if x_webhook_id == TEST_WEBHOOK_ID:
-        return {"status": "received", "message": "Test webhook acknowledged"}
-
-    event = parse_subscription_webhook(body)
-
-    if event.type == SubscriptionWebhookType.BILLING:
-        # A period was renewed — record event.data against event.subscription_uuid
-        print(f"Subscription {event.subscription_uuid} billed {event.data.amount}")
-        return {"received": True}
-
-    if event.type != SubscriptionWebhookType.STATUS_TRANSITION:
-        # A webhook type this SDK version does not know: event.data is the raw dict.
-        return {"received": True}
-
-    print(f"Subscription {event.subscription_uuid} "
-          f"(ref: {event.subscription_reference or '-'}): "
-          f"{event.data.previous_status} -> {event.data.current_status}")
-
-    # React to the lifecycle transition — e.g. revoke access on cancellation
-    if event.data.current_status == SubscriptionStatus.CANCELLED:
-        print(f"Revoking access for {event.subscription_uuid}")
-    elif event.data.current_status == SubscriptionStatus.PAST_DUE:
-        print(f"Payment failed — notifying customer for {event.subscription_uuid}")
-
-    return {"received": True}
-```
-
-`SubscriptionStatus` values: `active`, `cancelled`, `past_due`, `low_on_funds`,
-`pending`, `trial`, `trial_expired`. A status added by the API later arrives as a plain
-string rather than failing the delivery.
-
-## Error Handling
-
-Every exception derives from `QBitFlowError` and carries `message`, `status_code` (whenever an
-HTTP response was involved, including response-shape failures) and `fields` — the per-field
-failures, one `FieldError(field, message)` each. Client-side validation, including building a
-request DTO, raises the same `ValidationError` with `status_code=None`.
-
-| HTTP status                                   | Exception                                           |
-| --------------------------------------------- | --------------------------------------------------- |
-| 400, 422                                      | `ValidationError` (same type as client-side checks) |
-| 401                                           | `AuthenticationError`                               |
-| 403                                           | `ForbiddenException`                                |
-| 404                                           | `NotFoundException`                                 |
-| 409                                           | `ConflictError`                                     |
-| 429                                           | `RateLimitError` (`retry_after` seconds or `None`)  |
-| other 4xx                                     | `InvalidRequestError`                               |
-| 5xx, 3xx, empty / non-JSON 2xx, wrong types   | `ServerError` (a subclass of `APIError`)            |
-| network / timeout after retries               | `NetworkError`                                      |
-
-```python
-from qbitflow.exceptions import (
-    QBitFlowError,
-    AuthenticationError,
-    ConflictError,
-    ForbiddenException,
-    NotFoundException,
-    RateLimitError,
-    ServerError,
-    ValidationError,
-    NetworkError,
+session = client.checkout_sessions.create_payment(
+    product_uuid="0192f1c2-1111-7c4d-9e5f-6a7b8c9d0e1f",  # or product_reference="tshirt-blue-m"
+    reference="order-1043",  # your order id: unique per space
+    customer_reference="crm-42",  # kept on the payment
+    success_url="https://shop.example.com/orders/1043?session={{UUID}}&type={{TRANSACTION_TYPE}}",
+    cancel_url="https://shop.example.com/cart",
+    expires_in_minutes=30,  # 10 to 1440
 )
+print("pay at", session.link, "- session", session.uuid)
+```
+
+A subscription checkout takes the same arguments plus its terms, each optional over a
+subscription product's:
+
+```python
+from qbitflow import Duration, DurationUnit
+
+session = client.checkout_sessions.create_subscription(
+    product_name="Pro plan",
+    price=4.99,  # USD per period
+    frequency=Duration(value=1, unit=DurationUnit.MONTHS),
+    trial_period=Duration(value=14, unit=DurationUnit.DAYS),
+    min_periods=3,  # the customer commits to 3 periods
+    success_url="https://app.example.com/billing?subscription={{UUID}}",
+)
+print("subscribe at", session.link)
+```
+
+- **Redirect placeholders.** In `success_url` and `cancel_url`, QBitFlow replaces `{{UUID}}` with
+  the session's id and `{{TRANSACTION_TYPE}}` with `payment` or `createSubscription`. In live mode
+  both URLs must be `https`. A redirect proves nothing (anyone can open the URL): fulfil on the
+  webhook, or on `get_status`.
+- **Errors to expect:** `409 merchant_not_ready` (`details["reason"]`) when the space's wallets
+  accept no currency; `409 unique_violation` when another payment or open session holds the
+  `reference`; `400 validation_failed` above 5 USD in test mode (`details["max"]`); `404` for an
+  unknown product or customer.
+
+### Status
+
+```python
+from qbitflow import CheckoutSessionStatusValue
+
+status = client.checkout_sessions.get_status(session.uuid)
+if status.status == CheckoutSessionStatusValue.COMPLETED:
+    print("paid, tx", status.tx_hash)
+elif status.status == CheckoutSessionStatusValue.EXPIRED:
+    print("expired unpaid:", status.message)
+elif status.status == CheckoutSessionStatusValue.WAITING_CONFIRMATION:
+    print("sent, waiting for the network")
+elif status.last_attempt is not None:  # created, or a status this SDK does not know
+    print("last attempt failed:", status.last_attempt.code)  # the customer may try again
+```
+
+| `status` | Meaning | Final |
+|---|---|---|
+| `created` | Waiting for the customer. With `last_attempt` set, their last attempt failed (`last_attempt.code` says why) | no |
+| `waitingConfirmation` | A transaction was sent; waiting for the network. It may last: the transaction can still land | no |
+| `completed` | Confirmed and recorded: the `Payment` or `Subscription` exists, with the session's id | yes |
+| `expired` | Expired unpaid (`checkout.expired` was sent). Read some days later, an expired session is a 404 | yes |
+
+**Never cancel an order on `last_attempt`:** a failed attempt is not final, and the customer can
+pay from the same checkout until it expires. Release what the order holds on `checkout.expired`.
+
+### Expire
+
+End a session early (an order cancelled on your side). It answers its status, and
+`checkout.expired` follows. Once the customer paid or is paying it is a `409 tx_already_sent`.
+
+```python
+expired = client.checkout_sessions.expire(session.uuid)
+print(expired.status)  # expired
+```
+
+## Products and customers
+
+Products are optional (a checkout can name an inline product) and give you a reusable catalog
+with payment links. A subscription product carries its terms.
+
+```python
+from qbitflow import Duration, DurationUnit, SubscriptionTermsParams
+
+product = client.products.create(
+    name="Pro plan",
+    description="Everything, billed monthly",
+    price=4.99,
+    reference="pro-monthly",  # unique per space; generated when left out
+    subscription=SubscriptionTermsParams(frequency=Duration(value=1, unit=DurationUnit.MONTHS)),
+)
+
+# Only the arguments given change. A new price applies to new checkouts and subscribers only.
+product = client.products.update(product.uuid, price=5.99, is_active=False)  # hidden from list()
+
+everything = client.products.list(include_hidden=True, subscription=True)
+print(product.payment_link, len(everything))
+```
+
+`products.get`, `get_by_reference` and `delete` complete the set. Deleting a product does not stop
+its subscriptions: cancel them with `subscriptions.cancel` if the product is gone for good.
+
+```python
+customer = client.customers.create(
+    name="Ada", last_name="Lovelace", email="ada@example.com", reference="crm-42"
+)
+
+# "" (or None) clears phone_number or address; leaving the argument out keeps it.
+customer = client.customers.update(customer.uuid, phone_number="")
+
+by_email = client.customers.get_by_email("ada@example.com")
+print(customer.uuid == by_email.uuid)
+```
+
+`customers.get`, `get_by_reference`, `list` / `iterate` (by `email` or `verified`) and `delete`
+complete the set. A checkout given `customer_uuid` or `customer_reference` asks the customer
+nothing (`customer_reference` is kept on the payment, and links your customer with that reference
+if there is one); without either, the checkout asks what your `checkout.customerDetails` setting
+says (the full details by default).
+
+The clearable update fields (`customers.update`'s `phone_number` and `address`,
+`products.update`'s and `webhooks.endpoints.update`'s `description`) default to `NOT_GIVEN`:
+left out, the value is unchanged; `""` or `None` clears it.
+
+## Payments and failures
+
+A `Payment` exists once its transaction is confirmed, with its checkout session's `pay@…` id.
+
+```python
+from datetime import datetime, timedelta, timezone
+
+since = datetime.now(timezone.utc) - timedelta(days=30)  # aware datetimes only
+page = client.payments.list(
+    created_after=since,
+    include_members=True,  # organization key: the members' payments too
+    limit=50,
+)
+for p in page.items:
+    print(
+        f"{p.uuid} {p.reference!r}: {p.amount:.2f} USD ({p.explorer_url}), "
+        f"merchant got {p.metadata.tx_amounts.usd.merchant:.2f} USD"
+    )
+
+payment = client.payments.get("pay@0192f1c2-2222-7c4d-9e5f-6a7b8c9d0e1f")
+by_ref = client.payments.get_by_reference("order-1042")
+print(payment.tx_hash, by_ref.uuid, payment.refundable)
+```
+
+- **Filters**: `customer_uuid`, `product_uuid`, `created_after` / `created_before` (both
+  excluded), `refunded`, and, with an organization key acting for itself, `include_members`
+  (every member's rows, each naming its `user_uuid`) or `user_uuid` (one member's). The last two
+  exclude each other.
+- **Reading a member's row** from the organization's space:
+  `client.payments.get(id, include_members=True)`, or `on_behalf_of` the member.
+- **The combined feed** of one-time payments and subscription bills, newest first:
+  `payments.list_combined` / `iterate_combined`, with the same filters plus `source`
+  (`CombinedPaymentSource.PAYMENT`, `CombinedPaymentSource.SUBSCRIPTION_HISTORY`) and
+  `subscription_uuid`.
+- **Failures** are the failed attempts to pay a checkout or a bill. They never moved money and
+  are not final: the customer can try again.
+
+```python
+from qbitflow import FailureCategory
+
+for f in client.failures.iterate(category=FailureCategory.INSUFFICIENT_BALANCE):
+    print(f"{f.tx_uuid} attempt {f.attempt}: {f.code} ({f.attempted_usd:.2f} USD)")
+```
+
+## Subscriptions
+
+A subscription exists once its customer signed its checkout: paid the first period, or started
+the free trial. It keeps the checkout's `sub@…` id for life.
+
+| `status` | Meaning |
+|---|---|
+| `trial` | In its free trial |
+| `trialExpired` | The trial ended without the customer confirming it (`action_required` `confirmTrial`); cancelled 7 days later unless confirmed |
+| `active` | Billed on its due dates |
+| `pastDue` | A bill failed; retried for up to 7 days (`dunning` on reads), then cancelled |
+| `paused` | Paused by its customer: not billed until resumed |
+| `stopped` | Cancelled during its period: never billed again, `cancelled` at `next_billing_date` |
+| `cancelled` | Over (`cancellation_reason` says why). Final |
+
+**Access rule: grant access while `now < current_period_end`, whatever the status.** A `stopped`
+or `paused` subscription has paid for its period; a `pastDue` one's period has ended.
+
+```python
+from datetime import datetime, timezone
+
+from qbitflow import Subscription
+
+
+def has_access(sub: Subscription) -> bool:
+    end = sub.current_period_end
+    return end is not None and datetime.now(timezone.utc) < end
+```
+
+`action_required` says what the customer must do (`topUpAllowance`, `raiseMaximum`,
+`confirmTrial`; `None`: nothing): point them to the `management_page_link` the subscription
+webhooks carry.
+
+```python
+from qbitflow import SubscriptionStatus
+
+page = client.subscriptions.list(status=SubscriptionStatus.PAST_DUE)
+for sub in page.items:
+    if sub.dunning is not None:
+        print(sub.uuid, sub.dunning.remaining_attempts, "attempts left")
+
+sub = client.subscriptions.get("sub@0192f1c2-3333-7c4d-9e5f-6a7b8c9d0e1f")  # cancelled ones too
+print(sub.status, sub.price_usd, "USD per period")
+
+# Every bill, newest first: the iterator fetches the pages lazily.
+for bill in client.subscriptions.iterate_bills(sub.uuid):
+    if bill.period_end is not None:
+        print(f"{bill.uuid}: {bill.amount:.2f} USD, paid until {bill.period_end.date()}")
+```
+
+- `subscriptions.get_by_reference` reads one by your checkout's `reference`; `get_bill` one bill
+  (`sub-hist@…`).
+- `subscriptions.get_public_history` returns the 10 latest bills as the customer's page shows
+  them. It is a public route: the fields only the merchant sees (`metadata`, `customer_uuid`,
+  `customer_reference`, `user_uuid`, `paid_min_units`, `refund`, …) are empty there. Use
+  `list_bills` for full bills.
+- Before its checkout completes, `subscriptions.get` is a 404: read the checkout session instead.
+
+### Cancel
+
+`cancel` cancels without the customer signing. By default it is immediate (`cancelled`, reason
+`merchant`); `immediate=False` stops it now and cancels it at the end of the period paid for.
+
+```python
+result = client.subscriptions.cancel(sub.uuid, immediate=False)
+# ConflictError 409 subscription_already_stopped_or_inactive; NotFoundError once cancelled
+if result.pending:
+    # HTTP 202: the on-chain cancellation is still confirming and the status is not updated yet.
+    # It goes on regardless; subscription.statusChanged tells the end.
+    print("cancellation confirming")
+else:
+    print("now", result.subscription.status)  # stopped
+```
+
+`cancel` answers 200 when done and 202 (`pending`) while confirming on-chain. It is never retried
+automatically.
+
+### Test billing
+
+In test mode a subscription is billed only when you ask, with live's statuses and webhooks:
+
+```python
+state = client.subscriptions.execute_test_billing(sub.uuid)
+# ConflictError 409 payment_not_due before next_billing_date; BadRequestError for a live one
+print(state.stage, state.outcome, state.failure_code)
+```
+
+Walk the timeline once in test mode: a 5-minute frequency, pay from a test wallet, trigger the
+bill, then empty the wallet and trigger it again to see `subscription.billingFailed` and
+`pastDue`.
+
+## Refunds
+
+```python
+# Refunds waiting for an answer. From the organization's space the members' are included by
+# default: include_members=False leaves them out.
+for r in client.refunds.list(include_members=False):
+    print(r.uuid, r.tx_uuid, r.initiated_by, r.reason, r.amount_usd)
+
+# Answered refunds (approved or rejected), page by page.
+for r in client.refunds.iterate_inactive():
+    print(r.uuid, r.status, r.explorer_url)
+```
+
+`refunds.initiate` starts a refund of a payment (`pay@…`) or a bill (`sub-hist@…`) of the space.
+**It creates a pending refund: no money moves until you sign the transfer in the dashboard**, from
+the wallet that was paid. `refund.completed` tells you when it is sent.
+
+```python
+from qbitflow import ConflictError
 
 try:
-    # "P" is too short: rejected locally, before any request, with the same type as a 400.
-    product = client.products.create(CreateProductDto(name="P", description="Desc", price=9.99))
-except ValidationError as e:
-    # A field rejected locally *or* by the API (400): same type, same handling.
-    print(f"Validation failed ({e.status_code}): {e.message}")
-    for failure in e.fields:
-        print(f"  {failure.field}: {failure.message}")
-except AuthenticationError:
-    print("Invalid or expired API key")
-except ForbiddenException:
-    print("This API key is not permitted to do that")
-except NotFoundException as e:
-    print(f"Not found: {e.message}")
-except ConflictError as e:
-    print(f"Conflict: {e.message}")
-except RateLimitError as e:
-    print(f"Rate limited; retry after {e.retry_after} seconds")
-except ServerError as e:
-    print(f"QBitFlow is unavailable or answered unexpectedly ({e.status_code}): {e.message}")
-except NetworkError as e:
-    print(f"Network error: {e.message}")
-except QBitFlowError as e:
-    print(f"SDK error: {e.message}")
+    refund = client.refunds.initiate(
+        tx_uuid="pay@0192f1c2-2222-7c4d-9e5f-6a7b8c9d0e1f",
+        refund_percent=50.0,  # of everything the customer paid, network fee included; None = 100
+        reason="Damaged in transit",
+        merchant_message="Sorry about that: half of your payment is on its way back.",
+    )
+    print(refund.uuid, refund.status)  # pending
+except ConflictError as exc:
+    if exc.code != "refund_already_exists":
+        raise
+    print("already refunded:", exc.details["refundUuid"])  # one refund per transaction
 ```
 
-Request DTOs (`CreateCustomerDto`, `CreateProductDto`, …) validate their fields when they
-are constructed — and again when handed to a request method — and raise the SDK's
-`ValidationError` with `fields`, never `pydantic.ValidationError`. Request methods also accept a
-plain mapping of the DTO's fields.
+A refund is `pending`, `approved` or `rejected`; `initiated_by` is `customer` (a request you
+answer in the dashboard) or `merchant`. A held seller's payment already released to them can no
+longer be refunded (`409 held_funds_released`).
 
-## API Reference
+## Marketplaces
 
-### QBitFlow
+A marketplace is an organization whose sellers are its **members**. You invite them, sell for
+them with your organization key and `On-Behalf-Of`, take a commission on their payments, and may
+hold their funds until you trust them. QBitFlow stays non-custodial: money goes from the
+customer's wallet to the seller's (and your commission to yours) in one transaction.
 
-#### Constructor
+**1. Invite the seller.** The SDK always invites members (`role: user`); the team is invited from
+the dashboard.
 
 ```python
-QBitFlow(
-    api_key: str,
-    timeout: Optional[float] = None,
-    max_retries: Optional[int] = None,
-    base_url: Optional[str] = None,
+created = client.invitations.create(
+    email="seller@example.com",
+    trust_layer=True,  # hold their payments until members.trust
+    organization_fee_percent=5.0,  # your commission: 0 to 50 %, at most 2 decimals
+    redirect_url="https://market.example.com/welcome",
+)  # ConflictError 409 already_joined for a member; RateLimitError beyond 50 invitations an hour
+print(created.invitation.uuid, created.link)  # the link is also emailed
+```
+
+**2. Wait for `member.joined`.** The seller exists once they accepted: store the event's
+`user_uuid` and match `invitation_uuid` to your invitation. Never trust the redirect's
+`?invitationUuid=` (anyone can open it).
+
+```python
+from qbitflow import MemberJoinedEvent
+
+if isinstance(event, MemberJoinedEvent):
+    print("invitation", event.data.invitation_uuid, "accepted by", event.data.user_uuid)
+```
+
+**3. Sell for them.** The seller adds their receiving wallet in their QBitFlow dashboard (only
+they can, not needed while you hold their funds). Then act in their space:
+
+```python
+if not client.wallets.list_supported_currencies(user_uuid=member_uuid):
+    raise SystemExit("the seller cannot be paid yet: their checkouts would answer 409 merchant_not_ready")
+
+seller = client.on_behalf_of(member_uuid)
+session = seller.checkout_sessions.create_payment(
+    product_name="Handmade mug",
+    price=4.5,
+    success_url="https://market.example.com/orders/{{UUID}}",
+)  # PermissionDeniedError 403 policy_disabled when your policies don't let members do this
+print(session.link)
+```
+
+**4. Hear of every sale.** An organization webhook endpoint receives every seller's events by
+default; the event's `user_uuid` names the seller. Use it as `on_behalf_of` for follow-up reads.
+
+**5. Commission and held funds.** Each payment records your fee in `metadata.organization_fee`
+and `metadata.tx_amounts`. While you hold a seller's funds (`trust_layer` True,
+`Member.trusted_at` None), their payments go to your wallet and the net is owed to them:
+
+```python
+held = client.members.get_held_funds(member_uuid)
+print(f"owed to the seller: {held.total_amount:.2f} USD over {len(held.ledgers)} lines")
+
+# Their new payments go to their own wallets from now on. What is held stays held until you
+# release it from the dashboard (heldFunds.released tells you).
+member = client.members.trust(member_uuid)
+if member.trusted_at is not None:
+    print("trusted since", member.trusted_at.isoformat())
+
+# Change the commission (a checkout already created keeps its fee).
+client.members.update(member_uuid, organization_fee_percent=7.5)
+```
+
+- `members.list` / `iterate` / `get`, `members.list_held_funds` (every member owed), and
+  `seller.members.get_own_held_funds()` (the seller's side) complete the reads.
+- `members.remove` ends a seller's membership in the key's mode: their keys stop working and
+  their checkouts close. It is a `409 held_funds_pending` while you hold their live funds: release
+  them first.
+- `invitations.list` / `iterate` (by `status`) and `invitations.revoke` manage the invitations.
+- Today a seller whose account already belongs to another organization cannot accept (no
+  `member.joined` comes), and test-mode sellers are real accounts that accept from a real inbox.
+
+## Wallets
+
+Wallets are added and removed in the dashboard, by their owner only. The SDK reads them.
+
+```python
+for w in client.wallets.list(with_balances=True):
+    print(w.currency.symbol, w.public_key)
+    for tw in w.token_wallets:
+        if tw.balance is not None:
+            print(f"  {tw.token.symbol}: {tw.balance.balance} ({tw.balance.balance_usd:.2f} USD)")
+```
+
+`wallets.list_for_member(user_uuid)` reads a member's wallets (organization key), and
+`wallets.list_supported_currencies` the currencies a space's checkouts accept: none means its
+checkouts answer `409 merchant_not_ready`.
+
+## Accounting export
+
+Every payment, bill, refund and fee between two dates (`YYYY-MM-DD` strings or `datetime.date`s,
+both included), as models or as CSV text:
+
+```python
+from pathlib import Path
+
+for e in client.accounting.export_json("2026-09-01", "2026-09-30"):
+    print(e.type, e.payment_uuid, e.tx_time_utc, e.token_symbol, e.gross_amount, e.net_amount)
+
+csv = client.accounting.export_csv("2026-09-01", "2026-09-30")
+Path("qbitflow-2026-09.csv").write_text(csv)
+```
+
+The SDK checks the dates and `from <= to` before sending. **The API allows at most 95 days per
+export** and answers 400 beyond: split longer ranges. Rows are typed `payment`,
+`subscriptionHistory`, `refund`, `organizationFee` or `referralFee`; amounts in a token's
+smallest unit are decimal strings, and the empty fields of a row are `None`.
+
+## Webhooks
+
+QBitFlow posts an **event** to your endpoints when something happens: a payment confirmed, a
+subscription billed, a member joined.
+
+### 1. Create an endpoint and store its secret
+
+```python
+from qbitflow import EventType
+
+created = client.webhooks.endpoints.create(
+    url="https://shop.example.com/webhooks/qbitflow",
+    events=[  # None: every type, including the ones added later
+        EventType.PAYMENT_COMPLETED,
+        EventType.CHECKOUT_EXPIRED,
+        EventType.SUBSCRIPTION_STATUS_CHANGED,
+    ],
+    description="Order fulfilment",
+)
+# The whsec_… secret is shown only this once: put it in your secret store now.
+print(created.uuid, created.secret)
+```
+
+Up to 10 endpoints per space and mode; live endpoints need `https` and a public host. An
+organization endpoint also receives its members' events unless created with
+`include_members=False`. `endpoints.list`, `get`, `update` (`enabled=False` pauses it, `True`
+enables it again) and `delete` manage them. An endpoint's secret is shown and rotated in the
+dashboard only.
+
+### 2. Verify and handle the deliveries
+
+Verify the `QBitFlow-Signature` header over the **raw body**, then switch on the event's class.
+`qbitflow.webhooks` works without a client (a receiver may not hold an API key):
+
+```python
+from datetime import datetime, timezone
+from typing import Optional
+
+from qbitflow import (
+    CheckoutExpiredEvent,
+    PaymentCompletedEvent,
+    SubscriptionStatusChangedEvent,
+    ValidationError,
+    WebhookSignatureError,
+    webhooks,
+)
+
+processed: set[str] = set()  # stands for your database: deliveries are at least once
+
+
+def handle_delivery(raw_body: bytes, signature_header: Optional[str], secret: str) -> int:
+    """Returns the HTTP status to answer."""
+    try:
+        event = webhooks.construct_event(raw_body, signature_header, secret)
+    except WebhookSignatureError as exc:
+        print("rejected:", exc.reason)  # e.g. noMatchingSignature, timestampOutsideTolerance
+        return 400
+    except ValidationError:
+        return 400  # not a v2 event: an endpoint still on v1
+    if event.id in processed:
+        return 200  # a retry of an event already handled
+    processed.add(event.id)
+
+    if isinstance(event, PaymentCompletedEvent):
+        p = event.data
+        print(f"fulfil order {p.reference!r} ({p.uuid}): {p.amount:.2f} USD")
+    elif isinstance(event, CheckoutExpiredEvent):
+        print("release order", event.data.reference)
+    elif isinstance(event, SubscriptionStatusChangedEvent):
+        s = event.data
+        access = s.current_period_end is not None and datetime.now(timezone.utc) < s.current_period_end
+        print(f"{s.uuid}: {s.previous_status} -> {s.status}, access: {access}")
+    # Any other type, or one added after this SDK (UnknownEvent): acknowledge it.
+    return 200
+```
+
+With FastAPI (`pip install fastapi`), hand it the raw body and the header:
+
+```python
+from fastapi import FastAPI, Request, Response
+
+app = FastAPI()
+
+
+@app.post("/webhooks/qbitflow")
+async def qbitflow_webhook(request: Request) -> Response:
+    raw_body = await request.body()  # the bytes as received: never re-serialized
+    status = handle_delivery(raw_body, request.headers.get("QBitFlow-Signature"), "whsec_…")
+    return Response(status_code=status)
+```
+
+- **At least once.** The same event can arrive more than once: **deduplicate on `event.id`**
+  (also in the `QBitFlow-Event-Id` header) and make the handler idempotent.
+- **Answer 2xx fast**, within 30 seconds, **including to the types you ignore**: anything else is
+  retried (for 3 days in live mode), and an endpoint failing for 3 days is disabled. Store the
+  event, answer, then process it in the background.
+- **Secret rotation** needs nothing on your side: for 24 hours after a rotation the header
+  carries two `v1=` signatures, the new secret's and the previous one's, and either secret
+  verifies. Switch your secret within the day.
+- **Timestamps** more than 5 minutes from your clock are refused (replays): `tolerance=` (seconds)
+  changes it, `now=` sets the clock in tests (a `datetime`, unix seconds, or a callable).
+- **Members' events** carry the member in `event.user_uuid`: read their resources with
+  `client.on_behalf_of(event.user_uuid)`.
+- **No fixed source IPs**: verify the signature, never allow-list addresses.
+- **v2 only.** An endpoint migrated from API v1 receives v1 bodies, which `parse_event` refuses
+  (a `ValidationError` on `version`): move it to v2 in the dashboard, or with
+  `client.webhooks.endpoints.update(uuid, payload_version=WebhookPayloadVersion.V2)`.
+- Not holding the secret? `client.webhooks.verify_remote(endpoint_uuid, raw_body, header)` has
+  the API check it, then `client.webhooks.parse_event(raw_body)` parses the body.
+- `client.webhooks.verify`, `construct_event` and `parse_event` are the same functions on the
+  client.
+
+| `event.type` | Event class | `event.data` |
+|---|---|---|
+| `payment.completed` | `PaymentCompletedEvent` | `PaymentCompleted`: the `Payment` + `management_page_link` |
+| `subscription.created` | `SubscriptionCreatedEvent` | `SubscriptionCreated`: the `Subscription` (`active` or `trial`) + `management_page_link` |
+| `subscription.billed` | `SubscriptionBilledEvent` | `SubscriptionBilled`: the `Bill` (paid until `period_end`) + `subscription_reference`, `subscription_status` |
+| `subscription.statusChanged` | `SubscriptionStatusChangedEvent` | `SubscriptionStatusChanged`: the `Subscription` + `previous_status` |
+| `subscription.actionRequiredChanged` | `SubscriptionActionRequiredChangedEvent` | the `Subscription` + `previous_action_required` |
+| `subscription.billingFailed` | `SubscriptionBillingFailedEvent` | the `Subscription` + `reason`, `bill_uuid`, `amount_usd` (a **string**), `attempt`, `remaining_attempts`, `next_attempt_at` |
+| `subscription.upcomingBill` | `SubscriptionUpcomingBillEvent` | the `Subscription` + `billing_date`, `amount_usd` (a **float**), `trial_ending`, `balance_sufficient`, `allowance_sufficient` |
+| `refund.requested` / `.completed` / `.denied` | `RefundRequestedEvent` / `RefundCompletedEvent` / `RefundDeniedEvent` | the `Refund` |
+| `member.joined` | `MemberJoinedEvent` | `MemberJoined`: the `Member` + `invitation_uuid` |
+| `member.removed` | `MemberRemovedEvent` | the `Member` |
+| `heldFunds.released` | `HeldFundsReleasedEvent` | `HeldFundsReleased`: the transfer paid to the member + the `ledgers` it settled |
+| `checkout.expired` | `CheckoutExpiredEvent` | `PaymentSessionData`, or `SubscriptionSessionData` when `tx_type` is `createSubscription` |
+| `webhook.test` | `WebhookTestEvent` | `WebhookTest`: `endpoint_uuid`, `message` (the dashboard's test) |
+| any other | `UnknownEvent` | the raw JSON value |
+
+`qbitflow.Event` is the union of these classes (a pydantic discriminated union on `type`); every
+one derives from `BaseEvent` (`id`, `type`, `version`, `created_at`, `test`, `user_uuid`). Webhook
+data never carries what only API reads return (`customer`, `refund`/`refundable`, `dunning`,
+`approval`, `product_name`): those fields are `None` on events.
+
+### The event log
+
+Every event of the space, newest first, with each one's deliveries:
+
+```python
+from qbitflow import EventType
+
+for logged in client.webhooks.events.iterate(type=EventType.PAYMENT_COMPLETED):
+    detail = client.webhooks.events.get(logged.id)
+    for d in detail.deliveries:
+        print(detail.event.id, d.url, d.delivered, len(d.attempts))
+    break  # the first one is enough here: breaking stops the fetching
+```
+
+## Currencies
+
+```python
+currencies = client.currencies.list_available(test=True)
+by_id = {c.id: c for c in currencies}  # e.g. 6-decimal USDC
+
+if currencies:
+    c = client.currencies.get(currencies[0].id)  # resolve one id
+    print(c.symbol, c.decimals, len(by_id))
+```
+
+`list_available` lists every currency checkouts can take, `list_main` the chains' native coins,
+and `get` one by id, to resolve the `currency_id`, `available_currency_ids` and
+`accepted_currency_ids` fields. These routes are public and **limited to 60 requests a minute per
+IP: cache the list** at start-up instead of reading it per request. Payments, bills and
+subscriptions already carry their `currency`.
+
+## Pagination and iterators
+
+Paginated lists return a `Page[T]`: `items`, and `next_cursor` (`None` on the last page, else
+the value to pass back as `cursor=`, verbatim); `page.has_more` says whether another page follows.
+
+```python
+cursor = None
+while True:
+    customers = client.customers.list(limit=100, cursor=cursor)
+    for c in customers.items:
+        print(c.email)
+    if not customers.has_more:
+        break
+    cursor = customers.next_cursor
+```
+
+Each paginated list has an `iterate…` twin returning an iterator: it fetches one page at a time,
+only as you consume it, keeps your filters and page size, and stops when you `break`. An error is
+raised from the loop.
+
+```python
+for c in client.customers.iterate(verified=True):
+    print(c.uuid, c.email)
+```
+
+| Method | Iterator | Page size: default / max |
+|---|---|---|
+| `customers.list` | `iterate` | 10 / 100 |
+| `payments.list`, `payments.list_combined` | `iterate`, `iterate_combined` | 10 / 50 |
+| `failures.list` | `iterate` | 10 / 50 |
+| `subscriptions.list`, `subscriptions.list_bills` | `iterate`, `iterate_bills` | 20 / 100 |
+| `refunds.list_inactive` | `iterate_inactive` | 10 / 50 |
+| `members.list`, `invitations.list` | `iterate` | 20 / 100 |
+| `webhooks.events.list` (cursor `evt_…`) | `iterate` | 20 / 100 |
+
+The other lists are short and return a plain `list`: `products.list`, `refunds.list`,
+`wallets.*`, `currencies.*`, `webhooks.endpoints.list` (at most 10), `members.list_held_funds`
+and `subscriptions.get_public_history` (the 10 latest bills).
+
+## Errors
+
+Every error the SDK raises derives from `QBitFlowError` and from `ApiError`, which carries the
+fields every error has; catch the most specific class you can act on:
+
+| Class | When | Codes and fields worth knowing |
+|---|---|---|
+| `ValidationError` | 400 `validation_failed`, or input the SDK refused **before sending** (`status` None) | `field_errors`: each failing input by its wire name, dotted when nested (`frequency.unit`) |
+| `BadRequestError` | any other 400 | `bad_request`, `foreign_key_violation` (`details["field"]`) |
+| `AuthenticationError` | 401 | a missing, unknown, expired or revoked key (a removed member's keys too) |
+| `PermissionDeniedError` | 403 | `forbidden`, `policy_disabled` (`details["policy"]`), `plan_required` |
+| `NotFoundError` | 404 | unknown, deleted, or outside the request's space |
+| `ConflictError` | 409 | `unique_violation` (`details["field"]`), `tx_already_sent`, `merchant_not_ready` (`details["reason"]`), `refund_already_exists` (`details["refundUuid"]`), `held_funds_released`, `held_funds_pending`, `already_joined`, `payment_not_due`, `idempotency_key_in_use`, `conflict` |
+| `GoneError` | 410 | `merchant_closed`: a removed member's or a closed organization's space |
+| `IdempotencyError` | 422 `idempotency_key_reused` | an `Idempotency-Key` reused for another request: a bug, never retried |
+| `RateLimitError` | 429 | `retry_after` (seconds), `limit`, `period_seconds` |
+| `ServerError` | 5xx (503 `network_unavailable`, 504 `timeout`), an unexpected 3xx (redirects are never followed), a 2xx whose body is not the expected JSON | |
+| `NetworkError` | no response: DNS, connection, TLS, timeout | the cause is chained (`__cause__`) |
+| `WebhookSignatureError` | a webhook signature refused, locally or by `verify_remote` | `reason` |
+| `ApiError` | any other HTTP error (e.g. 413 `request_too_large`), and the base of all the above | |
+
+Every error carries `status` (`None` without a response), `code` (branch on it, never on
+`message`), `message`, `details` (never `None`), `request_id`, `field_errors` and `raw_body`.
+`str(error)` reads `"<message> (status <status>, code <code>, request <requestId>)"`, followed by
+`"; <field>: <message>"` for each field error.
+
+```python
+from qbitflow import ApiError, ConflictError, RateLimitError, ValidationError
+
+try:
+    client.customers.create(name="Ada", email="ada@example.com")
+    print("created")
+except ValidationError as exc:
+    for f in exc.field_errors:
+        print(f"{f.field}: {f.message}")  # show it next to the form field
+except ConflictError as exc:
+    if exc.code != "unique_violation":
+        raise
+    print("taken:", exc.details.get("field"))  # email or reference
+except RateLimitError as exc:
+    print("slow down, retry in", exc.retry_after, "s")
+except ApiError as exc:
+    # Quote the request id to support.
+    print(f"QBitFlow error {exc.status} {exc.code} (request {exc.request_id})")
+```
+
+**Client-side validation** runs before every request: names and texts (lengths in characters, no
+markup characters), references (`A-Z a-z 0-9 . _ : @ -`, 1 to 100), emails, phone numbers,
+absolute `http(s)` URLs, prices above 0, percents (at most 2 decimals), durations (a frequency
+between 1 unit and 1 year), UUIDs and transaction ids, dates, the checkout's product choice,
+exclusive filters, and argument types. A failure is a `ValidationError` with `status` None, and
+nothing is sent. What depends on the key's mode or on stored data is left to the API: the 5 USD
+test-mode cap, `https`-only live URLs, the frequency minimum (1 hour live, 5 minutes test), the
+95-day export window, uniqueness.
+
+## Retries and idempotency
+
+| | |
+|---|---|
+| Retried methods | every read (GET), and the 7 creates: `checkout_sessions.create_payment`, `checkout_sessions.create_subscription`, `products.create`, `customers.create`, `webhooks.endpoints.create`, `invitations.create`, `refunds.initiate` |
+| Never retried | every other write: updates, deletes, `checkout_sessions.expire`, `subscriptions.cancel`, `subscriptions.execute_test_billing`, `members.trust`, `members.remove`, `invitations.revoke`, `webhooks.verify_remote` |
+| Retried on | a network error or timeout, a 5xx, a 429, a 409 `idempotency_key_in_use` |
+| Not retried on | any other 4xx (422 `idempotency_key_reused` included), a 3xx, an unusable response |
+| Attempts | 3 retries by default (`max_retries=n`; `0` disables them) |
+| Back-off | 1 s, 2 s, 4 s…; a 429 waits for its `Retry-After` if longer. A wait above 60 s is not made: the `RateLimitError` is raised at once |
+
+`qbitflow.is_retryable(error)` says whether an error is of a transient kind. `timeout` bounds each
+attempt; a retried call may take longer in total.
+
+**Idempotency keys.** Each call of a create sends a fresh `Idempotency-Key` (a UUID v4) and reuses
+it on every retry of that call: a create retried after a timeout answers the first result instead
+of opening a second checkout. To retry **across processes** (a queue re-running a job after a
+crash), pass your own stable key:
+
+```python
+from qbitflow import IdempotencyError, RequestOptions
+
+order_id = "order-1044"
+try:
+    session = client.checkout_sessions.create_payment(
+        product_name="T-shirt",
+        price=4.99,
+        reference=order_id,
+        options=RequestOptions(
+            idempotency_key="checkout-" + order_id,  # the same key returns the same session
+            request_id="job-7781",  # sent as X-Request-Id, echoed in errors
+        ),
+    )
+    print(session.link)
+except IdempotencyError:
+    raise SystemExit("this key was already used with other params")  # 422 idempotency_key_reused
+```
+
+A key is 1 to 255 printable ASCII characters without spaces, and only successful answers are kept
+(24 hours): after a 4xx, the same key runs the request again. A `409 idempotency_key_in_use` (the
+first request still running) is retried automatically. Other methods ignore the option. Retry the
+other writes yourself only after reading the resource's state (a 504 may have done the work).
+
+## Configuration
+
+```python
+import os
+
+import httpx
+
+from qbitflow import QBitFlow
+
+client = QBitFlow(
+    os.environ["QBITFLOW_API_KEY"],
+    timeout=10,  # seconds, per attempt
+    max_retries=5,
+    http_client=httpx.Client(proxy="http://proxy.internal:3128"),  # proxies, transports, tracing…
 )
 ```
 
-`client.close()` releases the shared HTTP connection pool; the client is also a context
-manager. `client.on_behalf_of(user_id)` returns a scoped client sharing that pool (close only
-the root client).
+| Constructor argument | Default | |
+|---|---|---|
+| `base_url` | `https://api.qbitflow.app/v2` (`qbitflow.DEFAULT_BASE_URL`) | an absolute `http(s)` URL; a trailing `/` is stripped |
+| `timeout` | 30 (`DEFAULT_TIMEOUT`) | seconds, per attempt; positive |
+| `max_retries` | 3 (`DEFAULT_MAX_RETRIES`) | `0` disables retries; negative is refused |
+| `http_client` | an `httpx.Client` the SDK creates (and closes) | yours is never closed by the SDK, and never follows redirects for it |
+| `on_behalf_of` | none | every request acts in that member's space |
 
-#### Properties
+| `RequestOptions` field (`options=`, every method) | |
+|---|---|
+| `on_behalf_of` | acts in that member's space for this call; `""` forces the organization's |
+| `idempotency_key` | the 7 creates only: your own `Idempotency-Key` |
+| `request_id` | sends `X-Request-Id` (1 to 128 of `A-Z a-z 0-9 - _ . :`) |
 
-| Property             | Type                          | Description                              |
-|----------------------|-------------------------------|------------------------------------------|
-| `customers`          | `CustomerRequests`            | Customer CRUD operations                 |
-| `products`           | `ProductRequests`             | Product CRUD operations                  |
-| `users`              | `UserRequests`                | User management operations               |
-| `api_keys`           | `ApiKeyRequests`              | Read-only API key access                 |
-| `currencies`         | `CurrencyRequests`            | Supported-currency lookups               |
-| `one_time_payments`  | `PaymentRequests`             | One-time payment sessions and history    |
-| `subscriptions`      | `SubscriptionRequests`        | Recurring subscription management        |
-| `refunds`            | `RefundRequests`              | Refund retrieval                         |
-| `accounting`         | `AccountingRequests`          | Accounting data export (JSON/CSV)        |
-| `claims`             | `ClaimRequests`               | Account claim and fund transfer (`claim` is a deprecated alias) |
-| `transaction_status` | `TransactionStatusRequests`   | Transaction status polling               |
-| `webhooks`           | `WebhookRequests`             | Webhook signature verification           |
+| Webhook argument (`verify`, `construct_event`) | Default |
+|---|---|
+| `tolerance` | 300 seconds (`webhooks.DEFAULT_TOLERANCE`; 0 or less keeps it) |
+| `now` | the system clock |
+
+A bad argument makes `QBitFlow(...)` raise a `ValidationError`. A client's configuration never
+changes; `client.on_behalf_of(...)` derives clients that share it. Use the client as a context
+manager, or call `client.close()`, to close the connections the SDK opened. Every request sends
+`User-Agent: qbitflow-python/3.0.0` (`qbitflow.__version__`). The SDK is synchronous; a client is
+safe to share between threads.
+
+## Migrating from 2.x
+
+3.0.0 is a rewrite for API v2: base URL `/v2`, a new client with keyword-only arguments, UUID ids,
+members and invitations instead of users and claims, a new webhook signature, typed errors.
+**[MIGRATION-v3.md](MIGRATION-v3.md)** maps every 2.x method and type to its replacement, with
+before/after code for the common tasks.
+
+## Examples
+
+Runnable scripts in [`examples/`](examples) (`QBITFLOW_API_KEY=sk_… python examples/<name>.py`):
+
+| Example | Shows |
+|---|---|
+| [`checkout.py`](examples/checkout.py) | a payment checkout, its status, expiry |
+| [`subscriptions.py`](examples/subscriptions.py) | a subscription checkout with a trial, filtered lists, bills, cancel at period end |
+| [`marketplace.py`](examples/marketplace.py) | invite a seller, sell `on_behalf_of`, held funds, trust |
+| [`webhook_handler.py`](examples/webhook_handler.py) | a verified receiver (standard library) with deduplication and typed events |
+| [`errors_and_retries.py`](examples/errors_and_retries.py) | error classes, `is_retryable`, idempotency keys across processes |
 
 ## Testing
 
 ```bash
-# Offline suite (no server needed): transport, DTOs, validation, webhooks
-pytest tests/ -v
-
-# Live integration tests run against the server named by QBITFLOW_BASE_URL, with
-# QBITFLOW_API_KEY. They never default to localhost or production:
-#   neither variable set           -> the live tests are skipped
-#   key set, QBITFLOW_BASE_URL not -> the live tests fail with a clear message
-set -a; . ../.local.env; set +a   # or export both variables yourself
-pytest tests/test_integration.py -v
+pip install -e ".[dev]"
+mypy qbitflow/ && flake8 qbitflow/ tests/ && black --check qbitflow/ tests/ && isort --check-only qbitflow/ tests/ && pytest
 ```
+
+`pytest` runs the offline suite against stub transports, including the cross-SDK conformance
+vectors in `tests/fixtures/vectors/`. The live checks need an API key **and** an explicit base
+URL:
+
+```bash
+QBITFLOW_API_KEY=sk_… QBITFLOW_BASE_URL=https://… pytest tests/test_integration.py -v
+```
+
+The read-only checks only read; the write checks also need `QBITFLOW_LIVE_WRITES=1` and a
+test-mode key (or `QBITFLOW_ALLOW_LIVE_MODE_WRITES=1`).
 
 ## License
 
-This project is licensed under the MPL-2.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MPL-2.0 License: see the [LICENSE](LICENSE) file. See also
+[COMPLIANCE.md](COMPLIANCE.md) and the [trademark policy](TRADEMARKS.md).
 
 ## Support
 
--   📖 [Documentation](https://qbitflow.app/docs)
--   📧 [Email Support](mailto:support@qbitflow.app)
--   🐛 [Issue Tracker](https://github.com/qbitflow/qbitflow-python-sdk/issues)
+- 📖 [Documentation](https://qbitflow.app/docs)
+- 📧 [Email Support](mailto:support@qbitflow.app)
+- 🐛 [Issue Tracker](https://github.com/qbitflow/qbitflow-python-sdk/issues)
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for a list of changes in each version.
+See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Security
 
-For security issues, please email security@qbitflow.app instead of using the issue tracker.
-
+For security issues, please email security@qbitflow.app instead of using the issue tracker (see
+[SECURITY.md](SECURITY.md)).

@@ -1,0 +1,21 @@
+{
+  "createdAt": "2026-10-01T12:00:00Z",
+  "data": {
+    "acceptedCurrencyIds": [
+      8
+    ],
+    "email": "alice@example.com",
+    "joinedAt": "2026-06-15T09:00:00Z",
+    "lastName": "Martin",
+    "name": "Alice",
+    "organizationFeePercent": 5,
+    "spaceUuid": "019eca82-5680-7b00-8000-0000000000b2",
+    "test": false,
+    "trustedAt": "2026-07-01T09:00:00Z",
+    "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+  },
+  "id": "evt_d32aec3c-d46c-57e3-9292-f8433766df46",
+  "test": false,
+  "type": "member.removed",
+  "version": "v2"
+}

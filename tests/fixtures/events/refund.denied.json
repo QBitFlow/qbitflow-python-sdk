@@ -1,0 +1,28 @@
+{
+  "createdAt": "2026-10-01T12:00:00Z",
+  "data": {
+    "amountMinUnits": "10004200",
+    "amountUsd": 10.0042,
+    "chain": "BASE",
+    "createdAt": "2026-09-29T08:15:00Z",
+    "currencyId": 8,
+    "held": false,
+    "initiatedBy": "customer",
+    "merchantMessage": "Only one payment was received for this order",
+    "metadata": null,
+    "paidMinUnits": "10004200",
+    "paidUsd": 10.0042,
+    "reason": "I was charged twice for the same order",
+    "refundPercent": 100,
+    "respondedAt": "2026-10-01T12:00:00Z",
+    "status": "rejected",
+    "test": false,
+    "txHash": "",
+    "txUuid": "pay@01a0f755-f200-7000-8000-000000000001",
+    "uuid": "refund@01a0ec3b-3ba0-7000-8000-000000000006"
+  },
+  "id": "evt_fa171de1-b845-53e3-b885-2c59c88c0ddf",
+  "test": false,
+  "type": "refund.denied",
+  "version": "v2"
+}

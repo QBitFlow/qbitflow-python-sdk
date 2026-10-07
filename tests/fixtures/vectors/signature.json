@@ -1,0 +1,621 @@
+{
+  "cases": [
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "docs rotation, new secret at t+60",
+      "now": 1790856060,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "docs rotation, old secret at t+60",
+      "now": 1790856060,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_old_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "docs rotation, other secret at t+60",
+      "now": 1790856060,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_other_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "docs rotation, new secret at t+360",
+      "now": 1790856360,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "docs rotation, old secret at t+360",
+      "now": 1790856360,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_old_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "docs rotation, other secret at t+360 (time checked first)",
+      "now": 1790856360,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_other_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "docs rotation, t 60 s in the future",
+      "now": 1790855940,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "docs rotation, t 360 s in the future",
+      "now": 1790855640,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "docs, now equals t",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_old_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "new signature only, new secret",
+      "now": 1790856001,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "old signature only, new secret",
+      "now": 1790856001,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=00,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "three v1, the matching one last",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance: exactly 300 s old",
+      "now": 1790856300,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance: 301 s old",
+      "now": 1790856301,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance: exactly 300 s in the future",
+      "now": 1790855700,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance: 301 s in the future",
+      "now": 1790855699,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance 600: 500 s old",
+      "now": 1790856500,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 600
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance 600: 601 s old",
+      "now": 1790856601,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 600
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance 10: exactly 10 s old",
+      "now": 1790856010,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 10
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance 10: 11 s in the future",
+      "now": 1790855989,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 10
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance 0 means 300: 299 s old",
+      "now": 1790856299,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 0
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance 0 means 300: 301 s old",
+      "now": 1790856301,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 0
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance -5 means 300: 300 s old",
+      "now": 1790856300,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": -5
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "tolerance -5 means 300: 301 s in the future",
+      "now": 1790855699,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": -5
+    },
+    {
+      "expect": "timestampOutsideTolerance",
+      "header": "t=0,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "t=0 far in the past",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "missingHeader",
+      "header": "",
+      "name": "header: empty",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "missingHeader",
+      "header": "   ",
+      "name": "header: only spaces",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,t=1790856000",
+      "name": "header: v1 before t",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000, v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: spaces around parts",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": " t = 1790856000 , v1 = 4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d ",
+      "name": "header: spaces around keys and values",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=1790856000,v0=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: unknown scheme only (v0)",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v0=abc,v2=def,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: unknown schemes next to v1",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=1790856000,t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: duplicate t (same value)",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,t=1790856001",
+      "name": "header: duplicate t (different values)",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=+1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: t with a plus sign",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=-1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: negative t",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=1790856000.0,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: decimal t",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=17908 56000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: t with an inner space",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: empty t",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=abc,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: non-numeric t",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=99999999999999999999,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: t overflows int64",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=0001790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: t with leading zeros, signed over the integer form",
+      "note": "the signed text is t as received (behaviour §10.1): a signature over the canonical integer does not match",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=0001790856000,v1=8f7970ffeec933a2a5a6d887c045947b34220f542146454733ebc9880904e2dc",
+      "name": "header: t with leading zeros, signed over the raw text",
+      "note": "the signed text is t as received, leading zeros included",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "T=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: uppercase T key",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=1790856000,V1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: uppercase V1 key only",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: missing t",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=1790856000",
+      "name": "header: missing v1",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=",
+      "name": "header: empty v1",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: empty v1 next to a valid one",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=4A158046F55556E922BDEC376A917C3AC338BA575B495F825427541A60BD2F4D",
+      "name": "header: uppercase hex signature",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4",
+      "name": "header: truncated signature",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d=x",
+      "name": "header: v1 value split on the first = only",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,garbage,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: part without =",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,",
+      "name": "header: trailing comma",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "malformedHeader",
+      "header": "t=1790856000;v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: semicolon separators",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856001,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "header: signature for another t",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "validationError",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d,v1=1cc78a6297ad96dd282d9d0399def50ed42a4e651885ac79f8528194227bc4f5",
+      "name": "secret: empty (programming error)",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "",
+      "tolerance": 300
+    },
+    {
+      "expect": "validationError",
+      "header": "",
+      "name": "secret: empty with an empty header (secret checked first)",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=d5fbe0d078c1d121b14d9645ac48e0c501246cb52d592627267f62f051dbad31",
+      "name": "secret: non-ASCII, UTF-8 bytes as the key",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_ünïcødé_☕",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "secret: without its whsec_ prefix does not match",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=2ff63696c81ff91ce3711962b3992f0d68d7c40d685acdac17146dbd22958bc2",
+      "name": "body: non-ASCII UTF-8",
+      "now": 1790856000,
+      "rawBody": "{\"data\":{\"message\":\"Café ☕ 😀 — naïve\"},\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=2ff63696c81ff91ce3711962b3992f0d68d7c40d685acdac17146dbd22958bc2",
+      "name": "body: NFD form of a body signed in NFC",
+      "now": 1790856000,
+      "rawBody": "{\"data\":{\"message\":\"Café ☕ 😀 — naïve\"},\"type\":\"webhook.test\",\"version\":\"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=db4a879bd30abf8bbe36dbdf418500d77c12c427c1c33f585a2391722402e91d",
+      "name": "body: empty",
+      "now": 1790856000,
+      "rawBody": "",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=1b06fc6810103a18ce6f013c0b3cc959d77d180cb0c0efcb7eb046ccc7f54b58",
+      "name": "body: CRLF line endings",
+      "now": 1790856000,
+      "rawBody": "{\"a\":1}\r\n{\"b\":2}\r\n",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=1b06fc6810103a18ce6f013c0b3cc959d77d180cb0c0efcb7eb046ccc7f54b58",
+      "name": "body: LF version of a CRLF-signed body",
+      "now": 1790856000,
+      "rawBody": "{\"a\":1}\n{\"b\":2}\n",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "body: trailing newline not signed",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}\n",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "noMatchingSignature",
+      "header": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d",
+      "name": "body: re-serialized with spaces",
+      "now": 1790856000,
+      "rawBody": "{\"createdAt\": \"2026-10-01T12:00:00Z\", \"data\": {}, \"id\": \"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\", \"test\": false, \"type\": \"webhook.test\", \"version\": \"v2\"}",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    },
+    {
+      "expect": "ok",
+      "header": "t=1790856000,v1=dd787bebf95f3c9b43d9d13267dac2cb630ebbe028d7391ec3f7fe3186ed1d2c",
+      "name": "body: invalid UTF-8 bytes",
+      "now": 1790856000,
+      "rawBodyBase64": "//4Ae4B9ww==",
+      "secret": "whsec_new_secret",
+      "tolerance": 300
+    }
+  ],
+  "comment": "Local webhook verification (behaviour.md §7, §10): verify(rawBody, header, secret, {tolerance, now}) must give expect.",
+  "generator": ".claude/cross-sdk-checks/v3/gen (cd gen && go run .)",
+  "sdk": "qbitflow-go-sdk 3.0.0"
+}

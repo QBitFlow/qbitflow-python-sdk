@@ -1,97 +1,90 @@
-"""
-Pytest configuration and fixtures for QBitFlow SDK tests.
+"""Shared test helpers: a recording stub HTTP server (httpx.MockTransport) and client factory."""
 
-The offline suites need nothing. The live integration suite (``tests/test_integration.py``)
-runs against the server named by ``QBITFLOW_BASE_URL`` — typically loaded from the workspace's
-``.local.env`` — and never falls back to localhost or production:
+from __future__ import annotations
 
-* neither ``QBITFLOW_API_KEY`` nor ``QBITFLOW_BASE_URL`` set → the live tests are skipped;
-* ``QBITFLOW_API_KEY`` set but ``QBITFLOW_BASE_URL`` missing → the live tests fail with a clear
-  message;
-* both set → the live tests run against that base URL::
+import json
+import threading
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
-    set -a; . ../.local.env; set +a
-    pytest tests/test_integration.py -v
-"""
-
-import os
-
+import httpx
 import pytest
 
 from qbitflow import QBitFlow
-from qbitflow.dto.user import UserRole
+
+TEST_API_KEY = "sk_test_key_123"
+BASE = "https://api.test"
+FIXTURES = Path(__file__).parent / "fixtures"
+
+MEMBER_UUID = "019eca82-5680-7b00-8000-0000000000b1"
 
 
-@pytest.fixture(scope="session")
-def base_url():
-    """The live server's base URL (``QBITFLOW_BASE_URL``); see the module docstring."""
-    key = os.getenv("QBITFLOW_API_KEY", "").strip()
-    url = os.getenv("QBITFLOW_BASE_URL", "").strip()
-    if not key and not url:
-        pytest.skip("live suite: QBITFLOW_API_KEY and QBITFLOW_BASE_URL are not set")
-    if key and not url:
-        pytest.fail(
-            "QBITFLOW_API_KEY is set but QBITFLOW_BASE_URL is not: the live suite never "
-            "defaults to localhost or production. Export QBITFLOW_BASE_URL (e.g. from "
-            ".local.env) or unset QBITFLOW_API_KEY to skip the live tests."
-        )
-    if not key:
-        pytest.skip("live suite: QBITFLOW_API_KEY is not set")
-    return url
+@dataclass
+class Recorded:
+    """One request the stub server received."""
+
+    method: str
+    path: str  # escaped path, as sent
+    query: str  # raw query, as sent
+    headers: httpx.Headers
+    body: bytes
+
+    def json(self) -> Any:
+        return json.loads(self.body)
 
 
-@pytest.fixture(scope="session")
-def api_key(base_url):
-    """The live API key (``QBITFLOW_API_KEY``); requires ``QBITFLOW_BASE_URL`` too."""
-    return os.environ["QBITFLOW_API_KEY"].strip()
+Handler = Callable[[httpx.Request, int], httpx.Response]
 
 
-@pytest.fixture(scope="session")
-def client(api_key, base_url):
-    """A client bound to the live server named by QBITFLOW_BASE_URL."""
-    client = QBitFlow(api_key=api_key, base_url=base_url)
-    yield client
-    client.close()
+class StubServer:
+    """A scripted handler that records every request (``n`` = its 0-based index)."""
+
+    def __init__(self, handler: Handler) -> None:
+        self.handler = handler
+        self.requests: List[Recorded] = []
+        self._lock = threading.Lock()
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        raw = request.url.raw_path.decode("ascii")
+        path, _, query = raw.partition("?")
+        with self._lock:
+            n = len(self.requests)
+            self.requests.append(
+                Recorded(request.method, path, query, request.headers, request.read())
+            )
+        return self.handler(request, n)
+
+
+def reply(status: int, body: Any = "", headers: Optional[Dict[str, str]] = None) -> httpx.Response:
+    """A JSON answer (``body`` a str is sent as is)."""
+    content = body if isinstance(body, (str, bytes)) else json.dumps(body)
+    h = {"Content-Type": "application/json"}
+    h.update(headers or {})
+    return httpx.Response(status, content=content, headers=h)
+
+
+def static(status: int, body: Any = "{}") -> Handler:
+    """Answer every request with the same status and body."""
+    return lambda _req, _n: reply(status, body)
+
+
+def sequence(*replies: Tuple[int, str]) -> Handler:
+    """Answer the scripted (status, body) pairs in order, then repeat the last one."""
+    return lambda _req, n: reply(*replies[min(n, len(replies) - 1)])
+
+
+def make_client(handler: Handler, **kwargs: Any) -> Tuple[QBitFlow, StubServer, List[float]]:
+    """A client on a stub server, with a recording sleep (no real waits)."""
+    server = StubServer(handler)
+    http = httpx.Client(transport=httpx.MockTransport(server))
+    kwargs.setdefault("base_url", BASE)
+    client = QBitFlow(TEST_API_KEY, http_client=http, **kwargs)
+    sleeps: List[float] = []
+    client._transport.sleep = sleeps.append
+    return client, server, sleeps
 
 
 @pytest.fixture
-def test_customer_data():
-    """Sample customer data for testing."""
-    from qbitflow.dto.customer import CreateCustomerDto
-
-    return CreateCustomerDto(
-        name="Test",
-        last_name="Customer",
-        email=f"test+{os.urandom(4).hex()}@example.com",
-        phone_number="+1234567890",
-        # A customer reference is unique per (organization, user), so it must be
-        # randomised like the email - a fixed value collides on every rerun (400).
-        reference=f"TEST-{os.urandom(4).hex()}",
-        address=None,
-    )
-
-
-@pytest.fixture
-def test_user_data():
-    """Sample user data for testing."""
-    from qbitflow.dto.user import CreateUserDto
-
-    return CreateUserDto(
-        email=f"user+{os.urandom(4).hex()}@example.com",
-        name="Test User",
-        last_name="SDK",
-        role=UserRole.USER,
-    )
-
-
-@pytest.fixture
-def test_product_data():
-    """Sample product data for testing."""
-    from qbitflow.dto.product import CreateProductDto
-
-    return CreateProductDto(
-        name="Test Product",
-        description="A test product for SDK testing",
-        price=9.99,
-        reference=f"TEST-PROD-{os.urandom(4).hex()}",
-    )
+def load_fixture() -> Callable[[str], str]:
+    return lambda name: (FIXTURES / name).read_text()

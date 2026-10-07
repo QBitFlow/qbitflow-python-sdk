@@ -1,0 +1,76 @@
+{
+  "createdAt": "2026-10-01T12:00:00Z",
+  "data": {
+    "amount": 10,
+    "amountMinUnits": "10000000",
+    "chain": "BASE",
+    "checkoutOpenedAt": "2026-10-01T12:00:00Z",
+    "confirmedAt": "2026-10-01T11:59:58Z",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "currency": {
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "decimals": 6,
+      "id": 8,
+      "mainCurrency": {
+        "address": "",
+        "decimals": 18,
+        "id": 3,
+        "mainCurrency": null,
+        "name": "Base",
+        "symbol": "BASE",
+        "test": false
+      },
+      "mainCurrencyId": 3,
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "test": false
+    },
+    "currencyId": 8,
+    "customerReference": "crm-5521",
+    "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
+    "description": "Lifetime access to the Pro plan",
+    "explorerUrl": "https://basescan.org/tx/0x1111111111111111111111111111111111111111111111111111111111111111",
+    "from": "0xabcdef1234567890abcdef1234567890abcdef12",
+    "managementPageLink": "https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f755-f200-7000-8000-000000000001",
+    "metadata": {
+      "feePercent": 1.5,
+      "txAmounts": {
+        "minUnits": {
+          "merchant": "9850000",
+          "networkFee": "4200",
+          "organization": "0",
+          "platform": "150000",
+          "referral": "0"
+        },
+        "usd": {
+          "merchant": 9.85,
+          "networkFee": 0.0042,
+          "platform": 0.15
+        }
+      },
+      "txMetadata": {
+        "blockData": {
+          "number": "52468103",
+          "timestamp": 1790855998
+        },
+        "networkFees": {
+          "amount": "1140000000000",
+          "unitsConsumed": 95000
+        }
+      }
+    },
+    "name": "Pro plan (lifetime)",
+    "paidMinUnits": "10004200",
+    "paidUsd": 10.0042,
+    "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+    "reference": "order-1042",
+    "test": false,
+    "to": "0x1234567890abcdef1234567890abcdef12345678",
+    "txHash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+    "uuid": "pay@01a0f755-f200-7000-8000-000000000001"
+  },
+  "id": "evt_82c1e15d-c0d9-584f-a65a-fb4099925273",
+  "test": false,
+  "type": "payment.completed",
+  "version": "v2"
+}
