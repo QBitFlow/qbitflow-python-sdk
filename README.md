@@ -59,28 +59,40 @@ pip install qbitflow
 
 ## Quick start
 
+The snippets in this README assume `import os` and `import qbitflow`, and, past this first one,
+a client named `client`. Variables such as `session_uuid`, `payment_uuid`, `subscription_uuid`
+and `member_uuid` hold ids you got earlier.
+
+<!-- docs:snippet client-init -->
 ```python
-import os
+# One client per API key, shared by the whole program. ValidationError: not an sk_… key.
+client = qbitflow.QBitFlow(os.environ["QBITFLOW_API_KEY"])
 
-from qbitflow import QBitFlow
-
-# One client per API key, shared by the whole program. `with` closes its connections.
-with QBitFlow(os.environ["QBITFLOW_API_KEY"]) as client:  # ValidationError: not an sk_… key
-    # The recommended start-up check: what is this key, and which mode is it in?
-    me = client.me()  # AuthenticationError for an unknown or revoked key
-    if me.space is not None:
-        print(f"{me.space.organization_name}, role {me.role}, test mode {me.space.test}")
-
-    # A hosted checkout for a one-time payment of 4.99 USD.
-    session = client.checkout_sessions.create_payment(
-        product_name="Premium access",
-        price=4.99,
-        reference="order-1042",
-        success_url="https://shop.example.com/thanks?session={{UUID}}",
-        cancel_url="https://shop.example.com/cart",
-    )
-    print("Send the customer to", session.link)
+# The recommended start-up check: what is this key, and which mode is it in?
+me = client.me()  # AuthenticationError for an unknown or revoked key
+if me.space is not None:
+    print(f"{me.space.organization_name}, role {me.role}, test mode {me.space.test}")
 ```
+<!-- /docs:snippet -->
+
+`client.close()`, or `with qbitflow.QBitFlow(...) as client:`, closes the connections the SDK
+opened. A hosted checkout for a one-time payment of 4.99 USD:
+
+<!-- docs:snippet checkout-create-payment -->
+```python
+session = client.checkout_sessions.create_payment(
+    product_name="T-shirt",
+    description="Blue, size M",
+    price=4.99,  # USD
+    reference="order-1042",  # your order id: unique per space
+    # QBitFlow replaces the placeholder with the session's id when it redirects the customer.
+    success_url=f"https://shop.example.com/orders/success?uuid={qbitflow.PLACEHOLDER_UUID}",
+    cancel_url="https://shop.example.com/orders/cancel",
+)
+# Redirect the customer to the hosted checkout page.
+print("Send the customer to", session.link)
+```
+<!-- /docs:snippet -->
 
 Then fulfil the order when the [`payment.completed` webhook](#webhooks) arrives for
 `session.uuid`, never on the customer's redirect to your success page: the
@@ -116,30 +128,30 @@ Register a handler per event type on a `WebhookRouter`, then mount it. The route
 the status QBitFlow expects. No framework is a dependency of the SDK: each adapter imports its
 framework only when you call it.
 
+**FastAPI** (with `from fastapi import FastAPI`; `mark_order_paid` stands for your own,
+idempotent, code):
+
+<!-- docs:snippet webhook-handler -->
 ```python
-import os
-
-from qbitflow import Event, PaymentCompleted, SubscriptionStatusChanged, WebhookRouter
-
-router = WebhookRouter(os.environ["QBITFLOW_WEBHOOK_SECRET"])
+router = qbitflow.WebhookRouter(os.environ["QBITFLOW_WEBHOOK_SECRET"])
 
 
-def mark_order_paid(reference: str, event_id: str) -> None: ...  # your code (idempotent)
-
-
-def update_access(subscription_uuid: str, has_access: bool) -> None: ...  # your code
-
-
-@router.on("payment.completed")
-def fulfil(data: PaymentCompleted, event: Event) -> None:
+@router.on("payment.completed")  # the handler gets the typed data, then the event
+def fulfil(data: qbitflow.PaymentCompleted, event: qbitflow.Event) -> None:
     # At least once: the same event can arrive twice, deduplicate on event.id.
     mark_order_paid(data.reference or data.uuid, event_id=event.id)
 
 
-@router.on("subscription.statusChanged")
-def access_changed(data: SubscriptionStatusChanged, event: Event) -> None:
-    update_access(data.uuid, data.has_access())
+app = FastAPI()
+# Verifies the QBitFlow-Signature header on the raw body, parses the event, runs the handler
+# for its type, and answers the status QBitFlow expects (200, 400 or 500).
+app.add_api_route("/webhooks/qbitflow", router.fastapi_endpoint(), methods=["POST"])
 ```
+<!-- /docs:snippet -->
+
+Register more handlers the same way, e.g. `@router.on("subscription.statusChanged")` to update
+access with `data.has_access()`. Starlette takes the same endpoint:
+`Route("/webhooks/qbitflow", router.fastapi_endpoint(), methods=["POST"])`.
 
 **Flask:**
 
@@ -158,15 +170,6 @@ from django.urls import path
 urlpatterns = [path("webhooks/qbitflow", router.django_view())]
 ```
 
-**FastAPI** (or Starlette's `Route(..., router.fastapi_endpoint(), methods=["POST"])`):
-
-```python
-from fastapi import FastAPI
-
-app = FastAPI()
-app.add_api_route("/webhooks/qbitflow", router.fastapi_endpoint(), methods=["POST"])
-```
-
 Inside a route of your own, `return await router.handle_asgi(request)` answers the Starlette
 `Request`. Anything else (a queue consumer, another framework): `router.handle(raw_body,
 signature_header)` returns a `WebhookResult` whose `status` you answer. The details are in
@@ -174,82 +177,80 @@ signature_header)` returns a `WebhookResult` whose `status` you answer. The deta
 
 ### Checkout, success page, and waiting in a script
 
+Create the checkout as in the [quick start](#quick-start). On the success page, show the state
+with [`get_status`](#status), but fulfil on the webhook (anyone can open the URL). In a script, a
+test or a back-office job, poll until the checkout is completed or expired:
+
+<!-- docs:snippet wait-for-completion -->
 ```python
-from qbitflow import PLACEHOLDER_UUID, CheckoutSessionStatusValue
-
-session = client.checkout_sessions.create_payment(
-    product_name="Premium access",
-    price=4.99,
-    reference="order-1042",
-    # QBitFlow replaces {{UUID}} with the session's id when it redirects the customer.
-    success_url=f"https://shop.example.com/thanks?session={PLACEHOLDER_UUID}",
-)
-
-# On the success page: show the state, but fulfil on the webhook (anyone can open the URL).
-status = client.checkout_sessions.get_status(session.uuid)
-
-# In a script, a test or a back-office job: poll until completed or expired (10 minutes at most).
-final = client.checkout_sessions.wait_for_completion(session.uuid, timeout=600, interval=3)
-if final.status != CheckoutSessionStatusValue.COMPLETED:
-    print("not paid:", final.status)  # expired, or still pending when the timeout elapsed
+# For scripts and back-office jobs: fulfil orders on the payment.completed webhook.
+final = client.checkout_sessions.wait_for_completion(session_uuid, timeout=600, interval=3)
+if final.status == qbitflow.CheckoutSessionStatusValue.COMPLETED:
+    print("paid")
+else:
+    print("not paid:", final.status)  # expired, or still open when the timeout elapsed
 ```
+<!-- /docs:snippet -->
 
 ### Access control
 
+<!-- docs:snippet has-access -->
 ```python
-if sub.has_access():  # current_period_end is set and now is before it, whatever the status
+subscription = client.subscriptions.get(subscription_uuid)
+# current_period_end is set and now is before it, whatever the status.
+if subscription.has_access():
     print("grant access")
+else:
+    print("no access")
 ```
+<!-- /docs:snippet -->
 
 ### Displaying amounts
 
-Amounts in a token's smallest unit are exact decimal strings: convert them with string
-arithmetic, never through a `float`.
-
+<!-- docs:snippet amounts-display -->
 ```python
-from qbitflow import format_amount, parse_amount
-
-payment = client.payments.get("pay@0192f1c2-2222-7c4d-9e5f-6a7b8c9d0e1f")
-if payment.currency is not None:
-    shown = payment.currency.format_amount(payment.amount_min_units)  # "10" for "10000000"
-    print(shown, payment.currency.symbol)
-
-assert format_amount("1500000", 6) == "1.5"
-assert parse_amount("1.5", 6) == "1500000"  # ValidationError beyond 6 decimal places
+# Amounts in a token's smallest unit are decimal strings: never convert them through a float.
+shown = qbitflow.format_amount("4990000", 6)  # "4.99" (6 decimals, like USDC)
+min_units = qbitflow.parse_amount("4.99", 6)  # "4990000"
+print(shown, min_units)
 ```
+<!-- /docs:snippet -->
+
+`parse_amount` raises a `ValidationError` beyond the given decimal places. A model's currency
+knows its decimals: `payment.currency.format_amount(payment.amount_min_units)`.
 
 ### A yearly accounting export
 
+<!-- docs:snippet accounting-export -->
 ```python
-from pathlib import Path
-
-# The API serves at most 95 days per export: these split the range and join the parts.
+# Any range: the SDK splits it into the API's 95-day windows and joins the parts.
 events = client.accounting.export_json_range("2026-01-01", "2026-12-31")
-Path("qbitflow-2026.csv").write_text(client.accounting.export_csv_range("2026-01-01", "2026-12-31"))
+for event in events:
+    print(event.type, event.payment_uuid, event.token_symbol, event.net_amount)
+
+csv_text = client.accounting.export_csv_range("2026-01-01", "2026-12-31")
+with open("qbitflow-2026.csv", "w", encoding="utf-8") as file:
+    file.write(csv_text)
 ```
+<!-- /docs:snippet -->
 
 ### A client from the environment
 
+<!-- docs:snippet config-from-env -->
 ```python
-from qbitflow import QBitFlow
-
-# QBITFLOW_API_KEY (required), QBITFLOW_BASE_URL and QBITFLOW_ON_BEHALF_OF (optional).
-client = QBitFlow.from_env(timeout=10)  # keyword arguments override the environment
+# QBITFLOW_API_KEY (required), QBITFLOW_BASE_URL and QBITFLOW_ON_BEHALF_OF when set.
+client = qbitflow.QBitFlow.from_env(timeout=10)  # explicit options override the environment
 ```
+<!-- /docs:snippet -->
 
 ## Authentication and acting for a member
 
 Every request sends your API key in `X-API-Key`. Keys are created in the QBitFlow dashboard; each
 belongs to one **space** (your organization's, or one of its members') and one **mode** (test or
 live). `QBitFlow(...)` only checks the key's shape (non-blank, starting with `sk_`) and sends
-nothing: call `me()` to check it online.
-
-```python
-me = client.me()
-if me.space is None or not me.space.test:
-    raise SystemExit("this job must run with a test-mode key")
-print("acting as", me.role, "in", me.space.organization_name)  # admin: an organization key
-```
+nothing: call `me()` to check it online ([quick start](#quick-start)). `me.role` is `admin` for
+an organization key, and `me.space.test` tells test mode from live (a job that must only run in
+test mode checks it first).
 
 Keep the key in a secret store or an environment variable, never in code. Keys issued before API v2
 (`sk_<digits>_…`) still work; rotate them in the dashboard to the `sk_<uuid>_…` format.
@@ -261,22 +262,23 @@ and checkouts, read their payments. Name the member by their **user UUID** (`Mem
 also in the `member.joined` webhook). A non-member, an owner or admin of the team, or a member of
 the other mode answers 404.
 
+<!-- docs:snippet client-on-behalf-of -->
+```python
+# Every request of this client sends On-Behalf-Of: it acts in the member's space.
+seller = client.on_behalf_of(member_uuid)  # shares the connections and settings of client
+products = seller.products.list()
+print(len(products), "products in the seller's space")
+```
+<!-- /docs:snippet -->
+
+For one request only, the request option wins over the client's; `""` forces the organization's
+own space for one request of the seller's client:
+
 ```python
 from qbitflow import RequestOptions
 
-member_uuid = "0192f1c2-7b3a-7c4d-9e5f-6a7b8c9d0e1f"  # Member.user_uuid
-
-# A client acting in the member's space. It shares the connections and settings of client.
-seller = client.on_behalf_of(member_uuid)
-print(len(seller.products.list()), "products in the seller's space")
-
-# One request only: the request option wins over the client's.
 page = client.payments.list(options=RequestOptions(on_behalf_of=member_uuid))
-print(len(page.items), "payments of the seller")
-
-# "" forces the organization's own space for one request of the seller's client.
 own = seller.products.list(options=RequestOptions(on_behalf_of=""))
-print(len(own), "products of the organization")
 ```
 
 `QBitFlow(key, on_behalf_of=uuid)` sets it for every request of a client. A value that is not a
@@ -289,36 +291,43 @@ on the webhook. The session's id (`pay@…` or `sub@…`) is also the id of the 
 subscription it creates once the customer's transaction is confirmed.
 
 Name the product with **exactly one** of `product_uuid`, `product_reference`, or an inline
-product (`product_name` + `price`, `description` optional):
+product (`product_name` + `price`, `description` optional, as in the
+[quick start](#quick-start)). A product of your catalog:
 
+<!-- docs:snippet checkout-create-payment-product -->
 ```python
 session = client.checkout_sessions.create_payment(
-    product_uuid="0192f1c2-1111-7c4d-9e5f-6a7b8c9d0e1f",  # or product_reference="tshirt-blue-m"
-    reference="order-1043",  # your order id: unique per space
-    customer_reference="crm-42",  # kept on the payment
-    success_url="https://shop.example.com/orders/1043?session={{UUID}}&type={{TRANSACTION_TYPE}}",
-    cancel_url="https://shop.example.com/cart",
-    expires_in_minutes=30,  # 10 to 1440
+    product_reference="tshirt-blue-m",  # or product_uuid=
+    reference="order-1042",
+    success_url=f"https://shop.example.com/orders/success?uuid={qbitflow.PLACEHOLDER_UUID}",
+    cancel_url="https://shop.example.com/orders/cancel",
 )
-print("pay at", session.link, "- session", session.uuid)
+print("Send the customer to", session.link)
 ```
+<!-- /docs:snippet -->
 
-A subscription checkout takes the same arguments plus its terms, each optional over a
-subscription product's:
+`reference` is your order id, unique per space. `customer_reference` is kept on the payment, and
+`expires_in_minutes` (10 to 1440) sets the checkout's lifetime.
 
+A subscription checkout takes the same arguments plus its terms (`frequency`, `trial_period`,
+and `min_periods`, the periods the customer commits to), each optional over a subscription
+product's:
+
+<!-- docs:snippet checkout-create-subscription -->
 ```python
-from qbitflow import Duration, DurationUnit
-
 session = client.checkout_sessions.create_subscription(
-    product_name="Pro plan",
+    product_name="T-shirt",
+    description="Blue, size M",
     price=4.99,  # USD per period
-    frequency=Duration(value=1, unit=DurationUnit.MONTHS),
-    trial_period=Duration(value=14, unit=DurationUnit.DAYS),
-    min_periods=3,  # the customer commits to 3 periods
-    success_url="https://app.example.com/billing?subscription={{UUID}}",
+    frequency=qbitflow.Duration(value=1, unit=qbitflow.DurationUnit.MONTHS),
+    trial_period=qbitflow.Duration(value=7, unit=qbitflow.DurationUnit.DAYS),
+    reference="order-1043",
+    success_url=f"https://shop.example.com/orders/success?uuid={qbitflow.PLACEHOLDER_UUID}",
+    cancel_url="https://shop.example.com/orders/cancel",
 )
-print("subscribe at", session.link)
+print("Send the customer to", session.link)  # sub@…: the subscription's id once signed
 ```
+<!-- /docs:snippet -->
 
 - **Redirect placeholders.** In `success_url` and `cancel_url`, QBitFlow replaces `{{UUID}}` with
   the session's id and `{{TRANSACTION_TYPE}}` with `payment` or `createSubscription`
@@ -333,19 +342,19 @@ print("subscribe at", session.link)
 
 ### Status
 
+<!-- docs:snippet checkout-status -->
 ```python
-from qbitflow import CheckoutSessionStatusValue
-
-status = client.checkout_sessions.get_status(session.uuid)
-if status.status == CheckoutSessionStatusValue.COMPLETED:
-    print("paid, tx", status.tx_hash)
-elif status.status == CheckoutSessionStatusValue.EXPIRED:
-    print("expired unpaid:", status.message)
-elif status.status == CheckoutSessionStatusValue.WAITING_CONFIRMATION:
-    print("sent, waiting for the network")
-elif status.last_attempt is not None:  # created, or a status this SDK does not know
-    print("last attempt failed:", status.last_attempt.code)  # the customer may try again
+status = client.checkout_sessions.get_status(session_uuid)  # pay@… or sub@…
+if status.status == qbitflow.CheckoutSessionStatusValue.COMPLETED:
+    print("paid, tx", status.tx_hash)  # the payment (or subscription) has the session's id
+elif status.status == qbitflow.CheckoutSessionStatusValue.EXPIRED:
+    print("expired unpaid")
+elif status.last_attempt is not None:
+    print("last attempt failed:", status.last_attempt.code)  # not final: they can try again
+else:
+    print("waiting:", status.status)  # created or waitingConfirmation
 ```
+<!-- /docs:snippet -->
 
 | `status` | Meaning | Final |
 |---|---|---|
@@ -362,44 +371,56 @@ session is `completed` or `expired` and returns that status; when `timeout` (sec
 600; 0 or less means the default) elapses first it returns the last status seen, so check
 `.status`. `interval` (default 3)
 is at least 1 second; errors of `get_status` (a 404 included) are raised. Webhooks remain the way
-to fulfil orders.
-
-```python
-final = client.checkout_sessions.wait_for_completion(session.uuid, timeout=120, interval=5)
-print(final.status)  # completed, expired, or still created/waitingConfirmation after 120 s
-```
+to fulfil orders. The code is in the
+[recipes](#checkout-success-page-and-waiting-in-a-script).
 
 ### Expire
 
 End a session early (an order cancelled on your side). It answers its status, and
 `checkout.expired` follows. Once the customer paid or is paying it is a `409 tx_already_sent`.
 
+<!-- docs:snippet checkout-expire -->
 ```python
-expired = client.checkout_sessions.expire(session.uuid)
-print(expired.status)  # expired
+# An order cancelled on your side: the checkout can no longer be paid.
+expired = client.checkout_sessions.expire(session_uuid)
+print(expired.status)  # expired; checkout.expired follows
 ```
+<!-- /docs:snippet -->
 
 ## Products and customers
 
 Products are optional (a checkout can name an inline product) and give you a reusable catalog
-with payment links. A subscription product carries its terms.
+with payment links. The `reference` is generated when left out.
+
+<!-- docs:snippet products-create -->
+```python
+product = client.products.create(
+    name="T-shirt",
+    description="Blue, size M",
+    price=4.99,  # USD
+    reference="tshirt-blue-m",  # your own id: unique per space
+)
+print(product.uuid, product.payment_link)
+```
+<!-- /docs:snippet -->
+
+<!-- docs:snippet products-list -->
+```python
+for product in client.products.list():
+    print(product.reference, product.name, product.price)
+```
+<!-- /docs:snippet -->
+
+A subscription product carries its terms. `update` changes only the arguments given; a new price
+applies to new checkouts and subscribers only, and an inactive product is hidden from `list()`
+unless `include_hidden=True` (`subscription=True` lists the subscription products only):
 
 ```python
 from qbitflow import Duration, DurationUnit, SubscriptionTermsParams
 
-product = client.products.create(
-    name="Pro plan",
-    description="Everything, billed monthly",
-    price=4.99,
-    reference="pro-monthly",  # unique per space; generated when left out
-    subscription=SubscriptionTermsParams(frequency=Duration(value=1, unit=DurationUnit.MONTHS)),
-)
-
-# Only the arguments given change. A new price applies to new checkouts and subscribers only.
-product = client.products.update(product.uuid, price=5.99, is_active=False)  # hidden from list()
-
-everything = client.products.list(include_hidden=True, subscription=True)
-print(product.payment_link, len(everything))
+terms = SubscriptionTermsParams(frequency=Duration(value=1, unit=DurationUnit.MONTHS))
+plan = client.products.create(name="Pro plan", price=4.99, subscription=terms)
+plan = client.products.update(plan.uuid, price=5.99, is_active=False)
 ```
 
 `products.get`, `get_by_reference` and `delete` complete the set. Deleting a product does not stop
@@ -431,30 +452,33 @@ left out, the value is unchanged; `""` or `None` clears it.
 
 A `Payment` exists once its transaction is confirmed, with its checkout session's `pay@…` id.
 
+<!-- docs:snippet payments-list -->
 ```python
-from datetime import datetime, timedelta, timezone
-
-since = datetime.now(timezone.utc) - timedelta(days=30)  # aware datetimes only
-page = client.payments.list(
-    created_after=since,
-    include_members=True,  # organization key: the members' payments too
-    limit=50,
-)
-for p in page.items:
-    print(
-        f"{p.uuid} {p.reference!r}: {p.amount:.2f} USD ({p.explorer_url}), "
-        f"merchant got {p.metadata.tx_amounts.usd.merchant:.2f} USD"
-    )
-
-payment = client.payments.get("pay@0192f1c2-2222-7c4d-9e5f-6a7b8c9d0e1f")
-by_ref = client.payments.get_by_reference("order-1042")
-print(payment.tx_hash, by_ref.uuid, payment.refundable)
+page = client.payments.list(refunded=False, limit=20)  # newest first
+for payment in page.items:
+    print(payment.uuid, payment.reference, f"{payment.amount:.2f} USD")
+if page.has_more:
+    print("next page: cursor =", page.next_cursor)  # pass it back as cursor=
 ```
+<!-- /docs:snippet -->
 
-- **Filters**: `customer_uuid`, `product_uuid`, `created_after` / `created_before` (both
-  excluded), `refunded`, and, with an organization key acting for itself, `include_members`
-  (every member's rows, each naming its `user_uuid`) or `user_uuid` (one member's). The last two
-  exclude each other.
+<!-- docs:snippet payments-get -->
+```python
+payment = client.payments.get(payment_uuid)  # pay@…, the id of its checkout session
+print(payment.reference, f"{payment.amount:.2f} USD", payment.tx_hash)
+
+by_reference = client.payments.get_by_reference("order-1042")  # your order id
+print(by_reference.uuid)
+```
+<!-- /docs:snippet -->
+
+A payment also carries its `explorer_url`, whether it is `refundable`, and its split:
+`metadata.tx_amounts.usd.merchant` is what the merchant received.
+
+- **Filters**: `customer_uuid`, `product_uuid`, `created_after` / `created_before` (aware
+  `datetime`s, both excluded), `refunded`, and, with an organization key acting for itself,
+  `include_members` (every member's rows, each naming its `user_uuid`) or `user_uuid` (one
+  member's). The last two exclude each other.
 - **Reading a member's row** from the organization's space:
   `client.payments.get(id, include_members=True)`, or `on_behalf_of` the member.
 - **The combined feed** of one-time payments and subscription bills, newest first:
@@ -488,15 +512,16 @@ the free trial. It keeps the checkout's `sub@…` id for life.
 
 **Access rule: grant access while `now < current_period_end`, whatever the status.** A `stopped`
 or `paused` subscription has paid for its period; a `pastDue` one's period has ended.
+`subscription.has_access()` applies it ([access control](#access-control));
+`has_access(at)` checks at a given `datetime` (a naive one is UTC). Every subscription model has
+it, the subscription webhooks' data included.
 
+<!-- docs:snippet subscriptions-get -->
 ```python
-from datetime import datetime, timezone
-
-print(sub.has_access())  # current_period_end is set and now is before it
-print(sub.has_access(datetime(2026, 12, 1, tzinfo=timezone.utc)))  # at a given time (naive: UTC)
+subscription = client.subscriptions.get(subscription_uuid)  # sub@…, cancelled ones too
+print(subscription.status, "paid until", subscription.current_period_end)
 ```
-
-Every subscription model has it, the subscription webhooks' data included.
+<!-- /docs:snippet -->
 
 `action_required` says what the customer must do (`topUpAllowance`, `raiseMaximum`,
 `confirmTrial`; `None`: nothing): point them to the `management_page_link` the subscription
@@ -510,11 +535,8 @@ for sub in page.items:
     if sub.dunning is not None:
         print(sub.uuid, sub.dunning.remaining_attempts, "attempts left")
 
-sub = client.subscriptions.get("sub@0192f1c2-3333-7c4d-9e5f-6a7b8c9d0e1f")  # cancelled ones too
-print(sub.status, sub.price_usd, "USD per period")
-
 # Every bill, newest first: the iterator fetches the pages lazily.
-for bill in client.subscriptions.iterate_bills(sub.uuid):
+for bill in client.subscriptions.iterate_bills(subscription_uuid):
     if bill.period_end is not None:
         print(f"{bill.uuid}: {bill.amount:.2f} USD, paid until {bill.period_end.date()}")
 ```
@@ -532,29 +554,36 @@ for bill in client.subscriptions.iterate_bills(sub.uuid):
 `cancel` cancels without the customer signing. By default it is immediate (`cancelled`, reason
 `merchant`); `immediate=False` stops it now and cancels it at the end of the period paid for.
 
+<!-- docs:snippet subscriptions-cancel -->
 ```python
-result = client.subscriptions.cancel(sub.uuid, immediate=False)
-# ConflictError 409 subscription_already_stopped_or_inactive; NotFoundError once cancelled
+result = client.subscriptions.cancel(subscription_uuid, immediate=False)  # at period end
 if result.pending:
-    # HTTP 202: the on-chain cancellation is still confirming and the status is not updated yet.
-    # It goes on regardless; subscription.statusChanged tells the end.
+    # HTTP 202: still confirming on-chain; subscription.statusChanged tells the end.
     print("cancellation confirming")
 else:
-    print("now", result.subscription.status)  # stopped
+    print("now", result.subscription.status)  # stopped, cancelled at the period's end
 ```
+<!-- /docs:snippet -->
 
-`cancel` answers 200 when done and 202 (`pending`) while confirming on-chain. It is never retried
-automatically.
+`cancel` answers 200 when done and 202 (`pending`) while confirming on-chain: the status is not
+updated yet, but the cancellation goes on regardless. It is never retried automatically. A
+subscription already stopped is a `ConflictError` (409
+`subscription_already_stopped_or_inactive`); a cancelled one a `NotFoundError`.
 
 ### Test billing
 
 In test mode a subscription is billed only when you ask, with live's statuses and webhooks:
 
+<!-- docs:snippet subscriptions-test-bill -->
 ```python
-state = client.subscriptions.execute_test_billing(sub.uuid)
-# ConflictError 409 payment_not_due before next_billing_date; BadRequestError for a live one
+# Test mode only: run the next billing now instead of on its due date.
+state = client.subscriptions.execute_test_billing(subscription_uuid)
 print(state.stage, state.outcome, state.failure_code)
 ```
+<!-- /docs:snippet -->
+
+Before `next_billing_date` it is a `ConflictError` (409 `payment_not_due`); for a live
+subscription a `BadRequestError`.
 
 Walk the timeline once in test mode: a 5-minute frequency, pay from a test wallet, trigger the
 bill, then empty the wallet and trigger it again to see `subscription.billingFailed` and
@@ -562,13 +591,19 @@ bill, then empty the wallet and trigger it again to see `subscription.billingFai
 
 ## Refunds
 
-```python
-# Refunds waiting for an answer. From the organization's space the members' are included by
-# default: include_members=False leaves them out.
-for r in client.refunds.list(include_members=False):
-    print(r.uuid, r.tx_uuid, r.initiated_by, r.reason, r.amount_usd)
+Refunds waiting for an answer. From the organization's space the members' are included by
+default: `include_members=False` leaves them out.
 
-# Answered refunds (approved or rejected), page by page.
+<!-- docs:snippet refunds-list -->
+```python
+for refund in client.refunds.list():  # the active refunds
+    print(refund.uuid, refund.tx_uuid, refund.status, refund.reason)
+```
+<!-- /docs:snippet -->
+
+The answered refunds (approved or rejected) come page by page:
+
+```python
 for r in client.refunds.iterate_inactive():
     print(r.uuid, r.status, r.explorer_url)
 ```
@@ -577,22 +612,21 @@ for r in client.refunds.iterate_inactive():
 **It creates a pending refund: no money moves until you sign the transfer in the dashboard**, from
 the wallet that was paid. `refund.completed` tells you when it is sent.
 
+<!-- docs:snippet refunds-create -->
 ```python
-from qbitflow import ConflictError
-
-try:
-    refund = client.refunds.initiate(
-        tx_uuid="pay@0192f1c2-2222-7c4d-9e5f-6a7b8c9d0e1f",
-        refund_percent=50.0,  # of everything the customer paid, network fee included; None = 100
-        reason="Damaged in transit",
-        merchant_message="Sorry about that: half of your payment is on its way back.",
-    )
-    print(refund.uuid, refund.status)  # pending
-except ConflictError as exc:
-    if exc.code != "refund_already_exists":
-        raise
-    print("already refunded:", exc.details["refundUuid"])  # one refund per transaction
+refund = client.refunds.initiate(
+    tx_uuid=payment_uuid,  # pay@… (or a bill's sub-hist@…)
+    refund_percent=50,  # of what the customer paid; None refunds everything
+    reason="Damaged item",
+)
+# A pending refund: no money moves until you sign the transfer in the dashboard.
+print(refund.uuid, refund.status)
 ```
+<!-- /docs:snippet -->
+
+`refund_percent` is a share of everything the customer paid, network fee included;
+`merchant_message` adds a note for the customer. There is one refund per transaction: another is
+a `ConflictError` (409 `refund_already_exists`, the existing one in `details["refundUuid"]`).
 
 A refund is `pending`, `approved` or `rejected`; `initiated_by` is `customer` (a request you
 answer in the dashboard) or `merchant`. A held seller's payment already released to them can no
@@ -608,15 +642,21 @@ customer's wallet to the seller's (and your commission to yours) in one transact
 **1. Invite the seller.** The SDK always invites members (`role: user`); the team is invited from
 the dashboard.
 
+<!-- docs:snippet members-invite -->
 ```python
 created = client.invitations.create(
     email="seller@example.com",
-    trust_layer=True,  # hold their payments until members.trust
-    organization_fee_percent=5.0,  # your commission: 0 to 50 %, at most 2 decimals
-    redirect_url="https://market.example.com/welcome",
-)  # ConflictError 409 already_joined for a member; RateLimitError beyond 50 invitations an hour
-print(created.invitation.uuid, created.link)  # the link is also emailed
+    trust_layer=True,  # hold their funds until you trust them
+    organization_fee_percent=10,  # your commission on their payments
+    redirect_url="https://shop.example.com/sellers/welcome",
+)
+# The seller exists once they accept: wait for the member.joined webhook.
+print("invitation", created.invitation.uuid, "link:", created.link)  # also emailed
 ```
+<!-- /docs:snippet -->
+
+The commission is 0 to 50 %, with at most 2 decimals. Inviting a member is a `ConflictError`
+(409 `already_joined`), and more than 50 invitations an hour a `RateLimitError`.
 
 **2. Wait for `member.joined`.** The seller exists once they accepted: store the event's
 `user_uuid` and match `invitation_uuid` to your invitation. Never trust the redirect's
@@ -630,20 +670,18 @@ if isinstance(event, MemberJoinedEvent):
 ```
 
 **3. Sell for them.** The seller adds their receiving wallet in their QBitFlow dashboard (only
-they can, not needed while you hold their funds). Then act in their space:
+they can, not needed while you hold their funds). Until then their checkouts answer
+`409 merchant_not_ready`:
 
 ```python
 if not client.wallets.list_supported_currencies(user_uuid=member_uuid):
-    raise SystemExit("the seller cannot be paid yet: their checkouts would answer 409 merchant_not_ready")
-
-seller = client.on_behalf_of(member_uuid)
-session = seller.checkout_sessions.create_payment(
-    product_name="Handmade mug",
-    price=4.5,
-    success_url="https://market.example.com/orders/{{UUID}}",
-)  # PermissionDeniedError 403 policy_disabled when your policies don't let members do this
-print(session.link)
+    raise SystemExit("the seller cannot be paid yet")
 ```
+
+Then act in their space with `seller = client.on_behalf_of(member_uuid)`
+([On-Behalf-Of](#on-behalf-of-acting-in-a-members-space)): `seller.checkout_sessions` and
+`seller.products` create the seller's checkouts and products. Your policies may not let members
+do this: a `PermissionDeniedError` (403 `policy_disabled`).
 
 **4. Hear of every sale.** An organization webhook endpoint receives every seller's events by
 default; the event's `user_uuid` names the seller. Use it as `on_behalf_of` for follow-up reads.
@@ -652,26 +690,107 @@ default; the event's `user_uuid` names the seller. Use it as `on_behalf_of` for 
 and `metadata.tx_amounts`. While you hold a seller's funds (`trust_layer` True,
 `Member.trusted_at` None), their payments go to your wallet and the net is owed to them:
 
+<!-- docs:snippet members-held-funds -->
 ```python
-held = client.members.get_held_funds(member_uuid)
-print(f"owed to the seller: {held.total_amount:.2f} USD over {len(held.ledgers)} lines")
+for summary in client.members.list_held_funds():  # every member you hold funds for
+    print(summary.user_uuid, f"{summary.total_amount:.2f} USD over {summary.count} lines")
 
+held = client.members.get_held_funds(member_uuid)  # one member, line by line
+print(f"owed to the seller: {held.total_amount:.2f} USD over {len(held.ledgers)} lines")
+```
+<!-- /docs:snippet -->
+
+The seller reads their side with their own key, or through a client acting for them
+(`seller.members.get_own_held_funds()`):
+
+<!-- docs:snippet members-own-held-funds -->
+```python
+# With a member's key, or a client acting on behalf of the member.
+held = client.members.get_own_held_funds()
+print(f"held for me: {held.total_amount:.2f} USD over {len(held.ledgers)} lines")
+```
+<!-- /docs:snippet -->
+
+Trust them once you no longer want to hold their funds:
+
+<!-- docs:snippet members-trust -->
+```python
 # Their new payments go to their own wallets from now on. What is held stays held until you
 # release it from the dashboard (heldFunds.released tells you).
 member = client.members.trust(member_uuid)
-if member.trusted_at is not None:
-    print("trusted since", member.trusted_at.isoformat())
-
-# Change the commission (a checkout already created keeps its fee).
-client.members.update(member_uuid, organization_fee_percent=7.5)
+print("trusted since", member.trusted_at)
 ```
+<!-- /docs:snippet -->
 
-- `members.list` / `iterate` / `get`, `members.list_held_funds` (every member owed), and
-  `seller.members.get_own_held_funds()` (the seller's side) complete the reads.
-- `members.remove` ends a seller's membership in the key's mode: their keys stop working and
-  their checkouts close. It is a `409 held_funds_pending` while you hold their live funds: release
-  them first.
-- `invitations.list` / `iterate` (by `status`) and `invitations.revoke` manage the invitations.
+Change the commission:
+
+<!-- docs:snippet members-update -->
+```python
+# The fee on their new payments (a checkout already created keeps its fee).
+member = client.members.update(member_uuid, organization_fee_percent=10)
+print(member.organization_fee_percent)
+```
+<!-- /docs:snippet -->
+
+**6. Manage members and invitations.**
+
+<!-- docs:snippet members-list -->
+```python
+page = client.members.list()
+for member in page.items:
+    print(member.user_uuid, member.email, f"fee {member.organization_fee_percent}%")
+```
+<!-- /docs:snippet -->
+
+<!-- docs:snippet members-get -->
+```python
+member = client.members.get(member_uuid)  # their user uuid
+print(member.name, member.last_name, "trusted:", member.trusted_at is not None)
+```
+<!-- /docs:snippet -->
+
+`members.iterate` walks every page. `wallets.list_for_member` reads a member's wallets:
+
+<!-- docs:snippet members-wallets -->
+```python
+for wallet in client.wallets.list_for_member(member_uuid):
+    print(wallet.currency.symbol, wallet.public_key)
+```
+<!-- /docs:snippet -->
+
+`members.remove` ends a seller's membership in the key's mode. It is a `409 held_funds_pending`
+while you hold their live funds: release them first.
+
+<!-- docs:snippet members-remove -->
+```python
+try:
+    client.members.remove(member_uuid)  # their keys stop working, their checkouts close
+    print("removed")
+except qbitflow.ConflictError as exc:
+    if exc.code != "held_funds_pending":
+        raise
+    print("release their held funds first")  # from the dashboard
+```
+<!-- /docs:snippet -->
+
+`invitations.list` / `iterate` (by `status`) and `invitations.revoke` manage the invitations:
+
+<!-- docs:snippet invitations-list -->
+```python
+page = client.invitations.list(status=qbitflow.InvitationStatus.PENDING)
+for invitation in page.items:
+    print(invitation.uuid, invitation.email, "expires", invitation.expires_at)
+```
+<!-- /docs:snippet -->
+
+<!-- docs:snippet invitations-revoke -->
+```python
+invitation = client.invitations.revoke(invitation_uuid)  # a pending one only
+print(invitation.status)  # revoked
+```
+<!-- /docs:snippet -->
+
+- `members.list_held_funds` lists every member you owe, longest held first.
 - Today a seller whose account already belongs to another organization cannot accept (no
   `member.joined` comes), and test-mode sellers are real accounts that accept from a real inbox.
 
@@ -694,17 +813,9 @@ checkouts answer `409 merchant_not_ready`.
 ## Accounting export
 
 Every payment, bill, refund and fee between two dates (`YYYY-MM-DD` strings or `datetime.date`s,
-both included), as models or as CSV text:
-
-```python
-from pathlib import Path
-
-for e in client.accounting.export_json("2026-09-01", "2026-09-30"):
-    print(e.type, e.payment_uuid, e.tx_time_utc, e.token_symbol, e.gross_amount, e.net_amount)
-
-csv = client.accounting.export_csv("2026-09-01", "2026-09-30")
-Path("qbitflow-2026-09.csv").write_text(csv)
-```
+both included), as models (`export_json`) or as CSV text (`export_csv`); the
+[recipe](#a-yearly-accounting-export) exports a year with their `_range` twins. Each row has its
+`type`, `payment_uuid`, `tx_time_utc`, `token_symbol`, `gross_amount`, `net_amount` and more.
 
 The SDK checks the dates and `from <= to` before sending. **The API allows at most 95 days per
 export** and answers 400 beyond. `export_json_range` and `export_csv_range` take any range: they
@@ -721,21 +832,22 @@ subscription billed, a member joined.
 
 ### 1. Create an endpoint and store its secret
 
+<!-- docs:snippet webhook-endpoint-create -->
 ```python
-from qbitflow import EventType
-
 created = client.webhooks.endpoints.create(
     url="https://shop.example.com/webhooks/qbitflow",
     events=[  # None: every type, including the ones added later
-        EventType.PAYMENT_COMPLETED,
-        EventType.CHECKOUT_EXPIRED,
-        EventType.SUBSCRIPTION_STATUS_CHANGED,
+        qbitflow.EventType.PAYMENT_COMPLETED,
+        qbitflow.EventType.CHECKOUT_EXPIRED,
+        qbitflow.EventType.SUBSCRIPTION_STATUS_CHANGED,
     ],
     description="Order fulfilment",
 )
-# The whsec_… secret is shown only this once: put it in your secret store now.
+# The whsec_… secret is returned only this once: put it in your secret store now
+# (QBITFLOW_WEBHOOK_SECRET for your webhook handler).
 print(created.uuid, created.secret)
 ```
+<!-- /docs:snippet -->
 
 Up to 10 endpoints per space and mode; live endpoints need `https` and a public host. An
 organization endpoint also receives its members' events unless created with
@@ -860,27 +972,27 @@ assert result.status == 200
 `webhooks.verify(raw_body, header, secret)` checks a signature (raising `WebhookSignatureError`
 with a `reason`: `missingHeader`, `malformedHeader`, `timestampOutsideTolerance`,
 `noMatchingSignature`), `webhooks.construct_event` verifies then parses, and
-`webhooks.parse_event` only parses (a `ValidationError` for a body that is not a v2 event):
+`webhooks.parse_event` only parses (a `ValidationError` for a body that is not a v2 event, such
+as an endpoint still on v1). In a handler that returns the HTTP status to answer:
 
+<!-- docs:snippet webhook-verify -->
 ```python
-from typing import Optional
-
-from qbitflow import PaymentCompletedEvent, ValidationError, WebhookSignatureError, webhooks
-
-
-def handle_delivery(raw_body: bytes, signature_header: Optional[str], secret: str) -> int:
-    """Returns the HTTP status to answer."""
-    try:
-        event = webhooks.construct_event(raw_body, signature_header, secret)
-    except WebhookSignatureError as exc:
-        print("rejected:", exc.reason)  # e.g. noMatchingSignature, timestampOutsideTolerance
-        return 400
-    except ValidationError:
-        return 400  # not a v2 event: an endpoint still on v1
-    if isinstance(event, PaymentCompletedEvent):  # narrow the union by class
-        print("fulfil order", event.data.reference)
-    return 200  # any other type, or one added after this SDK (UnknownEvent): acknowledge it
+try:
+    event = qbitflow.webhooks.construct_event(
+        raw_body,  # the raw bytes as received, never re-serialized
+        signature_header,  # the QBitFlow-Signature header
+        os.environ["QBITFLOW_WEBHOOK_SECRET"],
+    )
+except qbitflow.WebhookSignatureError as exc:
+    print("rejected:", exc.reason)  # e.g. noMatchingSignature, timestampOutsideTolerance
+    return 400
+except qbitflow.ValidationError:
+    return 400  # not a v2 event
+if isinstance(event, qbitflow.PaymentCompletedEvent):  # narrow the union by class
+    print("fulfil order", event.data.reference)
+return 200  # acknowledge every other type too, or QBitFlow retries it
 ```
+<!-- /docs:snippet -->
 
 `now=` sets their clock in tests (a `datetime`, unix seconds, or a callable). Not holding the
 secret? `client.webhooks.verify_remote(endpoint_uuid, raw_body, header)` has the API check it,
@@ -913,28 +1025,34 @@ data never carries what only API reads return (`customer`, `refund`/`refundable`
 
 ### The event log
 
-Every event of the space, newest first, with each one's deliveries:
+Every event of the space, newest first (`events.iterate` walks every page):
+
+<!-- docs:snippet events-list -->
+```python
+page = client.webhooks.events.list(type=qbitflow.EventType.PAYMENT_COMPLETED, limit=20)
+for event in page.items:  # newest first
+    print(event.id, event.type, event.created_at)
+```
+<!-- /docs:snippet -->
+
+`events.get(event_id)` adds each one's deliveries:
 
 ```python
-from qbitflow import EventType
-
-for logged in client.webhooks.events.iterate(type=EventType.PAYMENT_COMPLETED):
-    detail = client.webhooks.events.get(logged.id)
-    for d in detail.deliveries:
-        print(detail.event.id, d.url, d.delivered, len(d.attempts))
-    break  # the first one is enough here: breaking stops the fetching
+detail = client.webhooks.events.get(event_id)
+for d in detail.deliveries:
+    print(detail.event.id, d.url, d.delivered, len(d.attempts))
 ```
 
 ## Currencies
 
+<!-- docs:snippet currencies-list -->
 ```python
-currencies = client.currencies.list_available(test=True)
-by_id = {c.id: c for c in currencies}  # e.g. 6-decimal USDC
-
-if currencies:
-    c = client.currencies.get(currencies[0].id)  # resolve one id
-    print(c.symbol, c.decimals, len(by_id))
+# A public route limited to 60 requests a minute: cache the list at start-up.
+currencies = client.currencies.list_available()
+for currency in currencies:
+    print(currency.id, currency.symbol, currency.name, currency.decimals)
 ```
+<!-- /docs:snippet -->
 
 `list_available` lists every currency checkouts can take, `list_main` the chains' native coins,
 and `get` one by id, to resolve the `currency_id`, `available_currency_ids` and
@@ -947,25 +1065,27 @@ subscriptions already carry their `currency`.
 Paginated lists return a `Page[T]`: `items`, and `next_cursor` (`None` on the last page, else
 the value to pass back as `cursor=`, verbatim); `page.has_more` says whether another page follows.
 
+<!-- docs:snippet customers-list -->
 ```python
-cursor = None
-while True:
-    customers = client.customers.list(limit=100, cursor=cursor)
-    for c in customers.items:
-        print(c.email)
-    if not customers.has_more:
-        break
-    cursor = customers.next_cursor
+page = client.customers.list(limit=20)
+for customer in page.items:
+    print(customer.uuid, customer.email, customer.reference)
+if page.has_more:
+    print("next page: cursor =", page.next_cursor)  # pass it back as cursor=
 ```
+<!-- /docs:snippet -->
 
 Each paginated list has an `iterate…` twin returning an iterator: it fetches one page at a time,
 only as you consume it, keeps your filters and page size, and stops when you `break`. An error is
 raised from the loop.
 
+<!-- docs:snippet pagination-iterate -->
 ```python
-for c in client.customers.iterate(verified=True):
-    print(c.uuid, c.email)
+# Fetches one page at a time, only as the loop consumes it; break stops the fetching.
+for payment in client.payments.iterate(limit=50):
+    print(payment.uuid, f"{payment.amount:.2f} USD")
 ```
+<!-- /docs:snippet -->
 
 | Method | Iterator | Page size: default / max |
 |---|---|---|
@@ -1007,25 +1127,26 @@ Every error carries `status` (`None` without a response), `code` (branch on it, 
 `str(error)` reads `"<message> (status <status>, code <code>, request <requestId>)"`, followed by
 `"; <field>: <message>"` for each field error.
 
+<!-- docs:snippet errors-handling -->
 ```python
-from qbitflow import ApiError, ConflictError, RateLimitError, ValidationError
-
 try:
-    client.customers.create(name="Ada", email="ada@example.com")
-    print("created")
-except ValidationError as exc:
-    for f in exc.field_errors:
-        print(f"{f.field}: {f.message}")  # show it next to the form field
-except ConflictError as exc:
-    if exc.code != "unique_violation":
-        raise
-    print("taken:", exc.details.get("field"))  # email or reference
-except RateLimitError as exc:
-    print("slow down, retry in", exc.retry_after, "s")
-except ApiError as exc:
-    # Quote the request id to support.
+    payment = client.payments.get_by_reference("order-1042")
+    print("paid:", payment.uuid)
+except qbitflow.ValidationError as exc:  # status None: refused before sending
+    for field_error in exc.field_errors:
+        print(f"{field_error.field}: {field_error.message}")
+except qbitflow.NotFoundError:
+    print("no payment for order-1042 yet")
+except qbitflow.ApiError as exc:  # the base of every error the SDK raises
     print(f"QBitFlow error {exc.status} {exc.code} (request {exc.request_id})")
+    if qbitflow.is_retryable(exc):  # network, 5xx, 429: worth trying again later
+        print("transient: try again later")
 ```
+<!-- /docs:snippet -->
+
+Catch the classes you act on before `ApiError`: a `ConflictError` with code `unique_violation`
+names the taken field in `details["field"]`, a `RateLimitError` says when to retry in
+`retry_after`. Quote the request id to support.
 
 **Client-side validation** runs before every request: names and texts (lengths in characters, no
 markup characters), references (`A-Z a-z 0-9 . _ : @ -`, 1 to 100), emails, phone numbers,
@@ -1055,26 +1176,27 @@ it on every retry of that call: a create retried after a timeout answers the fir
 of opening a second checkout. To retry **across processes** (a queue re-running a job after a
 crash), pass your own stable key:
 
+<!-- docs:snippet retries-idempotency -->
 ```python
-from qbitflow import IdempotencyError, RequestOptions
+# Network errors, timeouts, 5xx and 429 are retried with back-off (3 retries by default).
+client = qbitflow.QBitFlow.from_env(max_retries=5)
 
-order_id = "order-1044"
-try:
-    session = client.checkout_sessions.create_payment(
-        product_name="T-shirt",
-        price=4.99,
-        reference=order_id,
-        options=RequestOptions(
-            idempotency_key="checkout-" + order_id,  # the same key returns the same session
-            request_id="job-7781",  # sent as X-Request-Id, echoed in errors
-        ),
-    )
-    print(session.link)
-except IdempotencyError:
-    raise SystemExit("this key was already used with other params")  # 422 idempotency_key_reused
+order_reference = "order-1042"
+session = client.checkout_sessions.create_payment(
+    product_name="T-shirt",
+    description="Blue, size M",
+    price=4.99,
+    reference=order_reference,
+    # A key derived from the order: any retry, even from another process after a crash,
+    # returns this same checkout instead of creating a second one.
+    options=qbitflow.RequestOptions(idempotency_key=f"checkout-{order_reference}"),
+)
+print("Send the customer to", session.link)
 ```
+<!-- /docs:snippet -->
 
-A key is 1 to 255 printable ASCII characters without spaces, and only successful answers are kept
+The same key with other params is an `IdempotencyError` (422 `idempotency_key_reused`).
+`RequestOptions(request_id=...)` also sends an `X-Request-Id`, echoed in errors. A key is 1 to 255 printable ASCII characters without spaces, and only successful answers are kept
 (24 hours): after a 4xx, the same key runs the request again. A `409 idempotency_key_in_use` (the
 first request still running) is retried automatically. Other methods ignore the option. Retry the
 other writes yourself only after reading the resource's state (a 504 may have done the work).
@@ -1135,25 +1257,41 @@ before/after code for the common tasks.
 
 ## Examples
 
-Runnable scripts in [`examples/`](examples) (`QBITFLOW_API_KEY=sk_… python examples/<name>.py`):
+Runnable scripts in [`examples/`](examples) (`QBITFLOW_API_KEY=sk_… python examples/<name>.py`;
+`QBITFLOW_BASE_URL` optional). The code blocks of this README come from their `# docs:start`
+regions ([CONTRIBUTING.md](CONTRIBUTING.md#website-snippets)).
 
-| Example | Shows |
-|---|---|
-| [`checkout.py`](examples/checkout.py) | a payment checkout, its status, expiry |
-| [`subscriptions.py`](examples/subscriptions.py) | a subscription checkout with a trial, filtered lists, bills, cancel at period end |
-| [`marketplace.py`](examples/marketplace.py) | invite a seller, sell `on_behalf_of`, held funds, trust |
-| [`webhook_handler.py`](examples/webhook_handler.py) | a `WebhookRouter` behind a standard-library server: typed handlers, deduplication, `has_access` |
-| [`errors_and_retries.py`](examples/errors_and_retries.py) | error classes, `is_retryable`, idempotency keys across processes |
+| Example | Shows | Other environment |
+|---|---|---|
+| [`client_setup.py`](examples/client_setup.py) | a client and `me()`, `QBitFlow.from_env` | |
+| [`checkout.py`](examples/checkout.py) | a payment checkout, its status, waiting, expiry | `WAIT=1` waits for the payment |
+| [`catalog.py`](examples/catalog.py) | create and list products, list customers, a checkout for a product | |
+| [`payments.py`](examples/payments.py) | a page of payments, one payment, every payment, `format_amount` | `PAYMENT_UUID` |
+| [`refunds.py`](examples/refunds.py) | refund half of a payment, the active refunds | `PAYMENT_UUID` (refunds it) |
+| [`subscriptions.py`](examples/subscriptions.py) | a subscription checkout with a trial; one subscription's access, bills, test billing, cancel at period end | `SUBSCRIPTION_UUID`, `TEST_BILL=1`, `CANCEL=1` |
+| [`marketplace.py`](examples/marketplace.py) | invitations, members, `on_behalf_of`, held funds, fee, trust, removal | `INVITE=1`, `INVITATION_UUID`, `MEMBER_UUID`, `UPDATE_FEE=1`, `TRUST=1`, `REMOVE=1` |
+| [`webhook_endpoints.py`](examples/webhook_endpoints.py) | create a webhook endpoint, the event log | `CREATE_ENDPOINT=1` |
+| [`webhook_fastapi.py`](examples/webhook_fastapi.py) | a `WebhookRouter` mounted in FastAPI (needs `fastapi` and `uvicorn`) | `QBITFLOW_WEBHOOK_SECRET` (no API key) |
+| [`webhook_handler.py`](examples/webhook_handler.py) | a `WebhookRouter` behind a standard-library server: typed handlers, deduplication, `has_access` | `QBITFLOW_WEBHOOK_SECRET` (no API key) |
+| [`webhook_verify.py`](examples/webhook_verify.py) | `construct_event` on a delivery signed with `webhooks.sign` (offline) | `QBITFLOW_WEBHOOK_SECRET` (optional, no API key) |
+| [`errors_and_retries.py`](examples/errors_and_retries.py) | error classes, `is_retryable`, idempotency keys across processes | |
+| [`accounting.py`](examples/accounting.py) | a year of accounting events, as models and as `qbitflow-2026.csv` | |
+| [`currencies.py`](examples/currencies.py) | the currencies customers can pay with | |
+
+The examples share the order references `order-1042` (payment) and `order-1043` (subscription),
+unique per space: those that create a payment checkout expire it before they exit, so they can
+run again.
 
 ## Testing
 
 ```bash
 pip install -e ".[dev]"
-mypy qbitflow/ && flake8 qbitflow/ tests/ && black --check qbitflow/ tests/ && isort --check-only qbitflow/ tests/ && pytest
+mypy qbitflow/ && flake8 qbitflow/ tests/ examples/ && black --check qbitflow/ tests/ examples/ && isort --check-only qbitflow/ tests/ examples/ && pytest
 ```
 
 `pytest` runs the offline suite against stub transports, including the cross-SDK conformance
-vectors in `tests/fixtures/vectors/`. The live checks need an API key **and** an explicit base
+vectors in `tests/fixtures/vectors/`, and the website snippet check
+([CONTRIBUTING.md](CONTRIBUTING.md#website-snippets)). The live checks need an API key **and** an explicit base
 URL:
 
 ```bash
