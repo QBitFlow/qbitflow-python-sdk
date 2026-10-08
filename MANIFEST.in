@@ -11,6 +11,9 @@ include pyproject.toml
 recursive-include qbitflow *.py
 recursive-include qbitflow py.typed
 
+# Contributor docs, tracked in git (setuptools_scm would ship them in the sdist).
+exclude CLAUDE.md AGENTS.md CONTRIBUTING.md
+
 recursive-exclude tests *
 recursive-exclude examples *
 recursive-exclude * __pycache__
