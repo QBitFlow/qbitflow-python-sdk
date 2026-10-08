@@ -111,6 +111,23 @@ never published; its changes are part of 3.0.0).
 -   **Client-side validation** of every input (the API's rules: names, texts, references,
     emails, phones, URLs, prices, percents, durations, ids, dates, exclusive filters, argument
     types), raising `ValidationError` with wire field names before anything is sent.
+-   **Checkout fees**: the customer pays a tax, shipping or QBitFlow's processing fee on top of
+    the price.
+    -   `checkout_sessions.create_payment(..., fees=CheckoutFees(items=[FeeItem(label,
+        amount_usd, description=None)], processing_fee=None))`: up to 10 lines of your own and
+        the processing fee (grossed up so you keep the price and your lines; `None` follows the
+        dashboard's `checkout.customerPaysProcessingFee` setting). `amount_usd` is a number (sent
+        as a JSON number) or a string / `Decimal` (sent as a string, as written). Omitted when not
+        given; `create_subscription` takes no fees.
+    -   Validated before sending: at most 10 lines (`fees.items`), `label` the name rule in 1 to
+        40 characters, `description` the text rule up to 200, `amount_usd` above 0, at most
+        1,000,000, at most 2 decimals, no sign or exponent (`fees.items[i].amountUsd`…). The
+        test-mode $5 cap, fees included, is the API's (a 400 on `fees`).
+    -   Models: `FeeLine` (`type`, `label`, `description`, `amount_usd` as a decimal string) and
+        the open enum `FeeLineType` (`CUSTOM`, `PROCESSING_FEE`); `Payment.price` and
+        `Payment.fees` (so `payment.completed` has them: `amount` = `price` + the fees);
+        `PaymentSessionData.fees` and `amount` (`checkout.expired`: what the customer pays
+        before the network fee).
 -   `X-Request-Id` (`RequestOptions(request_id=…)`), echoed as `request_id` on errors.
 -   `NOT_GIVEN`: the default of the clearable update fields (`""` or `None` clears them).
 -   `qbitflow.__version__` single-sourced in `qbitflow/_version.py`; `User-Agent:

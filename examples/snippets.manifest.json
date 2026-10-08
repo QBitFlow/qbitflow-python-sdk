@@ -1,11 +1,12 @@
 {
   "sdk": "python",
-  "catalog": "24c3d761ef71e3b16c7b550b93bdce05d9636c28",
+  "catalog": "f9eecb0441342a2f962621197a55097b965006da",
   "snippets": {
     "client-init": "examples/client_setup.py",
     "client-on-behalf-of": "examples/marketplace.py",
     "config-from-env": "examples/client_setup.py",
     "checkout-create-payment": "examples/checkout.py",
+    "checkout-create-payment-fees": "examples/checkout.py",
     "checkout-create-payment-product": "examples/catalog.py",
     "checkout-create-subscription": "examples/subscriptions.py",
     "checkout-status": "examples/checkout.py",

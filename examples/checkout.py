@@ -1,4 +1,5 @@
-"""A one-time payment checkout: create it, read its status, wait for it, expire it.
+"""A one-time payment checkout: create it, read its status, wait for it, expire it; and a
+checkout with fees (a shipping line and the processing fee), expired right away.
 
 QBITFLOW_API_KEY=sk_… python examples/checkout.py           # WAIT=1 to wait for the payment
 """
@@ -24,6 +25,32 @@ def create_checkout(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSession:
     # Redirect the customer to the hosted checkout page.
     print("Send the customer to", session.link)
     # docs:end checkout-create-payment
+    return session
+
+
+def create_checkout_with_fees(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSession:
+    # docs:start checkout-create-payment-fees
+    session = client.checkout_sessions.create_payment(
+        product_name="T-shirt",
+        description="Blue, size M",
+        price=3.99,  # USD: you keep the price and your lines
+        reference="order-1044",
+        success_url=f"https://shop.example.com/orders/success?uuid={qbitflow.PLACEHOLDER_UUID}",
+        cancel_url="https://shop.example.com/orders/cancel",
+        fees=qbitflow.CheckoutFees(
+            # Your own lines (up to 10), shown to the customer and paid with the price.
+            items=[
+                qbitflow.FeeItem(
+                    label="Shipping", description="Standard, 3 to 5 days", amount_usd=0.75
+                ),
+            ],
+            # The customer also pays QBitFlow's processing fee, a last line computed by QBitFlow.
+            processing_fee=True,
+        ),
+    )
+    # The customer pays the price plus every line (then the network fee on top).
+    print("Send the customer to", session.link)
+    # docs:end checkout-create-payment-fees
     return session
 
 
@@ -63,6 +90,10 @@ def expire_checkout(client: qbitflow.QBitFlow, session_uuid: str) -> None:
 
 def main() -> None:
     with new_client() as client:
+        # The checkout with fees is a demo: expire it, which also frees order-1044.
+        with_fees = create_checkout_with_fees(client)
+        client.checkout_sessions.expire(with_fees.uuid)
+
         session = create_checkout(client)
         session_uuid = session.uuid
         show_status(client, session_uuid)
