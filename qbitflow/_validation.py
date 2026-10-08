@@ -35,6 +35,8 @@ _PHONE = re.compile(r"\+?[0-9][0-9 ().-]{4,}[0-9]")
 _UUID = re.compile(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
 _DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 _REQUEST_ID = re.compile(r"[A-Za-z0-9\-_.:]{1,128}")
+#: An amount in USD written as a string: digits, then at most 2 decimals (no sign, no exponent).
+_USD = re.compile(r"[0-9]+(?:\.[0-9]{1,2})?")
 _NIL_UUID = "00000000-0000-0000-0000-000000000000"
 _TX_PREFIXES = ("pay", "sub", "payg", "sub-hist", "refund", "transfer")
 
@@ -263,6 +265,31 @@ class Validator:
         """A price in USD: a finite number above 0."""
         if not _is_number(value) or not math.isfinite(value) or value <= 0:
             self.add(field, "must be a number above 0")
+
+    def usd(self, field: str, value: Any, max_usd: int) -> None:
+        """An amount in USD (the ``usd`` validator): a finite number, or a string of digits with
+        at most 2 decimals (no sign, no exponent; a ``Decimal`` is checked as its string), above 0
+        and at most ``max_usd``, with at most 2 decimals (a number's shortest decimal form)."""
+        if value is None:
+            self.add(field, "is required")
+            return
+        if isinstance(value, Decimal):
+            value = str(value)
+        if isinstance(value, str):
+            ok = _USD.fullmatch(value) is not None and 0 < Decimal(value) <= max_usd
+        elif _is_number(value):
+            ok = (
+                math.isfinite(value)
+                and 0 < value <= max_usd
+                and _USD.fullmatch(format(Decimal(repr(value)), "f")) is not None
+            )
+        else:
+            ok = False
+        if not ok:
+            self.add(
+                field,
+                f"must be an amount in USD above 0 and at most {max_usd}, with at most 2 decimals",
+            )
 
     def percent(self, field: str, value: Any, max_percent: float, positive: bool) -> None:
         """A rate in percent: finite, from 0 (above 0 when ``positive``) to ``max_percent``, with

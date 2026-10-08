@@ -8,7 +8,7 @@ from pydantic import Field
 
 from ._base import Bool, Float, Model, Str, Time, UInt
 from ._fields import CheckoutSessionStatusValueT, TransactionTypeT
-from .common import Attempt, Duration
+from .common import Attempt, Duration, FeeLine
 
 __all__ = [
     "CheckoutSession",
@@ -54,8 +54,15 @@ class PaymentSessionData(Model):
     product_reference: Optional[Str] = Field(default=None, alias="productReference")
     product_name: Optional[Str] = Field(default=None, alias="productName")
     description: Optional[Str] = None
-    #: The price in USD.
+    #: The product's price in USD.
     price: Optional[Float] = None
+    #: What a one-time payment's checkout adds to the price, in the order shown: the merchant's
+    #: lines, then the processing fee (when the customer pays it). Empty without any, and always
+    #: on a subscription session.
+    fees: List[FeeLine] = Field(default_factory=list)
+    #: What the customer pays in USD before the network fee: the price plus every line of
+    #: ``fees`` (the payment's ``amount``). ``None`` on a subscription session.
+    amount: Optional[Float] = None
     #: Where the customer goes after paying (placeholders filled).
     success_url: Optional[Str] = Field(default=None, alias="successUrl")
     cancel_url: Optional[Str] = Field(default=None, alias="cancelUrl")

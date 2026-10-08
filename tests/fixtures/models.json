@@ -47,6 +47,20 @@
     "test": false,
     "userUuid": "m-1",
     "reference": "order-1",
+    "price": 8.5,
+    "fees": [
+      {
+        "type": "custom",
+        "label": "VAT (20%)",
+        "description": "Standard rate",
+        "amountUsd": "1.35"
+      },
+      {
+        "type": "processingFee",
+        "label": "Processing fee",
+        "amountUsd": "0.15"
+      }
+    ],
     "name": "Pro",
     "description": "Lifetime",
     "productUuid": "p-1",

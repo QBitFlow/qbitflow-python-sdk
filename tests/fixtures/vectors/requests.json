@@ -2706,6 +2706,350 @@
     {
       "args": {
         "params": {
+          "cancelUrl": "https://shop.example.com/orders/cancel",
+          "description": "Blue, size M",
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 0.75,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ],
+            "processingFee": true
+          },
+          "price": 3.99,
+          "productName": "T-shirt",
+          "reference": "order-1044",
+          "successUrl": "https://shop.example.com/orders/success?uuid={{UUID}}"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees with a line and the processing fee",
+      "request": {
+        "body": {
+          "cancelUrl": "https://shop.example.com/orders/cancel",
+          "description": "Blue, size M",
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 0.75,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ],
+            "processingFee": true
+          },
+          "price": 3.99,
+          "productName": "T-shirt",
+          "reference": "order-1044",
+          "successUrl": "https://shop.example.com/orders/success?uuid={{UUID}}"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/payment",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 20,
+                "label": "VAT (20%)"
+              }
+            ],
+            "processingFee": false
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees processingFee false",
+      "note": "false is sent: it turns the setting off for this checkout",
+      "request": {
+        "body": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 20,
+                "label": "VAT (20%)"
+              }
+            ],
+            "processingFee": false
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/payment",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 20,
+                "label": "VAT (20%)"
+              },
+              {
+                "amountUsd": 4.5,
+                "description": "Express",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees without processingFee",
+      "note": "processingFee omitted: the space's checkout.customerPaysProcessingFee setting decides; lines keep their order; a line without description has none",
+      "request": {
+        "body": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 20,
+                "label": "VAT (20%)"
+              },
+              {
+                "amountUsd": 4.5,
+                "description": "Express",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/payment",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "processingFee": true
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees processingFee only",
+      "note": "no items: items omitted",
+      "request": {
+        "body": {
+          "fees": {
+            "processingFee": true
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/payment",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {},
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees empty",
+      "note": "fees given empty: sent as {} (items and processingFee omitted)",
+      "request": {
+        "body": {
+          "fees": {},
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/payment",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 0.01,
+                "label": "A"
+              },
+              {
+                "amountUsd": 19.9,
+                "label": "B"
+              },
+              {
+                "amountUsd": 1000000,
+                "label": "C"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees amountUsd numbers",
+      "note": "a number is sent as a JSON number",
+      "request": {
+        "body": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 0.01,
+                "label": "A"
+              },
+              {
+                "amountUsd": 19.9,
+                "label": "B"
+              },
+              {
+                "amountUsd": 1000000,
+                "label": "C"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/payment",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: session without fees",
+      "note": "fees not given: no fees key",
+      "request": {
+        "body": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/payment",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
           "txUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
         }
       },

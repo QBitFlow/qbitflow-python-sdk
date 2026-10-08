@@ -3347,6 +3347,1192 @@
     {
       "args": {
         "params": {
+          "fees": {},
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees empty object"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "processingFee": true
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees processingFee true only"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "processingFee": false
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees processingFee false only"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ],
+            "processingFee": true
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees one line and the processing fee"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees 10 lines"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees 11 lines",
+      "note": "the count fails on fees.items"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "a|b"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items",
+          "fees.items[10].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees 11 lines, the last with a bad label",
+      "note": "every line is checked, the count too"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": ""
+              },
+              {
+                "amountUsd": 0,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label",
+          "fees.items[1].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees two bad lines"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label absent"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": ""
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label empty"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "   "
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label blank"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "S"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "llllllllllllllllllllllllllllllllllllllll"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label 40"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "lllllllllllllllllllllllllllllllllllllllll"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label 41"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label 40 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label 41 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "VAT (20%)"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label with allowed punctuation"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Ship\nping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label with newline"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Ship\tping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label with tab"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Ship|ping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label with |"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "<b>Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label with <"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Ship‮ping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees label with bidi U+202E"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description absent"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description empty",
+      "note": "an empty description is absent (not sent)"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "x",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description 200"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].description"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description 201"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description 200 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "   ",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].description"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description blank"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard,\n\t3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description with newline and tab"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard\u0000",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].description"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description with NUL"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard; 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].description"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees description with ;"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd absent"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 0,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 0"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": -1,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd -1"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": -0.01,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd -0.01"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 0.01,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 0.01"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 0.001,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 0.001"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 19.9,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 19.9"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 20,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 20 (integer)"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 1.999,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 1.999"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 1000000,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 1000000"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 1000000.01,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 1000000.01"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 1000001,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 1000001"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 0.30000000000000004,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 0.1 + 0.2 (0.30000000000000004)"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "NaN",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd NaN",
+      "note": "the IEEE value (README: non-finite numbers); an SDK taking strings too refuses the string as well"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "Infinity",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd Infinity",
+      "note": "the IEEE value (README: non-finite numbers); an SDK taking strings too refuses the string as well"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "-Infinity",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd -Infinity",
+      "note": "the IEEE value (README: non-finite numbers); an SDK taking strings too refuses the string as well"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 2,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ],
+            "processingFee": true
+          },
+          "price": 3.99,
+          "productName": "T-shirt"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees with an inline product above the test-mode cap",
+      "note": "the $5 test-mode cap (fees included) is the API's"
+    },
+    {
+      "args": {
+        "params": {
           "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
         }
       },

@@ -17,7 +17,9 @@ import pytest
 
 from qbitflow import (
     NOT_GIVEN,
+    CheckoutFees,
     Duration,
+    FeeItem,
     QBitFlow,
     RequestOptions,
     ServerError,
@@ -62,6 +64,15 @@ def _duration(value: Any) -> Any:
     return value
 
 
+def _fee_item(item: Any) -> Any:
+    if not isinstance(item, dict):
+        return item
+    amount = item.get("amountUsd")
+    if isinstance(amount, str) and amount in _NON_FINITE:  # the IEEE values, as for price
+        amount = _NON_FINITE[amount]
+    return FeeItem(label=item.get("label"), amount_usd=amount, description=item.get("description"))
+
+
 def convert_param(key: str, value: Any) -> Any:
     if key in ("price", "refundPercent", "organizationFeePercent") and value in _NON_FINITE:
         return _NON_FINITE[value]
@@ -72,6 +83,12 @@ def convert_param(key: str, value: Any) -> Any:
             frequency=_duration(value.get("frequency")),
             trial_period=_duration(value.get("trialPeriod")),
             min_periods=value.get("minPeriods"),
+        )
+    if key == "fees" and isinstance(value, dict):
+        items = value.get("items")
+        return CheckoutFees(
+            processing_fee=value.get("processingFee"),
+            items=[_fee_item(i) for i in items] if isinstance(items, list) else items,
         )
     if key in ("createdAfter", "createdBefore") and isinstance(value, str):
         return parse_time(value)

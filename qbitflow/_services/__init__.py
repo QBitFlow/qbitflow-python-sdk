@@ -2,8 +2,10 @@
 
 from ._base import NOT_GIVEN, NotGiven
 from .catalog import (
+    CheckoutFees,
     CheckoutSessionsService,
     CustomersService,
+    FeeItem,
     ProductsService,
     SubscriptionTermsParams,
 )
@@ -21,6 +23,8 @@ __all__ = [
     "NOT_GIVEN",
     "NotGiven",
     "SubscriptionTermsParams",
+    "CheckoutFees",
+    "FeeItem",
     "ProductsService",
     "CustomersService",
     "CheckoutSessionsService",

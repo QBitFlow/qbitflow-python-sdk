@@ -36,6 +36,7 @@ __all__ = [
     "Role",
     "Credential",
     "MerchantNotReadyReason",
+    "FeeLineType",
 ]
 
 
@@ -298,3 +299,11 @@ class MerchantNotReadyReason(StrEnum):
     NO_WALLET = "noWallet"
     ORGANIZATION_NO_WALLET = "organizationNoWallet"
     NO_TOKEN_WALLET = "noTokenWallet"
+
+
+class FeeLineType(StrEnum):
+    """Who added a line to a payment checkout's price (:class:`FeeLine`)."""
+
+    CUSTOM = "custom"  #: The merchant's own line: a tax, shipping, a service fee.
+    #: QBitFlow's processing fee, which the merchant has the customer pay (computed by QBitFlow).
+    PROCESSING_FEE = "processingFee"

@@ -21,6 +21,7 @@ from .enums import (
     EventType,
     FailureCategory,
     FailureKind,
+    FeeLineType,
     InvitationStatus,
     LedgerEntryType,
     NotRefundableReason,
@@ -55,6 +56,7 @@ EndpointDisabledReasonT = Annotated[
 EventTypeT = Annotated[Union[EventType, str], open_enum(EventType)]
 FailureCategoryT = Annotated[Union[FailureCategory, str], open_enum(FailureCategory)]
 FailureKindT = Annotated[Union[FailureKind, str], open_enum(FailureKind)]
+FeeLineTypeT = Annotated[Union[FeeLineType, str], open_enum(FeeLineType)]
 InvitationStatusT = Annotated[Union[InvitationStatus, str], open_enum(InvitationStatus)]
 LedgerEntryTypeT = Annotated[Union[LedgerEntryType, str], open_enum(LedgerEntryType)]
 NotRefundableReasonT = Annotated[Union[NotRefundableReason, str], open_enum(NotRefundableReason)]

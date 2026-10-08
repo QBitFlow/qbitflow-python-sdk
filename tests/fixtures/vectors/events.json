@@ -53,6 +53,16 @@
           "optional": true,
           "path": "data.userName",
           "value": ""
+        },
+        {
+          "optional": true,
+          "path": "data.fees",
+          "value": []
+        },
+        {
+          "optional": true,
+          "path": "data.amount",
+          "value": null
         }
       ],
       "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"availableCurrencyIds\": [\n      2,\n      5,\n      8\n    ],\n    \"cancelUrl\": \"https://shop.example.com/cart\",\n    \"createdAt\": \"2026-09-30T12:00:00Z\",\n    \"description\": \"Lifetime access to the Pro plan\",\n    \"expiresAt\": \"2026-10-01T12:00:00Z\",\n    \"organizationName\": \"Example Shop\",\n    \"price\": 10,\n    \"productName\": \"Pro plan (lifetime)\",\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"order-1043\",\n    \"successUrl\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f22f-9600-7000-8000-000000000008&redirectUrl=https%3A%2F%2Fshop.example.com%2Fthanks\",\n    \"test\": false,\n    \"txType\": \"payment\",\n    \"uuid\": \"pay@01a0f22f-9600-7000-8000-000000000008\"\n  },\n  \"id\": \"evt_63b9afe7-5561-5c7e-b2c5-42b4d58ecba8\",\n  \"test\": false,\n  \"type\": \"checkout.expired\",\n  \"version\": \"v2\"\n}\n"
@@ -276,9 +286,18 @@
           "optional": true,
           "path": "data.refund",
           "value": null
+        },
+        {
+          "path": "data.price",
+          "value": 10
+        },
+        {
+          "optional": true,
+          "path": "data.fees",
+          "value": []
         }
       ],
-      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amount\": 10,\n    \"amountMinUnits\": \"10000000\",\n    \"chain\": \"BASE\",\n    \"checkoutOpenedAt\": \"2026-10-01T12:00:00Z\",\n    \"confirmedAt\": \"2026-10-01T11:59:58Z\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"description\": \"Lifetime access to the Pro plan\",\n    \"explorerUrl\": \"https://basescan.org/tx/0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f755-f200-7000-8000-000000000001\",\n    \"metadata\": {\n      \"feePercent\": 1.5,\n      \"txAmounts\": {\n        \"minUnits\": {\n          \"merchant\": \"9850000\",\n          \"networkFee\": \"4200\",\n          \"organization\": \"0\",\n          \"platform\": \"150000\",\n          \"referral\": \"0\"\n        },\n        \"usd\": {\n          \"merchant\": 9.85,\n          \"networkFee\": 0.0042,\n          \"platform\": 0.15\n        }\n      },\n      \"txMetadata\": {\n        \"blockData\": {\n          \"number\": \"52468103\",\n          \"timestamp\": 1790855998\n        },\n        \"networkFees\": {\n          \"amount\": \"1140000000000\",\n          \"unitsConsumed\": 95000\n        }\n      }\n    },\n    \"name\": \"Pro plan (lifetime)\",\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"order-1042\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"txHash\": \"0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"uuid\": \"pay@01a0f755-f200-7000-8000-000000000001\"\n  },\n  \"id\": \"evt_82c1e15d-c0d9-584f-a65a-fb4099925273\",\n  \"test\": false,\n  \"type\": \"payment.completed\",\n  \"version\": \"v2\"\n}\n"
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amount\": 10,\n    \"amountMinUnits\": \"10000000\",\n    \"chain\": \"BASE\",\n    \"checkoutOpenedAt\": \"2026-10-01T12:00:00Z\",\n    \"confirmedAt\": \"2026-10-01T11:59:58Z\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"description\": \"Lifetime access to the Pro plan\",\n    \"explorerUrl\": \"https://basescan.org/tx/0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f755-f200-7000-8000-000000000001\",\n    \"metadata\": {\n      \"feePercent\": 1.5,\n      \"txAmounts\": {\n        \"minUnits\": {\n          \"merchant\": \"9850000\",\n          \"networkFee\": \"4200\",\n          \"organization\": \"0\",\n          \"platform\": \"150000\",\n          \"referral\": \"0\"\n        },\n        \"usd\": {\n          \"merchant\": 9.85,\n          \"networkFee\": 0.0042,\n          \"platform\": 0.15\n        }\n      },\n      \"txMetadata\": {\n        \"blockData\": {\n          \"number\": \"52468103\",\n          \"timestamp\": 1790855998\n        },\n        \"networkFees\": {\n          \"amount\": \"1140000000000\",\n          \"unitsConsumed\": 95000\n        }\n      }\n    },\n    \"name\": \"Pro plan (lifetime)\",\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"price\": 10,\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"order-1042\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"txHash\": \"0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"uuid\": \"pay@01a0f755-f200-7000-8000-000000000001\"\n  },\n  \"id\": \"evt_82c1e15d-c0d9-584f-a65a-fb4099925273\",\n  \"test\": false,\n  \"type\": \"payment.completed\",\n  \"version\": \"v2\"\n}\n"
     },
     {
       "expect": {
@@ -837,6 +856,74 @@
     },
     {
       "expect": {
+        "dataShape": "payment",
+        "id": "evt_00000000-0000-5000-8000-000000000004",
+        "known": true,
+        "ok": true,
+        "test": true,
+        "type": "checkout.expired",
+        "userUuid": ""
+      },
+      "name": "checkout.expired, payment session with fees",
+      "note": "fees (the merchant's lines, then the processing fee) and amount (price + fees); amountUsd stays a decimal string",
+      "probes": [
+        {
+          "path": "data.uuid",
+          "value": "pay@01a0f22f-9600-7000-8000-00000000000b"
+        },
+        {
+          "path": "data.txType",
+          "value": "payment"
+        },
+        {
+          "optional": true,
+          "path": "data.price",
+          "value": 3.99
+        },
+        {
+          "optional": true,
+          "path": "data.amount",
+          "value": 5
+        },
+        {
+          "path": "data.fees[0].type",
+          "value": "custom"
+        },
+        {
+          "path": "data.fees[0].label",
+          "value": "Shipping"
+        },
+        {
+          "optional": true,
+          "path": "data.fees[0].description",
+          "value": "Standard, 3 to 5 days"
+        },
+        {
+          "path": "data.fees[0].amountUsd",
+          "value": "0.75"
+        },
+        {
+          "path": "data.fees[1].type",
+          "value": "processingFee"
+        },
+        {
+          "path": "data.fees[1].label",
+          "value": "Processing fee"
+        },
+        {
+          "optional": true,
+          "path": "data.fees[1].description",
+          "value": ""
+        },
+        {
+          "path": "data.fees[1].amountUsd",
+          "value": "0.26"
+        }
+      ],
+      "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{\"amount\":5,\"availableCurrencyIds\":[8],\"fees\":[{\"amountUsd\":\"0.75\",\"description\":\"Standard, 3 to 5 days\",\"label\":\"Shipping\",\"type\":\"custom\"},{\"amountUsd\":\"0.26\",\"label\":\"Processing fee\",\"type\":\"processingFee\"}],\"organizationName\":\"Example Shop\",\"price\":3.99,\"productName\":\"T-shirt\",\"test\":true,\"txType\":\"payment\",\"uuid\":\"pay@01a0f22f-9600-7000-8000-00000000000b\"},\"id\":\"evt_00000000-0000-5000-8000-000000000004\",\"test\":true,\"type\":\"checkout.expired\",\"version\":\"v2\"}"
+    },
+    {
+      "expect": {
         "id": "evt_00000000-0000-5000-8000-000000000003",
         "known": false,
         "ok": true,
@@ -1155,7 +1242,7 @@
         "stage": "data"
       },
       "name": "data: payment amount as a string",
-      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amount\": \"10\",\n    \"amountMinUnits\": \"10000000\",\n    \"chain\": \"BASE\",\n    \"checkoutOpenedAt\": \"2026-10-01T12:00:00Z\",\n    \"confirmedAt\": \"2026-10-01T11:59:58Z\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"description\": \"Lifetime access to the Pro plan\",\n    \"explorerUrl\": \"https://basescan.org/tx/0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f755-f200-7000-8000-000000000001\",\n    \"metadata\": {\n      \"feePercent\": 1.5,\n      \"txAmounts\": {\n        \"minUnits\": {\n          \"merchant\": \"9850000\",\n          \"networkFee\": \"4200\",\n          \"organization\": \"0\",\n          \"platform\": \"150000\",\n          \"referral\": \"0\"\n        },\n        \"usd\": {\n          \"merchant\": 9.85,\n          \"networkFee\": 0.0042,\n          \"platform\": 0.15\n        }\n      },\n      \"txMetadata\": {\n        \"blockData\": {\n          \"number\": \"52468103\",\n          \"timestamp\": 1790855998\n        },\n        \"networkFees\": {\n          \"amount\": \"1140000000000\",\n          \"unitsConsumed\": 95000\n        }\n      }\n    },\n    \"name\": \"Pro plan (lifetime)\",\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"order-1042\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"txHash\": \"0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"uuid\": \"pay@01a0f755-f200-7000-8000-000000000001\"\n  },\n  \"id\": \"evt_82c1e15d-c0d9-584f-a65a-fb4099925273\",\n  \"test\": false,\n  \"type\": \"payment.completed\",\n  \"version\": \"v2\"\n}\n"
+      "rawBody": "{\n  \"createdAt\": \"2026-10-01T12:00:00Z\",\n  \"data\": {\n    \"amount\": \"10\",\n    \"amountMinUnits\": \"10000000\",\n    \"chain\": \"BASE\",\n    \"checkoutOpenedAt\": \"2026-10-01T12:00:00Z\",\n    \"confirmedAt\": \"2026-10-01T11:59:58Z\",\n    \"createdAt\": \"2026-10-01T12:00:00Z\",\n    \"currency\": {\n      \"address\": \"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\n      \"decimals\": 6,\n      \"id\": 8,\n      \"mainCurrency\": {\n        \"address\": \"\",\n        \"decimals\": 18,\n        \"id\": 3,\n        \"mainCurrency\": null,\n        \"name\": \"Base\",\n        \"symbol\": \"BASE\",\n        \"test\": false\n      },\n      \"mainCurrencyId\": 3,\n      \"name\": \"USD Coin\",\n      \"symbol\": \"USDC\",\n      \"test\": false\n    },\n    \"currencyId\": 8,\n    \"customerReference\": \"crm-5521\",\n    \"customerUuid\": \"01a05cd7-2a00-7d00-8000-0000000000d1\",\n    \"description\": \"Lifetime access to the Pro plan\",\n    \"explorerUrl\": \"https://basescan.org/tx/0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"from\": \"0xabcdef1234567890abcdef1234567890abcdef12\",\n    \"managementPageLink\": \"https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f755-f200-7000-8000-000000000001\",\n    \"metadata\": {\n      \"feePercent\": 1.5,\n      \"txAmounts\": {\n        \"minUnits\": {\n          \"merchant\": \"9850000\",\n          \"networkFee\": \"4200\",\n          \"organization\": \"0\",\n          \"platform\": \"150000\",\n          \"referral\": \"0\"\n        },\n        \"usd\": {\n          \"merchant\": 9.85,\n          \"networkFee\": 0.0042,\n          \"platform\": 0.15\n        }\n      },\n      \"txMetadata\": {\n        \"blockData\": {\n          \"number\": \"52468103\",\n          \"timestamp\": 1790855998\n        },\n        \"networkFees\": {\n          \"amount\": \"1140000000000\",\n          \"unitsConsumed\": 95000\n        }\n      }\n    },\n    \"name\": \"Pro plan (lifetime)\",\n    \"paidMinUnits\": \"10004200\",\n    \"paidUsd\": 10.0042,\n    \"price\": 10,\n    \"productUuid\": \"019cadfd-8900-7c00-8000-0000000000c1\",\n    \"reference\": \"order-1042\",\n    \"test\": false,\n    \"to\": \"0x1234567890abcdef1234567890abcdef12345678\",\n    \"txHash\": \"0x1111111111111111111111111111111111111111111111111111111111111111\",\n    \"uuid\": \"pay@01a0f755-f200-7000-8000-000000000001\"\n  },\n  \"id\": \"evt_82c1e15d-c0d9-584f-a65a-fb4099925273\",\n  \"test\": false,\n  \"type\": \"payment.completed\",\n  \"version\": \"v2\"\n}\n"
     },
     {
       "expect": {
