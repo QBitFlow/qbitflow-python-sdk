@@ -7,8 +7,10 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .._transport import Endpoint, Query, RequestOptions, pathf
 from .._validation import Validator, check_path_required, check_path_tx_id, check_path_uuid
+from ..errors import field_error
 from ..models.checkout import CheckoutSession, CheckoutSessionStatus
 from ..models.common import Duration, Page
+from ..models.enums import CheckoutSessionStatusValue
 from ..models.resources import Customer, Product
 from ._base import NOT_GIVEN, NotGiven, Service, compact, duration_body, iterate_pages
 
@@ -584,6 +586,47 @@ class CheckoutSessionsService(Service):
         check_path_tx_id("uuid", uuid)
         endpoint = Endpoint("GET", pathf("/transaction/session-checkout/{}/status", uuid))
         return self._call(CheckoutSessionStatus, endpoint, options)
+
+    def wait_for_completion(
+        self,
+        uuid: str,
+        *,
+        timeout: float = 600,
+        interval: float = 3,
+        options: Optional[RequestOptions] = None,
+    ) -> CheckoutSessionStatus:
+        """Poll :meth:`get_status` until the session is ``completed`` or ``expired``, and return
+        that status. For scripts, tests and back-office jobs: **fulfil orders from the
+        webhooks** (``payment.completed``), not from this.
+
+        Args:
+            uuid: The session (``pay@…`` or ``sub@…``).
+            timeout: Seconds to wait at most (default 600; 0 or less means the default). When
+                it elapses first, the **last status seen** is returned (not final: check
+                ``.status``).
+            interval: Seconds between two polls (default 3; less than 1 counts as 1).
+
+        Raises:
+            ValidationError: a malformed uuid, or a ``timeout``/``interval`` that is not a
+                number.
+            Any error of :meth:`get_status` (a 404 included), as is.
+        """
+        check_path_tx_id("uuid", uuid)
+        for name, value in (("timeout", timeout), ("interval", interval)):
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or value != value:
+                raise field_error(name, "must be a number of seconds")
+        pause = max(float(interval), 1.0)
+        transport = self._client._transport
+        deadline = transport.monotonic() + (float(timeout) if timeout > 0 else 600.0)
+        final = (CheckoutSessionStatusValue.COMPLETED, CheckoutSessionStatusValue.EXPIRED)
+        while True:
+            status = self.get_status(uuid, options=options)
+            if status.status in final:
+                return status
+            remaining = deadline - transport.monotonic()
+            if remaining <= 0:
+                return status
+            transport.sleep(min(pause, remaining))
 
     def expire(
         self, uuid: str, *, options: Optional[RequestOptions] = None

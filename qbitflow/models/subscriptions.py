@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Optional
 
 from pydantic import Field
 
+from ..errors import field_error
 from ._base import ZERO_TIME, Bool, Model, Str, Time, UInt
 from ._fields import (
     ActionRequiredT,
@@ -89,6 +91,26 @@ class Subscription(Model):
     customer: Optional[CustomerSummary] = None
     #: The failing bill's retries, while past due (API reads only).
     dunning: Optional[DunningStatus] = None
+
+    def has_access(self, at: Optional[datetime] = None) -> bool:
+        """Whether the subscriber has access at ``at`` (default: now): ``current_period_end`` is
+        set and ``at`` is before it, whatever the status (a cancelled subscription keeps access
+        until the end of the period paid for).
+
+        Args:
+            at: The moment to check; a naive datetime is taken as UTC.
+
+        Raises:
+            ValidationError: ``at`` is not a datetime.
+        """
+        if at is None:
+            at = datetime.now(timezone.utc)
+        elif not isinstance(at, datetime):
+            raise field_error("at", "must be a datetime")
+        elif at.tzinfo is None:
+            at = at.replace(tzinfo=timezone.utc)
+        end = self.current_period_end
+        return end is not None and at < end
 
 
 class SubscriptionCancellation(Model):

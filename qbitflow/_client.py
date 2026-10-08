@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import os
 from types import TracebackType
-from typing import Optional, Type
+from typing import Any, Optional, Type
 
 import httpx
 
@@ -121,6 +122,34 @@ class QBitFlow:
             raise field_error("httpClient", "must be an httpx.Client")
 
         self._init(Transport(api_key, url, seconds, retries, http_client), on_behalf_of or "")
+
+    @classmethod
+    def from_env(cls, **overrides: Any) -> "QBitFlow":
+        """A client configured from the environment: the key from ``QBITFLOW_API_KEY``
+        (required), the base URL from ``QBITFLOW_BASE_URL`` when set (else the default), and
+        ``on_behalf_of`` from ``QBITFLOW_ON_BEHALF_OF`` when set. Keyword arguments (any of
+        :class:`QBitFlow`'s, ``api_key`` included) override the environment::
+
+            client = QBitFlow.from_env(timeout=10)
+
+        Raises:
+            ValidationError: ``QBITFLOW_API_KEY`` is not set (and no ``api_key`` is given), or
+                a value is invalid (as :class:`QBitFlow` checks it).
+        """
+        if "api_key" in overrides:
+            api_key = overrides.pop("api_key")
+        else:
+            api_key = os.environ.get("QBITFLOW_API_KEY", "")
+            if trim_space(api_key) == "":
+                raise field_error("QBITFLOW_API_KEY", "is required (the environment has no key)")
+        for name, variable in (
+            ("base_url", "QBITFLOW_BASE_URL"),
+            ("on_behalf_of", "QBITFLOW_ON_BEHALF_OF"),
+        ):
+            value = os.environ.get(variable, "")
+            if name not in overrides and trim_space(value) != "":
+                overrides[name] = trim_space(value)
+        return cls(api_key, **overrides)
 
     def _init(self, transport: Transport, on_behalf_of: str) -> None:
         self._transport = transport

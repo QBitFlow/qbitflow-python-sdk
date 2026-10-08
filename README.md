@@ -18,7 +18,10 @@ Base and Solana, straight to yours.
   sends an `Idempotency-Key`, so a retry never charges or creates twice.
 - **Iterators**: `for payment in client.payments.iterate(): ...` walks every page lazily.
 - **Webhooks** verified locally (`QBitFlow-Signature`, secret rotation included) and parsed into
-  typed events.
+  typed events; a `WebhookRouter` dispatches them to your handlers and plugs into Flask, Django
+  or FastAPI in one line.
+- **Integration helpers**: `wait_for_completion` for scripts, `subscription.has_access()`, exact
+  `format_amount`/`parse_amount`, accounting exports over any range, `QBitFlow.from_env()`.
 
 > Coming from 2.x? Read [MIGRATION-v3.md](MIGRATION-v3.md): 3.0.0 targets API v2 and changes the
 > client and most names.
@@ -27,6 +30,7 @@ Base and Solana, straight to yours.
 
 - [Installation](#installation)
 - [Quick start](#quick-start)
+- [Integration recipes](#integration-recipes)
 - [Authentication and acting for a member](#authentication-and-acting-for-a-member)
 - [Checkout sessions](#checkout-sessions)
 - [Products and customers](#products-and-customers)
@@ -79,7 +83,8 @@ with QBitFlow(os.environ["QBITFLOW_API_KEY"]) as client:  # ValidationError: not
 ```
 
 Then fulfil the order when the [`payment.completed` webhook](#webhooks) arrives for
-`session.uuid`, never on the customer's redirect to your success page.
+`session.uuid`, never on the customer's redirect to your success page: the
+[integration recipes](#integration-recipes) show the endpoint in Flask, Django and FastAPI.
 
 ### Conventions
 
@@ -99,6 +104,138 @@ Then fulfil the order when the [`payment.completed` webhook](#webhooks) arrives 
 - **Enums** are `StrEnum`s (`SubscriptionStatus.ACTIVE`). A value this SDK does not know yet is
   kept as the raw `str`: compare with `==`, and give every `match` a default case.
 - **Times** are timezone-aware `datetime`s, with the offset the API sent.
+
+## Integration recipes
+
+The usual integration in a few lines each: create a checkout, receive the webhook, grant access.
+
+### A webhook endpoint in your framework
+
+Register a handler per event type on a `WebhookRouter`, then mount it. The router verifies the
+`QBitFlow-Signature` header over the raw body, parses the event, runs your handlers and answers
+the status QBitFlow expects. No framework is a dependency of the SDK: each adapter imports its
+framework only when you call it.
+
+```python
+import os
+
+from qbitflow import Event, PaymentCompleted, SubscriptionStatusChanged, WebhookRouter
+
+router = WebhookRouter(os.environ["QBITFLOW_WEBHOOK_SECRET"])
+
+
+def mark_order_paid(reference: str, event_id: str) -> None: ...  # your code (idempotent)
+
+
+def update_access(subscription_uuid: str, has_access: bool) -> None: ...  # your code
+
+
+@router.on("payment.completed")
+def fulfil(data: PaymentCompleted, event: Event) -> None:
+    # At least once: the same event can arrive twice, deduplicate on event.id.
+    mark_order_paid(data.reference or data.uuid, event_id=event.id)
+
+
+@router.on("subscription.statusChanged")
+def access_changed(data: SubscriptionStatusChanged, event: Event) -> None:
+    update_access(data.uuid, data.has_access())
+```
+
+**Flask:**
+
+```python
+from flask import Flask
+
+app = Flask(__name__)
+app.add_url_rule("/webhooks/qbitflow", view_func=router.flask_view())  # POST only
+```
+
+**Django** (the view is CSRF-exempt: QBitFlow signs its deliveries instead):
+
+```python
+from django.urls import path
+
+urlpatterns = [path("webhooks/qbitflow", router.django_view())]
+```
+
+**FastAPI** (or Starlette's `Route(..., router.fastapi_endpoint(), methods=["POST"])`):
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+app.add_api_route("/webhooks/qbitflow", router.fastapi_endpoint(), methods=["POST"])
+```
+
+Inside a route of your own, `return await router.handle_asgi(request)` answers the Starlette
+`Request`. Anything else (a queue consumer, another framework): `router.handle(raw_body,
+signature_header)` returns a `WebhookResult` whose `status` you answer. The details are in
+[Webhooks](#webhooks).
+
+### Checkout, success page, and waiting in a script
+
+```python
+from qbitflow import PLACEHOLDER_UUID, CheckoutSessionStatusValue
+
+session = client.checkout_sessions.create_payment(
+    product_name="Premium access",
+    price=4.99,
+    reference="order-1042",
+    # QBitFlow replaces {{UUID}} with the session's id when it redirects the customer.
+    success_url=f"https://shop.example.com/thanks?session={PLACEHOLDER_UUID}",
+)
+
+# On the success page: show the state, but fulfil on the webhook (anyone can open the URL).
+status = client.checkout_sessions.get_status(session.uuid)
+
+# In a script, a test or a back-office job: poll until completed or expired (10 minutes at most).
+final = client.checkout_sessions.wait_for_completion(session.uuid, timeout=600, interval=3)
+if final.status != CheckoutSessionStatusValue.COMPLETED:
+    print("not paid:", final.status)  # expired, or still pending when the timeout elapsed
+```
+
+### Access control
+
+```python
+if sub.has_access():  # current_period_end is set and now is before it, whatever the status
+    print("grant access")
+```
+
+### Displaying amounts
+
+Amounts in a token's smallest unit are exact decimal strings: convert them with string
+arithmetic, never through a `float`.
+
+```python
+from qbitflow import format_amount, parse_amount
+
+payment = client.payments.get("pay@0192f1c2-2222-7c4d-9e5f-6a7b8c9d0e1f")
+if payment.currency is not None:
+    shown = payment.currency.format_amount(payment.amount_min_units)  # "10" for "10000000"
+    print(shown, payment.currency.symbol)
+
+assert format_amount("1500000", 6) == "1.5"
+assert parse_amount("1.5", 6) == "1500000"  # ValidationError beyond 6 decimal places
+```
+
+### A yearly accounting export
+
+```python
+from pathlib import Path
+
+# The API serves at most 95 days per export: these split the range and join the parts.
+events = client.accounting.export_json_range("2026-01-01", "2026-12-31")
+Path("qbitflow-2026.csv").write_text(client.accounting.export_csv_range("2026-01-01", "2026-12-31"))
+```
+
+### A client from the environment
+
+```python
+from qbitflow import QBitFlow
+
+# QBITFLOW_API_KEY (required), QBITFLOW_BASE_URL and QBITFLOW_ON_BEHALF_OF (optional).
+client = QBitFlow.from_env(timeout=10)  # keyword arguments override the environment
+```
 
 ## Authentication and acting for a member
 
@@ -184,7 +321,9 @@ print("subscribe at", session.link)
 ```
 
 - **Redirect placeholders.** In `success_url` and `cancel_url`, QBitFlow replaces `{{UUID}}` with
-  the session's id and `{{TRANSACTION_TYPE}}` with `payment` or `createSubscription`. In live mode
+  the session's id and `{{TRANSACTION_TYPE}}` with `payment` or `createSubscription`
+  (`qbitflow.PLACEHOLDER_UUID`, `qbitflow.PLACEHOLDER_TRANSACTION_TYPE`; the SDK sends them as
+  is, never URL-encoded). In live mode
   both URLs must be `https`. A redirect proves nothing (anyone can open the URL): fulfil on the
   webhook, or on `get_status`.
 - **Errors to expect:** `409 merchant_not_ready` (`details["reason"]`) when the space's wallets
@@ -217,6 +356,18 @@ elif status.last_attempt is not None:  # created, or a status this SDK does not 
 
 **Never cancel an order on `last_attempt`:** a failed attempt is not final, and the customer can
 pay from the same checkout until it expires. Release what the order holds on `checkout.expired`.
+
+For scripts, tests and back-office jobs, `wait_for_completion` polls `get_status` until the
+session is `completed` or `expired` and returns that status; when `timeout` (seconds, default
+600; 0 or less means the default) elapses first it returns the last status seen, so check
+`.status`. `interval` (default 3)
+is at least 1 second; errors of `get_status` (a 404 included) are raised. Webhooks remain the way
+to fulfil orders.
+
+```python
+final = client.checkout_sessions.wait_for_completion(session.uuid, timeout=120, interval=5)
+print(final.status)  # completed, expired, or still created/waitingConfirmation after 120 s
+```
 
 ### Expire
 
@@ -341,13 +492,11 @@ or `paused` subscription has paid for its period; a `pastDue` one's period has e
 ```python
 from datetime import datetime, timezone
 
-from qbitflow import Subscription
-
-
-def has_access(sub: Subscription) -> bool:
-    end = sub.current_period_end
-    return end is not None and datetime.now(timezone.utc) < end
+print(sub.has_access())  # current_period_end is set and now is before it
+print(sub.has_access(datetime(2026, 12, 1, tzinfo=timezone.utc)))  # at a given time (naive: UTC)
 ```
+
+Every subscription model has it, the subscription webhooks' data included.
 
 `action_required` says what the customer must do (`topUpAllowance`, `raiseMaximum`,
 `confirmTrial`; `None`: nothing): point them to the `management_page_link` the subscription
@@ -558,7 +707,10 @@ Path("qbitflow-2026-09.csv").write_text(csv)
 ```
 
 The SDK checks the dates and `from <= to` before sending. **The API allows at most 95 days per
-export** and answers 400 beyond: split longer ranges. Rows are typed `payment`,
+export** and answers 400 beyond. `export_json_range` and `export_csv_range` take any range: they
+request consecutive windows of at most 95 days (`[from, from + 95 days]`, the next starting the
+day after), in order, and join them (one list; one CSV with the header line once). A range of
+95 days or less is one request. Rows are typed `payment`,
 `subscriptionHistory`, `refund`, `organizationFee` or `referralFee`; amounts in a token's
 smallest unit are decimal strings, and the empty fields of a row are `None`.
 
@@ -591,25 +743,129 @@ organization endpoint also receives its members' events unless created with
 enables it again) and `delete` manage them. An endpoint's secret is shown and rotated in the
 dashboard only.
 
-### 2. Verify and handle the deliveries
+### 2. Handle the deliveries with a router
 
-Verify the `QBitFlow-Signature` header over the **raw body**, then switch on the event's class.
-`qbitflow.webhooks` works without a client (a receiver may not hold an API key):
+A `WebhookRouter` holds the endpoint's secret and your handlers; it needs no client (a receiver
+may not hold an API key). `client.webhooks.router(secret)` builds the same thing.
 
 ```python
-from datetime import datetime, timezone
-from typing import Optional
+import os
 
 from qbitflow import (
-    CheckoutExpiredEvent,
-    PaymentCompletedEvent,
-    SubscriptionStatusChangedEvent,
-    ValidationError,
-    WebhookSignatureError,
+    CheckoutExpired,
+    Event,
+    EventType,
+    PaymentCompleted,
+    SubscriptionStatusChanged,
+    UnknownEvent,
     webhooks,
 )
 
-processed: set[str] = set()  # stands for your database: deliveries are at least once
+router = webhooks.WebhookRouter(os.environ["QBITFLOW_WEBHOOK_SECRET"])  # tolerance=300
+
+
+@router.on("payment.completed")  # the handler gets the typed data, then the event
+def fulfil(data: PaymentCompleted, event: Event) -> None:
+    print(f"fulfil order {data.reference!r} ({data.uuid}): {data.amount:.2f} USD")
+
+
+@router.on(EventType.CHECKOUT_EXPIRED)  # an EventType works too
+def release(data: CheckoutExpired, event: Event) -> None:
+    print("release order", data.reference)
+
+
+@router.on("subscription.statusChanged")
+def status_changed(data: SubscriptionStatusChanged, event: Event) -> None:
+    print(f"{data.uuid}: {data.previous_status} -> {data.status}, access: {data.has_access()}")
+
+
+@router.on_unknown  # a type added after this SDK
+def unknown(event: UnknownEvent) -> None:
+    print("new event type", event.type)
+
+
+@router.on_any  # every event, after its type's handlers
+def audit(event: Event) -> None:
+    print("received", event.id, event.type)
+
+
+# router.add("member.joined", fn) registers without a decorator. Then, per delivery:
+result = router.handle(raw_body, signature_header)  # the raw bytes, never re-serialized
+print(result.status, result.event, result.error)
+```
+
+Mount it with `router.flask_view()`, `router.django_view()`, `router.fastapi_endpoint()` or
+`await router.handle_asgi(request)` ([recipes](#a-webhook-endpoint-in-your-framework)).
+
+| The delivery | `result.status` | Handlers |
+|---|---|---|
+| Verified, handled | 200 | its type's handlers (registration order), then every `on_any` |
+| A type without a handler, or one this SDK does not know | 200 (QBitFlow must not retry it) | `on_unknown` for an unknown type, then `on_any` |
+| Bad, missing or stale signature (`WebhookSignatureError`) | 400 | none |
+| Not JSON, not a v2 event, or not matching its type (`ValidationError`) | 400 | none |
+| A handler raised | 500 (QBitFlow retries) | the remaining ones are skipped; `result.error` is the exception |
+
+The adapters answer `{"received":true}` on a 200 and `{"error":"<reason>"}` otherwise, never
+the secret nor the exception: `invalid signature`, `invalid event` or `cannot read the body`
+(400), `internal error` (500). They accept `POST` only (405 `method not allowed`, with
+`Allow: POST`), read at most 1 MiB (413 `body too large`, early when `Content-Length` says so)
+and find `QBitFlow-Signature` whatever its case. The Flask view reads the raw body
+itself: don't read `request.data` before it. Handlers are synchronous; `handle_asgi` runs them
+in Starlette's thread pool. `WebhookRouter(secret, on_error=fn)` calls `fn(event, exception)`
+for every 400 and 500 (`event` is `None` when the body could not be parsed), to log it.
+
+- **At least once.** The same event can arrive more than once: **deduplicate on `event.id`**
+  (also in the `QBitFlow-Event-Id` header) and make the handlers idempotent: a 500 makes QBitFlow
+  deliver the event again, to every handler.
+- **Answer 2xx fast**, within 30 seconds, **including to the types you ignore** (the router does):
+  anything else is retried (for 3 days in live mode), and an endpoint failing for 3 days is
+  disabled. For slow work, store the event in a handler and process it in the background.
+- **Secret rotation** needs nothing on your side: for 24 hours after a rotation the header
+  carries two `v1=` signatures, the new secret's and the previous one's, and either secret
+  verifies. Switch your secret within the day.
+- **Timestamps** more than 5 minutes from your clock are refused (replays): `tolerance=`
+  (seconds) changes it.
+- **Members' events** carry the member in `event.user_uuid`: read their resources with
+  `client.on_behalf_of(event.user_uuid)`.
+- **No fixed source IPs**: verify the signature, never allow-list addresses.
+- **v2 only.** An endpoint migrated from API v1 receives v1 bodies, which the router answers 400
+  (a `ValidationError` on `version`): move it to v2 in the dashboard, or with
+  `client.webhooks.endpoints.update(uuid, payload_version=WebhookPayloadVersion.V2)`.
+
+### Testing your endpoint
+
+`webhooks.sign(raw_body, secret, timestamp=None)` builds the header exactly as QBitFlow does:
+
+```python
+import json
+
+from qbitflow import webhooks
+
+test_router = webhooks.WebhookRouter("whsec_test_secret")  # register your handlers on it
+event = {
+    "id": "evt_1",
+    "version": "v2",
+    "type": "webhook.test",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "test": True,
+    "data": {"endpointUuid": "", "message": "hello"},
+}
+body = json.dumps(event).encode()
+result = test_router.handle(body, webhooks.sign(body, "whsec_test_secret"))
+assert result.status == 200
+```
+
+### The lower level: verify and parse
+
+`webhooks.verify(raw_body, header, secret)` checks a signature (raising `WebhookSignatureError`
+with a `reason`: `missingHeader`, `malformedHeader`, `timestampOutsideTolerance`,
+`noMatchingSignature`), `webhooks.construct_event` verifies then parses, and
+`webhooks.parse_event` only parses (a `ValidationError` for a body that is not a v2 event):
+
+```python
+from typing import Optional
+
+from qbitflow import PaymentCompletedEvent, ValidationError, WebhookSignatureError, webhooks
 
 
 def handle_delivery(raw_body: bytes, signature_header: Optional[str], secret: str) -> int:
@@ -621,58 +877,17 @@ def handle_delivery(raw_body: bytes, signature_header: Optional[str], secret: st
         return 400
     except ValidationError:
         return 400  # not a v2 event: an endpoint still on v1
-    if event.id in processed:
-        return 200  # a retry of an event already handled
-    processed.add(event.id)
-
-    if isinstance(event, PaymentCompletedEvent):
-        p = event.data
-        print(f"fulfil order {p.reference!r} ({p.uuid}): {p.amount:.2f} USD")
-    elif isinstance(event, CheckoutExpiredEvent):
-        print("release order", event.data.reference)
-    elif isinstance(event, SubscriptionStatusChangedEvent):
-        s = event.data
-        access = s.current_period_end is not None and datetime.now(timezone.utc) < s.current_period_end
-        print(f"{s.uuid}: {s.previous_status} -> {s.status}, access: {access}")
-    # Any other type, or one added after this SDK (UnknownEvent): acknowledge it.
-    return 200
+    if isinstance(event, PaymentCompletedEvent):  # narrow the union by class
+        print("fulfil order", event.data.reference)
+    return 200  # any other type, or one added after this SDK (UnknownEvent): acknowledge it
 ```
 
-With FastAPI (`pip install fastapi`), hand it the raw body and the header:
+`now=` sets their clock in tests (a `datetime`, unix seconds, or a callable). Not holding the
+secret? `client.webhooks.verify_remote(endpoint_uuid, raw_body, header)` has the API check it,
+then `client.webhooks.parse_event(raw_body)` parses the body. `client.webhooks.verify`,
+`construct_event` and `parse_event` are the same functions on the client.
 
-```python
-from fastapi import FastAPI, Request, Response
-
-app = FastAPI()
-
-
-@app.post("/webhooks/qbitflow")
-async def qbitflow_webhook(request: Request) -> Response:
-    raw_body = await request.body()  # the bytes as received: never re-serialized
-    status = handle_delivery(raw_body, request.headers.get("QBitFlow-Signature"), "whsec_…")
-    return Response(status_code=status)
-```
-
-- **At least once.** The same event can arrive more than once: **deduplicate on `event.id`**
-  (also in the `QBitFlow-Event-Id` header) and make the handler idempotent.
-- **Answer 2xx fast**, within 30 seconds, **including to the types you ignore**: anything else is
-  retried (for 3 days in live mode), and an endpoint failing for 3 days is disabled. Store the
-  event, answer, then process it in the background.
-- **Secret rotation** needs nothing on your side: for 24 hours after a rotation the header
-  carries two `v1=` signatures, the new secret's and the previous one's, and either secret
-  verifies. Switch your secret within the day.
-- **Timestamps** more than 5 minutes from your clock are refused (replays): `tolerance=` (seconds)
-  changes it, `now=` sets the clock in tests (a `datetime`, unix seconds, or a callable).
-- **Members' events** carry the member in `event.user_uuid`: read their resources with
-  `client.on_behalf_of(event.user_uuid)`.
-- **No fixed source IPs**: verify the signature, never allow-list addresses.
-- **v2 only.** An endpoint migrated from API v1 receives v1 bodies, which `parse_event` refuses
-  (a `ValidationError` on `version`): move it to v2 in the dashboard, or with
-  `client.webhooks.endpoints.update(uuid, payload_version=WebhookPayloadVersion.V2)`.
-- Not holding the secret? `client.webhooks.verify_remote(endpoint_uuid, raw_body, header)` has
-  the API check it, then `client.webhooks.parse_event(raw_body)` parses the body.
-- `client.webhooks.verify`, `construct_event` and `parse_event` are the same functions on the
-  client.
+### Event types
 
 | `event.type` | Event class | `event.data` |
 |---|---|---|
@@ -895,10 +1110,15 @@ client = QBitFlow(
 | `idempotency_key` | the 7 creates only: your own `Idempotency-Key` |
 | `request_id` | sends `X-Request-Id` (1 to 128 of `A-Z a-z 0-9 - _ . :`) |
 
-| Webhook argument (`verify`, `construct_event`) | Default |
+| Webhook argument (`WebhookRouter`, `verify`, `construct_event`) | Default |
 |---|---|
 | `tolerance` | 300 seconds (`webhooks.DEFAULT_TOLERANCE`; 0 or less keeps it) |
-| `now` | the system clock |
+| `now` (`verify`, `construct_event`) | the system clock |
+| `on_error` (`WebhookRouter`) | none: called with `(event, exception)` for every 400 and 500 |
+
+`QBitFlow.from_env(**overrides)` reads `QBITFLOW_API_KEY` (required: a `ValidationError` naming
+it otherwise), `QBITFLOW_BASE_URL` and `QBITFLOW_ON_BEHALF_OF` (when set and not empty); its
+keyword arguments are the constructor's and win over the environment.
 
 A bad argument makes `QBitFlow(...)` raise a `ValidationError`. A client's configuration never
 changes; `client.on_behalf_of(...)` derives clients that share it. Use the client as a context
@@ -922,7 +1142,7 @@ Runnable scripts in [`examples/`](examples) (`QBITFLOW_API_KEY=sk_… python exa
 | [`checkout.py`](examples/checkout.py) | a payment checkout, its status, expiry |
 | [`subscriptions.py`](examples/subscriptions.py) | a subscription checkout with a trial, filtered lists, bills, cancel at period end |
 | [`marketplace.py`](examples/marketplace.py) | invite a seller, sell `on_behalf_of`, held funds, trust |
-| [`webhook_handler.py`](examples/webhook_handler.py) | a verified receiver (standard library) with deduplication and typed events |
+| [`webhook_handler.py`](examples/webhook_handler.py) | a `WebhookRouter` behind a standard-library server: typed handlers, deduplication, `has_access` |
 | [`errors_and_retries.py`](examples/errors_and_retries.py) | error classes, `is_retryable`, idempotency keys across processes |
 
 ## Testing
