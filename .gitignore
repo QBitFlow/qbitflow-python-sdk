@@ -20,7 +20,5 @@ qbitflow.egg-info/
 
 test-internal/
 
-CLAUDE.md
-
 **/.qbitflow-sync
 **/.mypy_cache
