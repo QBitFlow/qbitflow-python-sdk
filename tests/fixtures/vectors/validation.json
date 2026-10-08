@@ -2007,6 +2007,42 @@
     },
     {
       "args": {
+        "reference": "."
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.getByReference",
+      "name": "products.getByReference: single dot (relative path segment)"
+    },
+    {
+      "args": {
+        "reference": ".."
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "subscriptions.getByReference",
+      "name": "subscriptions.getByReference: two dots (relative path segment)"
+    },
+    {
+      "args": {
+        "email": ".."
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.getByEmail",
+      "name": "customers.getByEmail: two dots (relative path segment)"
+    },
+    {
+      "args": {
         "params": {
           "email": "alice@example.com",
           "name": "Alice"

@@ -423,6 +423,10 @@ def check_path_required(field: str, value: Any) -> None:
     """A free-form path parameter (a reference, an email, an event id): only its presence."""
     if not isinstance(value, str) or trim_space(value) == "":
         raise field_error(field, "is required")
+    # "." and ".." would be resolved as relative path segments (by URL parsers and by the
+    # server's path cleaning) and reach another route: refused, identically in every SDK.
+    if value in (".", ".."):
+        raise field_error(field, 'cannot be "." or ".."')
 
 
 def check_on_behalf_of(value: Any) -> None:
