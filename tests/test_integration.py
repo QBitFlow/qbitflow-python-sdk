@@ -20,6 +20,7 @@ from typing import Callable, Iterator, List
 import pytest
 
 from qbitflow import (
+    PLACEHOLDER_UUID,
     CheckoutSessionStatusValue,
     ConflictError,
     EventType,
@@ -27,6 +28,7 @@ from qbitflow import (
     NotFoundError,
     QBitFlow,
     Role,
+    webhooks,
 )
 
 pytestmark = pytest.mark.integration
@@ -200,7 +202,7 @@ def test_live_writes_checkout(writer: QBitFlow) -> None:
             product_name="SDK Python test",
             price=1,
             reference="sdk-python-order-" + suffix(),
-            success_url="https://example.com/ok?id={{UUID}}",
+            success_url=f"https://example.com/ok?id={PLACEHOLDER_UUID}",
             cancel_url="https://example.com/cancel",
         )
     except ConflictError as exc:
@@ -220,9 +222,15 @@ def test_live_writes_checkout(writer: QBitFlow) -> None:
         writer.checkout_sessions.get_status(session.uuid).status
         == CheckoutSessionStatusValue.CREATED
     )
+    # Nobody pays it: the timeout elapses and the last (non-final) status comes back.
+    waited = writer.checkout_sessions.wait_for_completion(session.uuid, timeout=1, interval=1)
+    assert waited.status == CheckoutSessionStatusValue.CREATED
     assert (
         writer.checkout_sessions.expire(session.uuid).status == CheckoutSessionStatusValue.EXPIRED
     )
+    # Final now: the first poll returns it, no wait.
+    waited = writer.checkout_sessions.wait_for_completion(session.uuid, timeout=5)
+    assert waited.status == CheckoutSessionStatusValue.EXPIRED
 
 
 def test_live_writes_webhook_endpoint(writer: QBitFlow) -> None:
@@ -234,6 +242,16 @@ def test_live_writes_webhook_endpoint(writer: QBitFlow) -> None:
     cleanup(writer, lambda: writer.webhooks.endpoints.delete(created.uuid))
     assert created.secret
     assert writer.webhooks.endpoints.get(created.uuid).url == created.url
+    # The router accepts a delivery signed with the endpoint's real secret (local check).
+    seen: List[str] = []
+    router = writer.webhooks.router(created.secret)
+    router.on_any(lambda event: seen.append(event.id))
+    body = (
+        b'{"id":"evt_sdk_smoke","version":"v2","type":"webhook.test",'
+        b'"createdAt":"2026-10-01T12:00:00Z","test":true,"data":{}}'
+    )
+    assert router.handle(body, webhooks.sign(body, created.secret)).status == 200
+    assert seen == ["evt_sdk_smoke"]
     updated = writer.webhooks.endpoints.update(created.uuid, description="", enabled=False)
     assert updated.description == "" and updated.disabled_at is not None
     writer.webhooks.endpoints.delete(created.uuid)

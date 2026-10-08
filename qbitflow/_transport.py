@@ -493,6 +493,7 @@ class Transport:
         self.http = http_client if http_client is not None else httpx.Client()
         # Test hooks.
         self.sleep: Callable[[float], None] = time.sleep
+        self.monotonic: Callable[[], float] = time.monotonic
         self.now: Callable[[], datetime] = lambda: datetime.now(timezone.utc)
         self.new_key: Callable[[], str] = lambda: str(uuid.uuid4())
 

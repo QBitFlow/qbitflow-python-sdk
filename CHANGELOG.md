@@ -115,6 +115,35 @@ never published; its changes are part of 3.0.0).
 -   `NOT_GIVEN`: the default of the clearable update fields (`""` or `None` clears them).
 -   `qbitflow.__version__` single-sourced in `qbitflow/_version.py`; `User-Agent:
     qbitflow-python/3.0.0`.
+-   **Integration helpers** (the same in the four SDKs):
+    -   `webhooks.WebhookRouter(secret, *, tolerance=300, on_error=None)` (also
+        `client.webhooks.router(secret)`): `@router.on("payment.completed")` (or an `EventType`)
+        handlers called with `(data, event)`, `@router.on_unknown`, `@router.on_any`,
+        `router.add(type, fn)`; `router.handle(raw_body, signature_header)` returns a
+        `WebhookResult(status, event, error)`: 400 for a bad signature or body (no handler
+        runs), 200 once handled or for a type without a handler, 500 when a handler raises (the
+        rest are skipped); `on_error(event, exc)` hears every 400 and 500. Adapters, each importing its framework only when used (no new
+        dependency; optional extras `flask`, `django`, `fastapi`, `starlette`):
+        `router.flask_view()`, `router.django_view()` (CSRF-exempt), `router.fastapi_endpoint()`
+        and `await router.handle_asgi(request)` for Starlette/FastAPI. They accept `POST` only
+        (405), read at most 1 MiB (413), match `QBitFlow-Signature` case-insensitively and
+        answer `{"received":true}` or `{"error":"…"}` (`invalid signature`, `invalid event`,
+        `cannot read the body`, `internal error`, `method not allowed`, `body too large`).
+    -   `webhooks.sign(raw_body, secret, timestamp=None)`: a `QBitFlow-Signature` header as
+        QBitFlow sends it, to test your endpoint.
+    -   `checkout_sessions.wait_for_completion(uuid, *, timeout=600, interval=3)`: polls
+        `get_status` until `completed` or `expired`; on timeout, the last status seen
+        (`timeout <= 0` means 600 s, `interval` at least 1 s).
+    -   `Subscription.has_access(at=None)`: `current_period_end` set and `at` before it.
+    -   `qbitflow.format_amount(min_units, decimals)` / `parse_amount(amount, decimals)` and
+        `Currency.format_amount(min_units)`: exact conversions between minimal units and
+        decimal strings (string arithmetic, never a float).
+    -   `accounting.export_json_range` / `export_csv_range`: any range, split into 95-day
+        windows requested in order and joined (the CSV header once).
+    -   `QBitFlow.from_env(**overrides)`: `QBITFLOW_API_KEY` (required), `QBITFLOW_BASE_URL`,
+        `QBITFLOW_ON_BEHALF_OF`; keyword arguments win.
+    -   `qbitflow.PLACEHOLDER_UUID` (`{{UUID}}`) and `PLACEHOLDER_TRANSACTION_TYPE`
+        (`{{TRANSACTION_TYPE}}`) for `success_url` / `cancel_url`.
 
 ### Changed
 

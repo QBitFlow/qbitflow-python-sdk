@@ -6,6 +6,7 @@ from typing import Generic, List, Optional, TypeVar
 
 from pydantic import Field
 
+from .._helpers import format_amount
 from ._base import ZERO_TIME, Bool, Float, Model, Str, Time, UInt
 from ._fields import (
     AttemptStatusT,
@@ -68,6 +69,16 @@ class Currency(Model):
     main_currency: Optional[Currency] = Field(default=None, alias="mainCurrency")
     #: True for a testnet currency.
     test: Bool = False
+
+    def format_amount(self, min_units: str) -> str:
+        """An amount of this currency in minimal units as a decimal string, exactly:
+        :func:`qbitflow.format_amount` with this currency's ``decimals``
+        (``usdc.format_amount("1500000") == "1.5"``).
+
+        Raises:
+            ValidationError: ``min_units`` is not an integer string (``-?[0-9]+``).
+        """
+        return format_amount(min_units, self.decimals)
 
 
 class CustomerSummary(Model):

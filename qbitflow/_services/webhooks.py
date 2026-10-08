@@ -189,6 +189,13 @@ class WebhooksService(Service):
         #: The event log.
         self.events = WebhookEventsService(client)
 
+    def router(
+        self, secret: str, *, tolerance: float = _webhooks.DEFAULT_TOLERANCE
+    ) -> _webhooks.WebhookRouter:
+        """A :class:`~qbitflow.webhooks.WebhookRouter` for an endpoint's secret (it needs no
+        client: ``webhooks.WebhookRouter(secret)`` is the same)."""
+        return _webhooks.WebhookRouter(secret, tolerance=tolerance)
+
     def verify(
         self,
         raw_body: _webhooks.RawBody,

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import date
-from typing import Iterator, List, Optional, Union
+from datetime import date, timedelta
+from typing import Iterator, List, Optional, Tuple, Union
 
 from .._transport import Endpoint, Query, RequestOptions, pathf
 from .._validation import Validator, check_path_uuid, known
@@ -260,6 +260,36 @@ def _export_query(from_date: Union[str, date], to_date: Union[str, date], fmt: s
     return Query().string("from", start).string("to", end).string("format", fmt)
 
 
+#: The longest export window the API serves: ``[from, from + 95 days]``.
+EXPORT_WINDOW_DAYS = 95
+
+
+def _export_windows(
+    from_date: Union[str, date], to_date: Union[str, date]
+) -> List[Tuple[str, str]]:
+    """Validate an export range like ``export_json``, then split it into consecutive windows of
+    at most 95 days (``[from, from + 95d]``, the next one starting the day after), on calendar
+    dates."""
+    v = Validator()
+    v.date_range("from", from_date, "to", to_date)
+    v.check()
+    start = from_date if isinstance(from_date, date) else date.fromisoformat(from_date)
+    end = to_date if isinstance(to_date, date) else date.fromisoformat(to_date)
+    windows: List[Tuple[str, str]] = []
+    while True:
+        window_end = min(end, start + timedelta(days=EXPORT_WINDOW_DAYS))
+        windows.append((start.isoformat(), window_end.isoformat()))
+        if window_end >= end:
+            return windows
+        start = window_end + timedelta(days=1)
+
+
+def _csv_rows(text: str) -> str:
+    """A CSV export without its header line (its line ending removed with it)."""
+    newline = text.find("\n")
+    return "" if newline < 0 else text[newline + 1 :]
+
+
 class AccountingService(Service):
     """The accounting export (``client.accounting``)."""
 
@@ -294,6 +324,52 @@ class AccountingService(Service):
         query = _export_query(from_date, to_date, "csv")
         endpoint = Endpoint("GET", "/accounting/export", query, accept="text/csv, application/json")
         return self._send(endpoint, options).body.decode("utf-8", errors="replace")
+
+    def export_json_range(
+        self,
+        from_date: Union[str, date],
+        to_date: Union[str, date],
+        *,
+        options: Optional[RequestOptions] = None,
+    ) -> List[AccountingEvent]:
+        """:meth:`export_json` over any range: it requests consecutive windows of at most 95
+        days (``[from, from + 95d]``, the next starting the day after), in order, and returns
+        every event in one list. A range of 95 days or less makes exactly one request.
+
+        Args:
+            from_date: The first day, ``YYYY-MM-DD`` (or a ``datetime.date``).
+            to_date: The last day (included), not before ``from_date``.
+
+        Raises:
+            ValidationError: a malformed date, or ``to_date`` before ``from_date`` (nothing is
+                sent). An API error of any window stops the export and is raised.
+        """
+        events: List[AccountingEvent] = []
+        for start, end in _export_windows(from_date, to_date):
+            events.extend(self.export_json(start, end, options=options))
+        return events
+
+    def export_csv_range(
+        self,
+        from_date: Union[str, date],
+        to_date: Union[str, date],
+        *,
+        options: Optional[RequestOptions] = None,
+    ) -> str:
+        """:meth:`export_csv` over any range (the windows of :meth:`export_json_range`): the
+        first window's header line once, then every window's data rows, line endings as the
+        server sends them."""
+        text = ""
+        for start, end in _export_windows(from_date, to_date):
+            part = self.export_csv(start, end, options=options)
+            if text == "":
+                text = part
+                continue
+            rows = _csv_rows(part)
+            if rows and not text.endswith("\n"):
+                text += "\r\n" if part[: len(part) - len(rows)].endswith("\r\n") else "\n"
+            text += rows
+        return text
 
 
 class CurrenciesService(Service):
