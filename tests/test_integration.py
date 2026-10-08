@@ -6,8 +6,8 @@
   by accident).
 * The read-only group only reads.
 * The write group also needs ``QBITFLOW_LIVE_WRITES=1`` and a test-mode key (per ``me()``), or
-  ``QBITFLOW_ALLOW_LIVE_MODE_WRITES=1``. It creates a product, a customer, a checkout session and
-  a webhook endpoint, and deletes (or expires) each of them.
+  ``QBITFLOW_ALLOW_LIVE_MODE_WRITES=1``. It creates a product, a customer, two checkout sessions
+  (one with fees) and a webhook endpoint, and deletes (or expires) each of them.
 """
 
 from __future__ import annotations
@@ -21,9 +21,11 @@ import pytest
 
 from qbitflow import (
     PLACEHOLDER_UUID,
+    CheckoutFees,
     CheckoutSessionStatusValue,
     ConflictError,
     EventType,
+    FeeItem,
     Me,
     NotFoundError,
     QBitFlow,
@@ -231,6 +233,44 @@ def test_live_writes_checkout(writer: QBitFlow) -> None:
     # Final now: the first poll returns it, no wait.
     waited = writer.checkout_sessions.wait_for_completion(session.uuid, timeout=5)
     assert waited.status == CheckoutSessionStatusValue.EXPIRED
+
+
+def test_live_writes_checkout_fees(writer: QBitFlow) -> None:
+    # The snippets' feesCheckout: $3.99 + $0.75 shipping + the processing fee, under the
+    # test-mode $5 cap. The API answers no read of the session's fees (GET /:uuid is the checkout
+    # page's): the round trip is the check.
+    try:
+        session = writer.checkout_sessions.create_payment(
+            product_name="T-shirt",
+            description="Blue, size M",
+            price=3.99,
+            reference="order-1044-" + suffix(),
+            success_url=f"https://shop.example.com/orders/success?uuid={PLACEHOLDER_UUID}",
+            cancel_url="https://shop.example.com/orders/cancel",
+            fees=CheckoutFees(
+                processing_fee=True,
+                items=[
+                    FeeItem(label="Shipping", description="Standard, 3 to 5 days", amount_usd=0.75)
+                ],
+            ),
+        )
+    except ConflictError as exc:
+        if exc.code == "merchant_not_ready":
+            pytest.skip("the space accepts no currency (merchant_not_ready)")
+        raise
+
+    def expire() -> None:
+        try:
+            writer.checkout_sessions.expire(session.uuid)
+        except ConflictError:
+            pass  # already final
+
+    cleanup(writer, expire)
+    assert session.uuid.startswith("pay@") and session.link and session.expires_at is not None
+    assert (
+        writer.checkout_sessions.get_status(session.uuid).status
+        == CheckoutSessionStatusValue.CREATED
+    )
 
 
 def test_live_writes_webhook_endpoint(writer: QBitFlow) -> None:

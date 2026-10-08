@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from decimal import Decimal
 from typing import Any, Dict, Iterator, List, Optional, Union
 
 from .._transport import Endpoint, Query, RequestOptions, pathf
@@ -16,6 +17,8 @@ from ._base import NOT_GIVEN, NotGiven, Service, compact, duration_body, iterate
 
 __all__ = [
     "SubscriptionTermsParams",
+    "CheckoutFees",
+    "FeeItem",
     "ProductsService",
     "CustomersService",
     "CheckoutSessionsService",
@@ -37,6 +40,97 @@ class SubscriptionTermsParams:
     frequency: Optional[Duration] = None
     trial_period: Optional[Duration] = None
     min_periods: Optional[int] = None
+
+
+@dataclass
+class FeeItem:
+    """A line of your own on a payment checkout (:class:`CheckoutFees`): a tax, shipping, a
+    service fee, shown to the customer and paid with the price.
+
+    Attributes:
+        label: The line's name, as the checkout shows it: one line, 1 to 40 characters, the
+            name rule (``"VAT (20%)"``, ``"Shipping"``).
+        amount_usd: The line's amount in USD: above 0, at most 1,000,000, with at most 2
+            decimals. A number is sent as a JSON number; a string (``"4.99"``) or a ``Decimal``
+            is sent as a string, as written, so no float rounds it.
+        description: More about the line, at most 200 characters (the text rule).
+    """
+
+    label: str
+    amount_usd: Union[Decimal, int, float, str]
+    description: Optional[str] = None
+
+
+@dataclass
+class CheckoutFees:
+    """What a one-time payment's checkout adds to its price (``checkout_sessions.create_payment``
+    ``fees``). The customer pays ``amount`` = the price plus every line; QBitFlow's fee (and an
+    organization's) is taken on that amount, and the network fee comes on top of it. In test mode
+    ``amount``, fees included, is capped at $5 (a 400 on ``fees``).
+
+    Attributes:
+        processing_fee: The customer pays QBitFlow's processing fee, as a last line computed by
+            QBitFlow on the price and your lines at your platform fee, grossed up (the fee is
+            also taken on that line) and rounded up to the cent, so you keep at least the price
+            and your lines. ``None``: the space's ``checkout.customerPaysProcessingFee`` setting
+            decides (off by default; set in the dashboard). ``False`` turns it off for this
+            checkout.
+        items: Up to 10 lines of your own, shown in this order, before the processing fee.
+    """
+
+    processing_fee: Optional[bool] = None
+    items: List[FeeItem] = field(default_factory=list)
+
+
+def _validate_fees(v: Validator, fees: Any) -> None:
+    """The ``fees`` rules (the docs' ``CheckoutFeesDto``), on their wire paths."""
+    if fees is None:
+        return
+    if not isinstance(fees, CheckoutFees):
+        v.add("fees", "must be a CheckoutFees")
+        return
+    v.boolean("fees.processingFee", fees.processing_fee)
+    items: Any = fees.items  # checked as given: a caller may pass anything
+    if items is None:
+        return
+    if isinstance(items, (str, bytes)) or not isinstance(items, (list, tuple)):
+        v.add("fees.items", "must be a list of FeeItem")
+        return
+    if len(items) > 10:
+        v.add("fees.items", "must have at most 10 lines")
+    item: Any
+    for i, item in enumerate(items):
+        path = f"fees.items[{i}]"
+        if not isinstance(item, FeeItem):
+            v.add(path, "must be a FeeItem")
+            continue
+        if v.required(f"{path}.label", item.label):
+            v.name(f"{path}.label", item.label, 1, 40)
+        if item.description is not None:
+            v.text(f"{path}.description", item.description, 1, 200)
+        v.usd(f"{path}.amountUsd", item.amount_usd, 1000000)
+
+
+def fees_body(fees: CheckoutFees) -> Dict[str, Any]:
+    """The fees' wire form: ``processingFee`` when set, ``items`` when any; each amount as given
+    (a number as a JSON number, a string or a ``Decimal`` as a string)."""
+    body: Dict[str, Any] = {}
+    if fees.processing_fee is not None:
+        body["processingFee"] = fees.processing_fee
+    if fees.items:
+        body["items"] = [
+            compact(
+                label=item.label,
+                description=item.description,
+                amountUsd=(
+                    str(item.amount_usd)
+                    if isinstance(item.amount_usd, Decimal)
+                    else item.amount_usd
+                ),
+            )
+            for item in fees.items
+        ]
+    return body
 
 
 def validate_terms(
@@ -454,6 +548,7 @@ class CheckoutSessionsService(Service):
         customer_uuid: Optional[str] = None,
         customer_reference: Optional[str] = None,
         expires_in_minutes: Optional[int] = None,
+        fees: Optional[CheckoutFees] = None,
         options: Optional[RequestOptions] = None,
     ) -> CheckoutSession:
         """Create a one-time payment checkout session
@@ -472,10 +567,18 @@ class CheckoutSessionsService(Service):
             customer_uuid: One of the space's customers.
             customer_reference: Your reference of the customer, kept on the payment.
             expires_in_minutes: The session's lifetime, 10 to 1440 (``None`` or 0: the default).
+            fees: Amounts the customer pays on top of the price: up to 10 lines of your own (a
+                tax, shipping) and QBitFlow's processing fee (:class:`CheckoutFees`). The
+                customer pays the price plus every line (the session's and the payment's
+                ``amount``), then the network fee on top. ``None``: no lines of your own, and
+                the space's ``checkout.customerPaysProcessingFee`` setting decides the
+                processing fee.
 
         Raises:
             ConflictError: 409 ``merchant_not_ready`` (``details["reason"]``), 409
                 ``unique_violation`` (the reference).
+            ValidationError: 400 ``validation_failed`` on ``fees`` in test mode when the amount,
+                fees included, is above $5 (``details["max"]``).
         """
         v = Validator()
         _validate_session(
@@ -492,6 +595,7 @@ class CheckoutSessionsService(Service):
             customer_reference,
             expires_in_minutes,
         )
+        _validate_fees(v, fees)
         v.check()
         body = compact(
             reference=reference,
@@ -506,6 +610,8 @@ class CheckoutSessionsService(Service):
             customerReference=customer_reference,
             expiresInMinutes=expires_in_minutes or None,
         )
+        if fees is not None:
+            body["fees"] = fees_body(fees)
         endpoint = Endpoint(
             "POST", "/transaction/session-checkout/new/payment", body=body, idempotent=True
         )

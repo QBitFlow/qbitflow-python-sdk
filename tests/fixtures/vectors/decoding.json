@@ -1412,6 +1412,224 @@
     {
       "args": {
         "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"uuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"amount\":121.83,\"price\":100,\"fees\":[{\"type\":\"custom\",\"label\":\"VAT (20%)\",\"description\":\"French VAT\",\"amountUsd\":\"20.00\"},{\"type\":\"processingFee\",\"label\":\"Processing fee\",\"amountUsd\":\"1.83\"}],\"name\":\"Pro plan\"}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment with price and fees",
+      "note": "amount = price + the fees' amountUsd; amountUsd stays a decimal string",
+      "probes": [
+        {
+          "path": "amount",
+          "value": 121.83
+        },
+        {
+          "path": "price",
+          "value": 100
+        },
+        {
+          "path": "fees[0].type",
+          "value": "custom"
+        },
+        {
+          "path": "fees[0].label",
+          "value": "VAT (20%)"
+        },
+        {
+          "optional": true,
+          "path": "fees[0].description",
+          "value": "French VAT"
+        },
+        {
+          "path": "fees[0].amountUsd",
+          "value": "20.00"
+        },
+        {
+          "path": "fees[1].type",
+          "value": "processingFee"
+        },
+        {
+          "path": "fees[1].label",
+          "value": "Processing fee"
+        },
+        {
+          "optional": true,
+          "path": "fees[1].description",
+          "value": ""
+        },
+        {
+          "path": "fees[1].amountUsd",
+          "value": "1.83"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"uuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"amount\":10,\"amountMinUnits\":\"10000000\",\"currencyId\":8,\"currency\":{\"id\":8,\"name\":\"USD Coin\",\"symbol\":\"USDC\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"mainCurrency\":{\"id\":3,\"name\":\"Base\",\"symbol\":\"BASE\",\"decimals\":18,\"address\":\"\",\"mainCurrency\":null,\"test\":false},\"test\":false},\"txHash\":\"0x11\",\"chain\":\"BASE\",\"test\":false,\"name\":\"Pro plan\",\"description\":\"Lifetime\",\"metadata\":{\"feePercent\":1.5,\"txMetadata\":{\"networkFees\":{\"amount\":\"1140000000000\",\"unitsConsumed\":21000},\"blockData\":{\"number\":\"52468103\",\"timestamp\":1790855998}},\"txAmounts\":{\"usd\":{\"platform\":0.15,\"merchant\":9.85},\"minUnits\":{\"platform\":\"150000\",\"organization\":\"0\",\"referral\":\"0\",\"merchant\":\"9850000\"}}},\"refundable\":true}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment without price and fees",
+      "note": "absent price is 0, absent fees an empty list",
+      "probes": [
+        {
+          "path": "amount",
+          "value": 10
+        },
+        {
+          "path": "price",
+          "value": 0
+        },
+        {
+          "optional": true,
+          "path": "fees",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"amount\":10,\"price\":10,\"fees\":null}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment price, fees null",
+      "probes": [
+        {
+          "path": "price",
+          "value": 10
+        },
+        {
+          "optional": true,
+          "path": "fees",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"amount\":12,\"price\":10,\"fees\":[{\"type\":\"tip\",\"label\":\"Tip\",\"amountUsd\":\"2\"}]}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment unknown FeeLineType kept",
+      "probes": [
+        {
+          "path": "fees[0].type",
+          "value": "tip"
+        },
+        {
+          "path": "fees[0].amountUsd",
+          "value": "2"
+        },
+        {
+          "optional": true,
+          "path": "fees[0].description",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"fees\":[{\"type\":null,\"label\":null,\"description\":null,\"amountUsd\":null}]}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment fee line with nulls",
+      "probes": [
+        {
+          "path": "fees[0].type",
+          "value": ""
+        },
+        {
+          "path": "fees[0].label",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "fees[0].description",
+          "value": ""
+        },
+        {
+          "path": "fees[0].amountUsd",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"fees\":[{\"type\":\"custom\",\"label\":\"VAT\",\"amountUsd\":20}]}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment fee amountUsd as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"fees\":{\"type\":\"custom\"}}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment fees as an object",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"price\":\"10\"}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment price as a string",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
           "includeMembers": true,
           "refunded": true,
           "source": "subscriptionHistory",

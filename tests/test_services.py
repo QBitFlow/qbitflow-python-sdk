@@ -3,10 +3,12 @@ its client-side checks (Go services_test.go, services_check_test.go)."""
 
 from __future__ import annotations
 
+import inspect
 import json
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional
 from urllib.parse import parse_qsl
 
@@ -18,6 +20,7 @@ from qbitflow import (
     BadRequestError,
     BillingOutcome,
     BillingStage,
+    CheckoutFees,
     CheckoutSessionStatusValue,
     CombinedPaymentSource,
     ConflictError,
@@ -26,6 +29,7 @@ from qbitflow import (
     EventType,
     FailureCategory,
     FailureKind,
+    FeeItem,
     InvitationStatus,
     NotFoundError,
     QBitFlow,
@@ -1300,3 +1304,89 @@ def test_iterator_errors_and_resume() -> None:
         for p in client.payments.iterate():
             got.append(p.uuid)
     assert got == ["id0"]
+
+
+# ── Checkout fees: the create_payment body ───────────────────────────────────
+
+ABSENT = object()
+
+FEES_BODIES: List[Any] = [
+    ("no fees", None, ABSENT),
+    ("empty", CheckoutFees(), {}),
+    ("processing fee on", CheckoutFees(processing_fee=True), {"processingFee": True}),
+    ("processing fee off", CheckoutFees(processing_fee=False), {"processingFee": False}),
+    (
+        "a number",
+        CheckoutFees(items=[FeeItem("Shipping", 0.75, "Standard, 3 to 5 days")]),
+        {
+            "items": [
+                {"label": "Shipping", "description": "Standard, 3 to 5 days", "amountUsd": 0.75}
+            ]
+        },
+    ),
+    (
+        "an int",
+        CheckoutFees(items=[FeeItem("Tax", 3)]),
+        {"items": [{"label": "Tax", "amountUsd": 3}]},
+    ),
+    (
+        "a string",
+        CheckoutFees(items=[FeeItem("VAT", "4.99")]),
+        {"items": [{"label": "VAT", "amountUsd": "4.99"}]},
+    ),
+    (
+        "a Decimal",
+        CheckoutFees(items=[FeeItem("VAT", Decimal("12.50"))]),
+        {"items": [{"label": "VAT", "amountUsd": "12.50"}]},
+    ),
+    (
+        "empty description omitted",
+        CheckoutFees(items=[FeeItem("VAT", 1, "")]),
+        {"items": [{"label": "VAT", "amountUsd": 1}]},
+    ),
+    (
+        "lines in order, then the processing fee flag",
+        CheckoutFees(processing_fee=True, items=[FeeItem("A", 1), FeeItem("B", "2.5")]),
+        {
+            "processingFee": True,
+            "items": [{"label": "A", "amountUsd": 1}, {"label": "B", "amountUsd": "2.5"}],
+        },
+    ),
+]
+
+
+@pytest.mark.parametrize("name, fees, want", FEES_BODIES, ids=[c[0] for c in FEES_BODIES])
+def test_create_payment_fees_body(name: str, fees: Any, want: Any) -> None:
+    client, server, _ = make_client(static(201, fx("CheckoutSession")))
+    client.checkout_sessions.create_payment(
+        product_name="T-shirt", description="Blue, size M", price=3.99, fees=fees
+    )
+    body = server.requests[0].json()
+    assert body["productName"] == "T-shirt" and body["price"] == 3.99
+    if want is ABSENT:
+        assert "fees" not in body
+    else:
+        assert body["fees"] == want
+        # Booleans stay booleans, numbers numbers and strings strings.
+        for got_item, want_item in zip(body["fees"].get("items", []), want.get("items", [])):
+            assert type(got_item["amountUsd"]) is type(want_item["amountUsd"])
+
+
+def test_create_payment_fees_wire_numbers() -> None:
+    client, server, _ = make_client(static(201, fx("CheckoutSession")))
+    client.checkout_sessions.create_payment(
+        product_uuid=UUID_A,
+        fees=CheckoutFees(items=[FeeItem("A", 0.1), FeeItem("B", 19.9), FeeItem("C", "4.99")]),
+    )
+    raw = server.requests[0].body.decode()
+    assert '"amountUsd":0.1}' in raw and '"amountUsd":19.9}' in raw
+    assert '"amountUsd":"4.99"}' in raw
+
+
+def test_create_subscription_has_no_fees() -> None:
+    assert (
+        "fees"
+        not in inspect.signature(
+            QBitFlow("sk_test_x").checkout_sessions.create_subscription
+        ).parameters
+    )

@@ -17,6 +17,7 @@ from qbitflow import (
     DurationUnit,
     EventDetail,
     EventType,
+    FeeLineType,
     HeldFundsReleasedEvent,
     LedgerEntryType,
     MemberJoinedEvent,
@@ -77,8 +78,10 @@ def load(event_type: str) -> Any:
 
 
 def _keys(value: Any) -> Any:
+    # An empty list is an omitted one (the API's omitempty lists, e.g. a payment's fees): the
+    # model writes [] for a list the example leaves out.
     if isinstance(value, dict):
-        return {k: _keys(v) for k, v in value.items() if v is not None}
+        return {k: _keys(v) for k, v in value.items() if v is not None and v != []}
     if isinstance(value, list):
         return [_keys(v) for v in value]
     return None
@@ -114,6 +117,7 @@ def test_payment_completed() -> None:
     )
     assert m.organization_fee is None
     assert p.customer is None and p.refund is None and p.refundable is None  # API reads only
+    assert p.price == 10 and p.fees == []  # a payment without fees: amount = price
     assert p.confirmed_at is not None and p.checkout_opened_at is not None
 
 
@@ -223,6 +227,27 @@ def test_checkout_expired() -> None:
         and len(p.available_currency_ids) == 3
     )
     assert p.organization_name == "Example Shop" and p.expires_at is not None
+    assert p.fees == [] and p.amount is None  # a session without fees (the docs' example)
+
+    with_fees = json.loads(raw("checkout.expired"))
+    with_fees["data"]["price"] = 3.99
+    with_fees["data"]["amount"] = 4.88
+    with_fees["data"]["fees"] = [
+        {
+            "type": "custom",
+            "label": "Shipping",
+            "description": "Standard, 3 to 5 days",
+            "amountUsd": "0.75",
+        },
+        {"type": "processingFee", "label": "Processing fee", "amountUsd": "0.14"},
+    ]
+    f = webhooks.parse_event(json.dumps(with_fees)).data
+    assert isinstance(f, PaymentSessionData) and f.price == 3.99 and f.amount == 4.88
+    assert [(x.type, x.label, x.description, x.amount_usd) for x in f.fees] == [
+        (FeeLineType.CUSTOM, "Shipping", "Standard, 3 to 5 days", "0.75"),
+        (FeeLineType.PROCESSING_FEE, "Processing fee", None, "0.14"),
+    ]
+    assert f.to_dict()["fees"] == with_fees["data"]["fees"]
 
     sub = webhooks.parse_event(
         json.dumps(

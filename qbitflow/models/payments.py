@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import Field
 
@@ -14,7 +14,7 @@ from ._fields import (
     FailureKindT,
     NotRefundableReasonT,
 )
-from .common import Currency, CustomerSummary, PaymentMetadata, RefundSummary
+from .common import Currency, CustomerSummary, FeeLine, PaymentMetadata, RefundSummary
 
 __all__ = ["Payment", "Bill", "CombinedPayment", "Failure"]
 
@@ -30,7 +30,8 @@ class Transfer(Model):
     from_: Str = Field(default="", alias="from")
     #: The wallet that received it.
     to: Str = ""
-    #: The amount, in USD (the network fee paid on top excluded).
+    #: The amount, in USD: what the customer paid (a payment's price plus its ``fees``), which the
+    #: contracts split. The network fee the customer paid on top is not in it.
     amount: Float = 0.0
     #: The amount in the token's min units (a decimal string).
     amount_min_units: Str = Field(default="", alias="amountMinUnits")
@@ -55,6 +56,12 @@ class Payment(Transfer):
 
     #: The merchant's reference for the payment, set when creating its checkout.
     reference: Optional[Str] = None
+    #: The product's price in USD, as the checkout had it. ``amount`` is the price plus the
+    #: ``fees``; on payments recorded before fees existed, ``price`` is ``amount``.
+    price: Float = 0.0
+    #: What the checkout added to the price, line by line, as the customer saw them (a tax,
+    #: shipping, the processing fee when the customer paid it); empty without any.
+    fees: List[FeeLine] = Field(default_factory=list)
     #: What was paid for: the checkout's product name when the checkout was created.
     name: Str = ""
     #: The same, for the product's description.

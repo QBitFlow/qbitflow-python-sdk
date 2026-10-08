@@ -11,6 +11,7 @@ from ._base import ZERO_TIME, Bool, Float, Model, Str, Time, UInt
 from ._fields import (
     AttemptStatusT,
     DurationUnitT,
+    FeeLineTypeT,
     RefundInitiatorT,
     RefundStatusT,
 )
@@ -21,6 +22,7 @@ __all__ = [
     "CustomerSummary",
     "RefundSummary",
     "Attempt",
+    "FeeLine",
     "PaymentMetadata",
     "OrganizationFee",
     "ReferralFee",
@@ -121,6 +123,21 @@ class Attempt(Model):
     #: The attempt's transaction, if it was sent.
     tx_hash: Optional[Str] = Field(default=None, alias="txHash")
     at: Time = ZERO_TIME
+
+
+class FeeLine(Model):
+    """An amount a one-time payment's checkout adds to its product's price (a tax, shipping,
+    QBitFlow's processing fee), shown to the customer line by line and paid with the price."""
+
+    #: ``custom`` (the merchant's line) or ``processingFee`` (QBitFlow's fee, which the merchant
+    #: has the customer pay).
+    type: FeeLineTypeT = ""
+    #: The line's name, as the checkout shows it (``Processing fee`` for the processing fee).
+    label: Str = ""
+    #: More about the line, as the merchant wrote it; ``None`` without one.
+    description: Optional[Str] = None
+    #: The line's amount in USD, a decimal string with at most 2 decimals (``"4.99"``).
+    amount_usd: Str = Field(default="", alias="amountUsd")
 
 
 class OrganizationFee(Model):

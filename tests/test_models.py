@@ -18,6 +18,8 @@ from qbitflow import (
     Customer,
     CustomerSummary,
     Failure,
+    FeeLine,
+    FeeLineType,
     HeldFunds,
     Invitation,
     InvitationCreated,
@@ -117,6 +119,13 @@ def test_model_values() -> None:
     assert hf.total_amount < 0 and hf.ledgers[0].metadata is None
     assert hf.ledgers[0].owed_min_units == "-10004200"
 
+    assert p.price == 8.5 and [f.type for f in p.fees] == [
+        FeeLineType.CUSTOM,
+        FeeLineType.PROCESSING_FEE,
+    ]
+    assert p.fees[0].description == "Standard rate" and p.fees[1].description is None
+    assert p.fees[0].amount_usd == "1.35" and p.fees[1].label == "Processing fee"
+
     m = Member.model_validate_json('{"organizationFeePercent":2,"acceptedCurrencyIds":[8.0]}')
     assert m.organization_fee_percent == 2 and m.accepted_currency_ids == [8]
 
@@ -132,3 +141,24 @@ def test_models_build_by_field_name() -> None:
         "createdAt": "0001-01-01T00:00:00Z",
         "test": False,
     }
+
+
+def test_fees() -> None:
+    # A payment recorded before fees: price absent (0), fees absent ([]).
+    old = Payment.model_validate_json('{"uuid":"pay@1","amount":10}')
+    assert old.price == 0 and old.fees == [] and "fees" in old.to_dict()
+    # A payment with fees: amount = price + the lines.
+    paid = Payment.model_validate_json(
+        '{"amount":4.88,"price":3.99,"fees":[{"type":"custom","label":"Shipping",'
+        '"amountUsd":"0.75"},{"type":"processingFee","label":"Processing fee","amountUsd":"0.14"}]}'
+    )
+    assert paid.price == 3.99 and [f.amount_usd for f in paid.fees] == ["0.75", "0.14"]
+    # An unknown FeeLineType is kept as its raw string.
+    line = FeeLine.model_validate_json('{"type":"tax","label":"VAT","amountUsd":"1.20"}')
+    assert line.type == "tax" and not isinstance(line.type, FeeLineType)
+    assert line.to_dict() == {"type": "tax", "label": "VAT", "amountUsd": "1.20"}
+    # amountUsd is a decimal string: a number there is a wrong type.
+    with pytest.raises(ValueError):
+        FeeLine.model_validate_json('{"type":"custom","label":"VAT","amountUsd":1.2}')
+    assert FeeLineType("processingFee") is FeeLineType.PROCESSING_FEE
+    assert FeeLine().type == "" and FeeLine().amount_usd == ""

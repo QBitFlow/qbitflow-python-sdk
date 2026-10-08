@@ -4,15 +4,18 @@ server and checks which fields fail (or that the request is sent)."""
 from __future__ import annotations
 
 import math
+from decimal import Decimal
 from typing import Any, Callable, List, Tuple
 
 import pytest
 
 from qbitflow import (
     NOT_GIVEN,
+    CheckoutFees,
     Duration,
     DurationUnit,
     EventType,
+    FeeItem,
     QBitFlow,
     ServerError,
     SubscriptionTermsParams,
@@ -450,6 +453,162 @@ def test_subscription_session(client: QBitFlow) -> None:
     assert fields(
         lambda: client.checkout_sessions.create_subscription(product_reference="pro", price=9.99)
     ) == ["productUuid"]
+
+
+# ── Checkout fees (fees.items[i].label / description / amountUsd, fees.items) ──
+
+
+def fee_fields(client: QBitFlow, fees: Any) -> List[str]:
+    return fields(
+        lambda: client.checkout_sessions.create_payment(
+            product_name="T-shirt", price=3.99, fees=fees
+        )
+    )
+
+
+def one(label: Any = "Shipping", amount: Any = 0.75, description: Any = None) -> CheckoutFees:
+    return CheckoutFees(items=[FeeItem(label=label, amount_usd=amount, description=description)])
+
+
+AMOUNT = "fees.items[0].amountUsd"
+GOOD_AMOUNTS: List[Any] = [
+    0.01,
+    0.75,
+    1,
+    19.9,
+    100.0,
+    1000000,
+    1000000.0,
+    "0.01",
+    "4.99",
+    "19.9",
+    "1000000",
+    "1000000.00",
+    "007.5",
+    Decimal("4.99"),
+    Decimal("1000000"),
+]
+BAD_AMOUNTS: List[Any] = [
+    0,
+    0.0,
+    -1,
+    -0.01,
+    1.999,
+    0.001,
+    1e-7,
+    1000000.01,
+    1000001,
+    math.nan,
+    math.inf,
+    -math.inf,
+    True,
+    None,
+    "0",
+    "0.00",
+    "-1",
+    "+1",
+    "1e2",
+    "abc",
+    "",
+    " 4.99",
+    "4.99 ",
+    "4.",
+    ".5",
+    "1.999",
+    "1,5",
+    "1000000.01",
+    "NaN",
+    "Infinity",
+    "٤",  # an Arabic-Indic digit: not [0-9]
+    Decimal("1.999"),
+    Decimal("4.990"),
+    Decimal("1E+2"),
+    Decimal("-1"),
+    Decimal("NaN"),
+    [1],
+]
+
+
+@pytest.mark.parametrize("amount", GOOD_AMOUNTS, ids=repr)
+def test_fee_amount_good(client: QBitFlow, amount: Any) -> None:
+    assert fee_fields(client, one(amount=amount)) == []
+
+
+@pytest.mark.parametrize("amount", BAD_AMOUNTS, ids=repr)
+def test_fee_amount_bad(client: QBitFlow, amount: Any) -> None:
+    assert fee_fields(client, one(amount=amount)) == [AMOUNT]
+
+
+def test_fee_amount_message(client: QBitFlow) -> None:
+    with pytest.raises(ValidationError) as info:
+        client.checkout_sessions.create_payment(product_uuid=MEMBER_UUID, fees=one(amount="1e2"))
+    assert info.value.field_errors[0].message == (
+        "fees.items[0].amountUsd must be an amount in USD above 0 and at most 1000000, "
+        "with at most 2 decimals"
+    )
+
+
+@pytest.mark.parametrize("label", ["a", "VAT (20%)", "Shipping", "é" * 40, "Zoë & Co"])
+def test_fee_label_good(client: QBitFlow, label: str) -> None:
+    assert fee_fields(client, one(label=label)) == []
+
+
+@pytest.mark.parametrize(
+    "label", ["", None, 42, "é" * 41] + [n for n in BAD_NAMES if n != "a"], ids=repr
+)
+def test_fee_label_bad(client: QBitFlow, label: Any) -> None:
+    assert fee_fields(client, one(label=label)) == ["fees.items[0].label"]
+
+
+@pytest.mark.parametrize(
+    "description", [None, "", "x", "Standard, 3 to 5 days", "Two\nlines\tand tab", "é" * 200]
+)
+def test_fee_description_good(client: QBitFlow, description: Any) -> None:
+    assert fee_fields(client, one(description=description)) == []
+
+
+@pytest.mark.parametrize(
+    "description", ["é" * 201, "  ", "<b>", "semi;colon", "nul\x00x", 7], ids=repr
+)
+def test_fee_description_bad(client: QBitFlow, description: Any) -> None:
+    assert fee_fields(client, one(description=description)) == ["fees.items[0].description"]
+
+
+def test_fee_items_count(client: QBitFlow) -> None:
+    ten = [FeeItem(f"Line {i}", 1) for i in range(10)]
+    assert fee_fields(client, CheckoutFees(items=ten)) == []
+    eleven = ten + [FeeItem("Line 10", 1)]
+    assert fee_fields(client, CheckoutFees(items=eleven)) == ["fees.items"]
+    assert fee_fields(client, CheckoutFees(items=[])) == []
+
+
+def test_fee_paths_and_types(client: QBitFlow) -> None:
+    fees = CheckoutFees(
+        items=[
+            FeeItem("Shipping", 0.75),
+            FeeItem("", 0, "<x>"),
+            FeeItem("VAT", "1e2"),
+        ]
+    )
+    assert fee_fields(client, fees) == [
+        "fees.items[1].label",
+        "fees.items[1].description",
+        "fees.items[1].amountUsd",
+        "fees.items[2].amountUsd",
+    ]
+    assert fee_fields(client, CheckoutFees(processing_fee=True)) == []
+    assert fee_fields(client, CheckoutFees(processing_fee=False)) == []
+    assert fee_fields(client, CheckoutFees(processing_fee="yes")) == [  # type: ignore[arg-type]
+        "fees.processingFee"
+    ]
+    assert fee_fields(client, {"processingFee": True}) == ["fees"]
+    assert fee_fields(client, CheckoutFees(items="Shipping")) == [  # type: ignore[arg-type]
+        "fees.items"
+    ]
+    assert fee_fields(client, CheckoutFees(items=[{"label": "x"}])) == [  # type: ignore[list-item]
+        "fees.items[0]"
+    ]
+    assert fee_fields(client, None) == []
 
 
 def test_ids() -> None:

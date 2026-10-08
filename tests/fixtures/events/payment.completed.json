@@ -62,6 +62,7 @@
     "name": "Pro plan (lifetime)",
     "paidMinUnits": "10004200",
     "paidUsd": 10.0042,
+    "price": 10,
     "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
     "reference": "order-1042",
     "test": false,
