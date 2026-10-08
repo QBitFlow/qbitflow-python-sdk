@@ -337,8 +337,60 @@ print("Send the customer to", session.link)  # sub@…: the subscription's id on
   webhook, or on `get_status`.
 - **Errors to expect:** `409 merchant_not_ready` (`details["reason"]`) when the space's wallets
   accept no currency; `409 unique_violation` when another payment or open session holds the
-  `reference`; `400 validation_failed` above 5 USD in test mode (`details["max"]`); `404` for an
-  unknown product or customer.
+  `reference`; `400 validation_failed` above 5 USD in test mode, fees included (`details["max"]`);
+  `404` for an unknown product or customer.
+
+### Fees
+
+A one-time payment checkout can add amounts to its product's price: a tax, shipping, a service
+fee, and QBitFlow's processing fee when you have the customer pay it. The customer sees them line
+by line and pays them with the price.
+
+<!-- docs:snippet checkout-create-payment-fees -->
+```python
+session = client.checkout_sessions.create_payment(
+    product_name="T-shirt",
+    description="Blue, size M",
+    price=3.99,  # USD: you keep the price and your lines
+    reference="order-1044",
+    success_url=f"https://shop.example.com/orders/success?uuid={qbitflow.PLACEHOLDER_UUID}",
+    cancel_url="https://shop.example.com/orders/cancel",
+    fees=qbitflow.CheckoutFees(
+        # Your own lines (up to 10), shown to the customer and paid with the price.
+        items=[
+            qbitflow.FeeItem(
+                label="Shipping", description="Standard, 3 to 5 days", amount_usd=0.75
+            ),
+        ],
+        # The customer also pays QBitFlow's processing fee, a last line computed by QBitFlow.
+        processing_fee=True,
+    ),
+)
+# The customer pays the price plus every line (then the network fee on top).
+print("Send the customer to", session.link)
+```
+<!-- /docs:snippet -->
+
+- **Your lines**: `fees=CheckoutFees(items=[...])`, up to 10 `FeeItem`s, shown in that order.
+  `label` is one line of 1 to 40 characters, `description` (optional) at most 200, and
+  `amount_usd` is above 0, at most 1,000,000, with at most 2 decimals. A number is sent as a JSON
+  number; a string (`"4.99"`) or a `Decimal` is sent as a string, as written, so no float rounds
+  it. The SDK checks all of this before sending (`fees.items[0].amountUsd`…).
+- **The processing fee**: `processing_fee=True` adds a last line, `Processing fee`, computed by
+  QBitFlow on the price and your lines at your platform fee. QBitFlow's fee is taken on
+  everything charged, this line included, so the line is grossed up (and rounded up to the cent)
+  to leave you at least the price and your lines, as if no fee were taken: $100 + $20 VAT at 1.5 %
+  is a $1.83 processing fee, $121.83 charged, $120.00 kept. Left out (`None`), the space's
+  `checkout.customerPaysProcessingFee` setting decides (off by default; set it in the
+  dashboard); `False` turns it off for one checkout. A product link's checkout follows the
+  setting too.
+- **What the customer pays** is the session's `amount`: the price plus every line. It is what
+  is charged and split (QBitFlow's fee, and an organization's, are taken on it) and recorded as
+  the payment's `amount`, with its `price` and `fees`. The network fee comes on top.
+- **Test mode** caps `amount`, fees included, at 5 USD: `400 validation_failed` on `fees`
+  (`details["max"]`).
+- Payments only: `create_subscription` takes no `fees`. The lines are fixed when the session is
+  created; `checkout.expired` carries them (`PaymentSessionData.fees`, `amount`).
 
 ### Status
 
@@ -474,6 +526,21 @@ print(by_reference.uuid)
 
 A payment also carries its `explorer_url`, whether it is `refundable`, and its split:
 `metadata.tx_amounts.usd.merchant` is what the merchant received.
+
+**The amounts.** `amount` is what the customer paid in USD (`amount_min_units` the same in the
+token's smallest unit): the product's `price` at the checkout plus the checkout's
+[`fees`](#fees), each a `FeeLine` (`type`: `FeeLineType.CUSTOM` for your lines,
+`FeeLineType.PROCESSING_FEE` for QBitFlow's; `label`; `description`; `amount_usd`, a decimal
+string). `amount` is what the contracts split; the network fee the customer paid on top is not in
+it (`paid_usd` includes it). On payments recorded before fees existed, `price` equals `amount`
+and `fees` is empty.
+
+```python
+print(f"price {payment.price:.2f} USD")
+for line in payment.fees:  # a tax, shipping, the processing fee
+    print(f"  {line.label}: {line.amount_usd} USD")
+print(f"paid {payment.amount:.2f} USD")
+```
 
 - **Filters**: `customer_uuid`, `product_uuid`, `created_after` / `created_before` (aware
   `datetime`s, both excluded), `refunded`, and, with an organization key acting for itself,
@@ -1264,7 +1331,7 @@ regions ([CONTRIBUTING.md](CONTRIBUTING.md#website-snippets)).
 | Example | Shows | Other environment |
 |---|---|---|
 | [`client_setup.py`](examples/client_setup.py) | a client and `me()`, `QBitFlow.from_env` | |
-| [`checkout.py`](examples/checkout.py) | a payment checkout, its status, waiting, expiry | `WAIT=1` waits for the payment |
+| [`checkout.py`](examples/checkout.py) | a payment checkout, its status, waiting, expiry; a checkout with fees | `WAIT=1` waits for the payment |
 | [`catalog.py`](examples/catalog.py) | create and list products, list customers, a checkout for a product | |
 | [`payments.py`](examples/payments.py) | a page of payments, one payment, every payment, `format_amount` | `PAYMENT_UUID` |
 | [`refunds.py`](examples/refunds.py) | refund half of a payment, the active refunds | `PAYMENT_UUID` (refunds it) |
@@ -1278,8 +1345,8 @@ regions ([CONTRIBUTING.md](CONTRIBUTING.md#website-snippets)).
 | [`accounting.py`](examples/accounting.py) | a year of accounting events, as models and as `qbitflow-2026.csv` | |
 | [`currencies.py`](examples/currencies.py) | the currencies customers can pay with | |
 
-The examples share the order references `order-1042` (payment) and `order-1043` (subscription),
-unique per space: those that create a payment checkout expire it before they exit, so they can
+The examples share the order references `order-1042` (payment), `order-1043` (subscription) and
+`order-1044` (a payment with fees), unique per space: those that create a payment checkout expire it before they exit, so they can
 run again.
 
 ## Testing
