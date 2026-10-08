@@ -2122,11 +2122,11 @@
     },
     {
       "args": {
-        "reference": ".."
+        "reference": "..."
       },
       "method": "subscriptions.getByReference",
-      "name": "path: reference made of dots",
-      "note": "a . or .. segment must not be resolved as a relative path",
+      "name": "path: reference of three dots",
+      "note": "an ordinary value; only exactly . and .. are refused (validation.json)",
       "request": {
         "body": null,
         "headers": {
@@ -2137,13 +2137,13 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscription/reference/subscription/%2E%2E",
+        "path": "/transaction/subscription/reference/subscription/%2E%2E%2E",
         "pathSegments": [
           "transaction",
           "subscription",
           "reference",
           "subscription",
-          ".."
+          "..."
         ],
         "query": [],
         "rawQuery": "",
