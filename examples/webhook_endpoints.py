@@ -30,8 +30,10 @@ def create_endpoint(client: qbitflow.QBitFlow) -> None:
 def list_events(client: qbitflow.QBitFlow) -> None:
     # docs:start events-list
     page = client.webhooks.events.list(type=qbitflow.EventType.PAYMENT_COMPLETED, limit=20)
-    for event in page.items:  # newest first
+    for event in page.items:  # newest first, each exactly as delivered
         print(event.id, event.type, event.created_at)
+    if page.has_more:
+        print("more: pass", page.next_cursor, "as cursor=")  # opaque, never an event id
     # docs:end events-list
 
 

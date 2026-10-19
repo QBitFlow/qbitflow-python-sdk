@@ -150,7 +150,7 @@ def test_router_unparsable_body_is_400(body: str) -> None:
 def test_router_data_not_fitting_its_type_is_400() -> None:
     calls = Calls()
     data = json.loads(PAYMENT)["data"]
-    data["amount"] = "ten"  # a number on the wire
+    data["amount"] = 10  # a JSON number where the model has a decimal string
     result = calls.router().handle(*signed(with_type(PAYMENT, "payment.completed", data=data)))
     assert result.status == 400 and isinstance(result.error, ValidationError)
     assert result.event is None and calls.log == []
@@ -221,6 +221,9 @@ def test_router_registration_checks() -> None:
     router = WebhookRouter(SECRET)
     with pytest.raises(ValidationError, match="type"):
         router.on("payment.complete")  # a typo
+    for retired in ("refund.completed", "refund.denied"):  # renamed: refund.approved / .rejected
+        with pytest.raises(ValidationError, match="type"):
+            router.on(retired)
     with pytest.raises(ValidationError):
         router.add("payment.completed", "not callable")  # type: ignore[arg-type]
     with pytest.raises(ValidationError):
@@ -230,6 +233,40 @@ def test_router_registration_checks() -> None:
     with pytest.raises(ValidationError):
         WebhookRouter(SECRET, on_error="log")  # type: ignore[arg-type]
     assert SECRET not in repr(router)
+
+
+@pytest.mark.parametrize(
+    "event_type, fixture",
+    [
+        ("refund.approved", "refund.approved"),
+        (EventType.REFUND_APPROVED, "refund.approved"),
+        ("refund.rejected", "refund.rejected"),
+        (EventType.REFUND_REJECTED, "refund.rejected"),
+        ("subscription.created", "subscription.created"),
+        ("subscription.billed", "subscription.billed"),
+    ],
+)
+def test_router_dispatches_the_renamed_and_reshaped_types(event_type: Any, fixture: str) -> None:
+    seen: List[Any] = []
+    router = WebhookRouter(SECRET)
+    router.on(event_type)(lambda data, event: seen.append(data))
+    body = (FIXTURES / "events" / f"{fixture}.json").read_text()
+    assert router.handle(*signed(body)).status == 200
+    assert len(seen) == 1
+    if fixture == "subscription.created":
+        assert type(seen[0]) is Subscription
+    elif fixture == "subscription.billed":
+        assert seen[0].bill.uuid.startswith("sub-hist@") and seen[0].subscription.uuid
+    else:
+        assert seen[0].uuid.startswith("refund@")
+
+
+def test_router_retired_type_is_unknown() -> None:
+    calls = Calls()
+    body = with_type((FIXTURES / "events" / "refund.approved.json").read_text(), "refund.completed")
+    result = calls.router().handle(*signed(body))
+    assert result.status == 200 and isinstance(result.event, UnknownEvent)
+    assert calls.names == ["unknown", "any1", "any2"]
 
 
 def test_client_router() -> None:
@@ -560,8 +597,9 @@ def test_wait_completes_after_polls() -> None:
     status = client.checkout_sessions.wait_for_completion(STATUS)
     assert status.status == CheckoutSessionStatusValue.COMPLETED
     assert len(server.requests) == 4 and sleeps == [3.0, 3.0, 3.0]
-    assert server.requests[0].path.startswith("/transaction/session-checkout/pay")
-    assert server.requests[0].path.endswith("/status")
+    # It polls checkout_sessions.get: GET /checkout-sessions/:uuid.
+    assert all(r.method == "GET" for r in server.requests)
+    assert server.requests[0].path == "/checkout-sessions/" + STATUS
 
 
 def test_wait_expired() -> None:
@@ -735,6 +773,11 @@ def test_currency_format_amount() -> None:
 # ── H6: range exports ────────────────────────────────────────────────────────
 
 
+def page(items: List[Any]) -> Dict[str, Any]:
+    """A bounded list's one-page envelope."""
+    return {"items": items, "hasMore": False}
+
+
 def windows_of(server: Any) -> List[Tuple[str, str]]:
     out = []
     for request in server.requests:
@@ -745,33 +788,36 @@ def windows_of(server: Any) -> List[Tuple[str, str]]:
 
 def test_export_json_range_yearly_windows() -> None:
     def handler(req: httpx.Request, n: int) -> httpx.Response:
-        return reply(200, [{"paymentUuid": f"pay@{n}", "type": "payment"}])
+        return reply(200, page([{"txUuid": f"pay@{n}", "type": "payment"}]))
 
     client, server, _ = make_client(handler)
     events = client.accounting.export_json_range("2026-01-01", "2026-12-31")
     assert windows_of(server) == [
-        ("2026-01-01", "2026-04-06"),
-        ("2026-04-07", "2026-07-11"),
-        ("2026-07-12", "2026-10-15"),
-        ("2026-10-16", "2026-12-31"),
+        ("2026-01-01", "2026-04-02"),
+        ("2026-04-03", "2026-07-03"),
+        ("2026-07-04", "2026-10-03"),
+        ("2026-10-04", "2026-12-31"),
     ]
-    assert [e.payment_uuid for e in events] == ["pay@0", "pay@1", "pay@2", "pay@3"]
+    assert [e.tx_uuid for e in events] == ["pay@0", "pay@1", "pay@2", "pay@3"]
     assert all("format=json" in r.query for r in server.requests)
+    assert qbitflow._services.organization.EXPORT_WINDOW_DAYS == 92
 
 
-def test_export_range_95_and_96_days() -> None:
+def test_export_range_92_and_93_days() -> None:
     from datetime import date
 
-    client, server, _ = make_client(lambda req, n: reply(200, []))
+    # 92 days, both ends counted: one request.
+    client, server, _ = make_client(lambda req, n: reply(200, page([])))
     start = date(2026, 1, 1)
-    assert client.accounting.export_json_range(start, start + timedelta(days=95)) == []
-    assert windows_of(server) == [("2026-01-01", "2026-04-06")]
+    assert client.accounting.export_json_range(start, start + timedelta(days=91)) == []
+    assert windows_of(server) == [("2026-01-01", "2026-04-02")]
 
-    client, server, _ = make_client(lambda req, n: reply(200, []))
-    client.accounting.export_json_range(start, start + timedelta(days=96))
-    assert windows_of(server) == [("2026-01-01", "2026-04-06"), ("2026-04-07", "2026-04-07")]
+    # 93 days: two requests, the second one day long.
+    client, server, _ = make_client(lambda req, n: reply(200, page([])))
+    client.accounting.export_json_range(start, start + timedelta(days=92))
+    assert windows_of(server) == [("2026-01-01", "2026-04-02"), ("2026-04-03", "2026-04-03")]
 
-    client, server, _ = make_client(lambda req, n: reply(200, []))
+    client, server, _ = make_client(lambda req, n: reply(200, page([])))
     client.accounting.export_json_range("2026-03-03", "2026-03-03")
     assert windows_of(server) == [("2026-03-03", "2026-03-03")]
 
@@ -799,7 +845,7 @@ def test_export_csv_range_dedupes_headers() -> None:
 
 
 def test_export_range_validation_and_errors() -> None:
-    client, server, _ = make_client(lambda req, n: reply(200, []))
+    client, server, _ = make_client(lambda req, n: reply(200, page([])))
     for args in (("2026-12-31", "2026-01-01"), ("2026-1-1", "2026-02-01"), ("", "2026-01-01")):
         with pytest.raises(ValidationError):
             client.accounting.export_json_range(*args)
@@ -810,7 +856,7 @@ def test_export_range_validation_and_errors() -> None:
     def handler(req: httpx.Request, n: int) -> httpx.Response:
         if n == 1:
             return reply(404, {"error": "gone", "code": "not_found"})
-        return reply(200, [])
+        return reply(200, page([]))
 
     client, server, _ = make_client(handler, max_retries=0)
     with pytest.raises(NotFoundError):
@@ -872,11 +918,11 @@ def test_placeholders_sent_literally() -> None:
     assert PLACEHOLDER_UUID == "{{UUID}}"
     assert PLACEHOLDER_TRANSACTION_TYPE == "{{TRANSACTION_TYPE}}"
 
-    session = {"uuid": "pay@x", "link": "https://pay.test/x"}
+    session = {"uuid": "pay@x", "link": "https://pay.test/x", "expiresAt": "2026-10-01T13:00:00Z"}
     client, server, _ = make_client(lambda req, n: reply(201, session))
     client.checkout_sessions.create_payment(
         product_name="Plan",
-        price=5,
+        price_usd="5",
         success_url=f"https://shop.test/ok?id={PLACEHOLDER_UUID}&t={PLACEHOLDER_TRANSACTION_TYPE}",
     )
     sent = server.requests[0].json()

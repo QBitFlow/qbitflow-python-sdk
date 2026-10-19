@@ -26,7 +26,10 @@
     {
       "args": {
         "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "includeHidden": true,
+          "limit": 50,
+          "reference": "pro-monthly",
           "subscription": false
         }
       },
@@ -42,21 +45,33 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product",
+        "path": "/products",
         "pathSegments": [
-          "product"
+          "products"
         ],
         "query": [
           [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
+          [
             "includeHidden",
             "true"
+          ],
+          [
+            "limit",
+            "50"
+          ],
+          [
+            "reference",
+            "pro-monthly"
           ],
           [
             "subscription",
             "false"
           ]
         ],
-        "rawQuery": "includeHidden=true&subscription=false",
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&includeHidden=true&limit=50&reference=pro-monthly&subscription=false",
         "verb": "GET"
       }
     },
@@ -64,8 +79,12 @@
       "args": {
         "params": {
           "description": "Monthly access to Pro",
+          "metadata": {
+            "crm:plan": "pro",
+            "sku": "PRO-M"
+          },
           "name": "Pro plan",
-          "price": 9.99,
+          "priceUsd": "9.99",
           "reference": "pro-monthly",
           "subscription": {
             "frequency": {
@@ -85,8 +104,12 @@
       "request": {
         "body": {
           "description": "Monthly access to Pro",
+          "metadata": {
+            "crm:plan": "pro",
+            "sku": "PRO-M"
+          },
           "name": "Pro plan",
-          "price": 9.99,
+          "priceUsd": "9.99",
           "reference": "pro-monthly",
           "subscription": {
             "frequency": {
@@ -108,9 +131,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product",
+        "path": "/products",
         "pathSegments": [
-          "product"
+          "products"
         ],
         "query": [],
         "rawQuery": "",
@@ -133,10 +156,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product/uuid/019cadfd-8900-7c00-8000-0000000000c1",
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
         "pathSegments": [
-          "product",
-          "uuid",
+          "products",
           "019cadfd-8900-7c00-8000-0000000000c1"
         ],
         "query": [],
@@ -160,14 +182,17 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product/reference/pro-monthly",
+        "path": "/products",
         "pathSegments": [
-          "product",
-          "reference",
-          "pro-monthly"
+          "products"
         ],
-        "query": [],
-        "rawQuery": "",
+        "query": [
+          [
+            "reference",
+            "pro-monthly"
+          ]
+        ],
+        "rawQuery": "reference=pro-monthly",
         "verb": "GET"
       }
     },
@@ -176,8 +201,12 @@
         "params": {
           "description": "",
           "isActive": false,
+          "metadata": {
+            "legacy": "",
+            "sku": "PRO-M2"
+          },
           "name": "Pro plan v2",
-          "price": 12.5
+          "priceUsd": "12.50"
         },
         "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
       },
@@ -187,8 +216,12 @@
         "body": {
           "description": "",
           "isActive": false,
+          "metadata": {
+            "legacy": "",
+            "sku": "PRO-M2"
+          },
           "name": "Pro plan v2",
-          "price": 12.5
+          "priceUsd": "12.50"
         },
         "headers": {
           "Accept": "application/json",
@@ -198,14 +231,14 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product/019cadfd-8900-7c00-8000-0000000000c1",
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
         "pathSegments": [
-          "product",
+          "products",
           "019cadfd-8900-7c00-8000-0000000000c1"
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
       }
     },
     {
@@ -224,9 +257,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product/019cadfd-8900-7c00-8000-0000000000c1",
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
         "pathSegments": [
-          "product",
+          "products",
           "019cadfd-8900-7c00-8000-0000000000c1"
         ],
         "query": [],
@@ -237,83 +270,10 @@
     {
       "args": {
         "params": {
-          "address": "1 rue de la Paix\nParis",
-          "email": "alice@example.com",
-          "lastName": "Martin",
-          "name": "Alice",
-          "phoneNumber": "+33 6 12 34 56 78",
-          "reference": "crm-5521"
-        }
-      },
-      "method": "customers.create",
-      "name": "customers.create",
-      "request": {
-        "body": {
-          "address": "1 rue de la Paix\nParis",
-          "email": "alice@example.com",
-          "lastName": "Martin",
-          "name": "Alice",
-          "phoneNumber": "+33 6 12 34 56 78",
-          "reference": "crm-5521"
-        },
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Idempotency-Key": "<uuid-v4>",
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/customer",
-        "pathSegments": [
-          "customer"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "POST"
-      }
-    },
-    {
-      "args": {
-        "params": {
-          "address": "",
-          "name": "Alicia",
-          "phoneNumber": ""
-        },
-        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
-      },
-      "method": "customers.update",
-      "name": "customers.update",
-      "request": {
-        "body": {
-          "address": "",
-          "name": "Alicia",
-          "phoneNumber": ""
-        },
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/customer/01a05cd7-2a00-7d00-8000-0000000000d1",
-        "pathSegments": [
-          "customer",
-          "01a05cd7-2a00-7d00-8000-0000000000d1"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "PUT"
-      }
-    },
-    {
-      "args": {
-        "params": {
-          "cursor": "01a05cd7-2a00-7d00-8000-0000000000d1",
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
+          "reference": "crm-5521",
           "verified": true
         }
       },
@@ -329,15 +289,14 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/customer/all",
+        "path": "/customers",
         "pathSegments": [
-          "customer",
-          "all"
+          "customers"
         ],
         "query": [
           [
             "cursor",
-            "01a05cd7-2a00-7d00-8000-0000000000d1"
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
           ],
           [
             "email",
@@ -348,12 +307,61 @@
             "50"
           ],
           [
+            "reference",
+            "crm-5521"
+          ],
+          [
             "verified",
             "true"
           ]
         ],
-        "rawQuery": "cursor=01a05cd7-2a00-7d00-8000-0000000000d1&email=alice%40example.com&limit=50&verified=true",
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&email=alice%40example.com&limit=50&reference=crm-5521&verified=true",
         "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "address": "1 rue de la Paix\nParis",
+          "email": "alice@example.com",
+          "firstName": "Alice",
+          "lastName": "Martin",
+          "metadata": {
+            "crm:id": "C-5521"
+          },
+          "phoneNumber": "+33 6 12 34 56 78",
+          "reference": "crm-5521"
+        }
+      },
+      "method": "customers.create",
+      "name": "customers.create",
+      "request": {
+        "body": {
+          "address": "1 rue de la Paix\nParis",
+          "email": "alice@example.com",
+          "firstName": "Alice",
+          "lastName": "Martin",
+          "metadata": {
+            "crm:id": "C-5521"
+          },
+          "phoneNumber": "+33 6 12 34 56 78",
+          "reference": "crm-5521"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers",
+        "pathSegments": [
+          "customers"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
       }
     },
     {
@@ -372,38 +380,10 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/customer/uuid/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
         "pathSegments": [
-          "customer",
-          "uuid",
+          "customers",
           "01a05cd7-2a00-7d00-8000-0000000000d1"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {
-        "email": "alice+vip@example.com"
-      },
-      "method": "customers.getByEmail",
-      "name": "customers.getByEmail",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/customer/email/alice+vip@example.com",
-        "pathSegments": [
-          "customer",
-          "email",
-          "alice+vip@example.com"
         ],
         "query": [],
         "rawQuery": "",
@@ -426,15 +406,55 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/customer/reference/crm-5521",
+        "path": "/customers",
         "pathSegments": [
-          "customer",
-          "reference",
-          "crm-5521"
+          "customers"
+        ],
+        "query": [
+          [
+            "reference",
+            "crm-5521"
+          ]
+        ],
+        "rawQuery": "reference=crm-5521",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "address": "",
+          "firstName": "Alicia",
+          "lastName": "",
+          "phoneNumber": ""
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "method": "customers.update",
+      "name": "customers.update",
+      "request": {
+        "body": {
+          "address": "",
+          "firstName": "Alicia",
+          "lastName": "",
+          "phoneNumber": ""
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "pathSegments": [
+          "customers",
+          "01a05cd7-2a00-7d00-8000-0000000000d1"
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "GET"
+        "verb": "PATCH"
       }
     },
     {
@@ -453,10 +473,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/customer/uuid/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
         "pathSegments": [
-          "customer",
-          "uuid",
+          "customers",
           "01a05cd7-2a00-7d00-8000-0000000000d1"
         ],
         "query": [],
@@ -467,11 +486,77 @@
     {
       "args": {
         "params": {
+          "main": true,
+          "test": true
+        }
+      },
+      "method": "currencies.list",
+      "name": "currencies.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/currencies",
+        "pathSegments": [
+          "currencies"
+        ],
+        "query": [
+          [
+            "main",
+            "true"
+          ],
+          [
+            "test",
+            "true"
+          ]
+        ],
+        "rawQuery": "main=true&test=true",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "method": "currencies.get",
+      "name": "currencies.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/currencies/8",
+        "pathSegments": [
+          "currencies",
+          "8"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
           "cancelUrl": "https://shop.example.com/cart",
           "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
           "description": "Lifetime access",
           "expiresInMinutes": 30,
-          "price": 10,
+          "metadata": {
+            "orderId": "order-1043"
+          },
+          "priceUsd": "10",
           "productName": "Pro plan (lifetime)",
           "reference": "order-1043",
           "successUrl": "https://shop.example.com/thanks?uuid={{UUID}}&type={{TRANSACTION_TYPE}}"
@@ -485,7 +570,10 @@
           "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
           "description": "Lifetime access",
           "expiresInMinutes": 30,
-          "price": 10,
+          "metadata": {
+            "orderId": "order-1043"
+          },
+          "priceUsd": "10",
           "productName": "Pro plan (lifetime)",
           "reference": "order-1043",
           "successUrl": "https://shop.example.com/thanks?uuid={{UUID}}&type={{TRANSACTION_TYPE}}"
@@ -498,11 +586,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/payment",
+        "path": "/checkout-sessions/payment",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "payment"
         ],
         "query": [],
@@ -517,6 +603,9 @@
           "frequency": {
             "unit": "months",
             "value": 1
+          },
+          "metadata": {
+            "plan": "pro"
           },
           "minPeriods": 0,
           "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
@@ -534,6 +623,9 @@
             "unit": "months",
             "value": 1
           },
+          "metadata": {
+            "plan": "pro"
+          },
           "minPeriods": 0,
           "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
           "trialPeriod": {
@@ -548,11 +640,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/subscription",
+        "path": "/checkout-sessions/subscription",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "subscription"
         ],
         "query": [],
@@ -564,8 +654,8 @@
       "args": {
         "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
       },
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus",
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get",
       "request": {
         "body": null,
         "headers": {
@@ -576,12 +666,10 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/pay@01a0f22f-9600-7000-8000-000000000008/status",
+        "path": "/checkout-sessions/pay@01a0f22f-9600-7000-8000-000000000008",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "pay@01a0f22f-9600-7000-8000-000000000008",
-          "status"
+          "checkout-sessions",
+          "pay@01a0f22f-9600-7000-8000-000000000008"
         ],
         "query": [],
         "rawQuery": "",
@@ -604,10 +692,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/sub@01a05cd7-2a00-7000-8000-000000000003/expire",
+        "path": "/checkout-sessions/sub@01a05cd7-2a00-7000-8000-000000000003/expire",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
+          "checkout-sessions",
           "sub@01a05cd7-2a00-7000-8000-000000000003",
           "expire"
         ],
@@ -621,10 +708,11 @@
         "params": {
           "createdAfter": "2026-09-01T00:00:00+02:00",
           "createdBefore": "2026-10-01T12:30:00.5Z",
-          "cursor": "01a0f22f-9600-7000-8000-000000000008",
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
           "limit": 20,
           "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "reference": "order-1043",
           "refunded": false
         }
       },
@@ -640,9 +728,8 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/payments",
+        "path": "/payments",
         "pathSegments": [
-          "transaction",
           "payments"
         ],
         "query": [
@@ -656,7 +743,7 @@
           ],
           [
             "cursor",
-            "01a0f22f-9600-7000-8000-000000000008"
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
           ],
           [
             "customerUuid",
@@ -671,60 +758,15 @@
             "019cadfd-8900-7c00-8000-0000000000c1"
           ],
           [
+            "reference",
+            "order-1043"
+          ],
+          [
             "refunded",
             "false"
           ]
         ],
-        "rawQuery": "createdAfter=2026-09-01T00%3A00%3A00%2B02%3A00&createdBefore=2026-10-01T12%3A30%3A00.5Z&cursor=01a0f22f-9600-7000-8000-000000000008&customerUuid=01a05cd7-2a00-7d00-8000-0000000000d1&limit=20&productUuid=019cadfd-8900-7c00-8000-0000000000c1&refunded=false",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {
-        "params": {
-          "includeMembers": true,
-          "refunded": true,
-          "source": "subscriptionHistory",
-          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
-        }
-      },
-      "method": "payments.listCombined",
-      "name": "payments.listCombined",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/transaction/payments/combined",
-        "pathSegments": [
-          "transaction",
-          "payments",
-          "combined"
-        ],
-        "query": [
-          [
-            "includeMembers",
-            "true"
-          ],
-          [
-            "refunded",
-            "true"
-          ],
-          [
-            "source",
-            "subscriptionHistory"
-          ],
-          [
-            "subscriptionUuid",
-            "sub@01a05cd7-2a00-7000-8000-000000000003"
-          ]
-        ],
-        "rawQuery": "includeMembers=true&refunded=true&source=subscriptionHistory&subscriptionUuid=sub%4001a05cd7-2a00-7000-8000-000000000003",
+        "rawQuery": "createdAfter=2026-09-01T00%3A00%3A00%2B02%3A00&createdBefore=2026-10-01T12%3A30%3A00.5Z&cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&customerUuid=01a05cd7-2a00-7d00-8000-0000000000d1&limit=20&productUuid=019cadfd-8900-7c00-8000-0000000000c1&reference=order-1043&refunded=false",
         "verb": "GET"
       }
     },
@@ -747,10 +789,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/payment/pay@01a0f22f-9600-7000-8000-000000000008",
+        "path": "/payments/pay@01a0f22f-9600-7000-8000-000000000008",
         "pathSegments": [
-          "transaction",
-          "payment",
+          "payments",
           "pay@01a0f22f-9600-7000-8000-000000000008"
         ],
         "query": [
@@ -779,15 +820,64 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/payment/reference/order-1043",
+        "path": "/payments",
         "pathSegments": [
-          "transaction",
-          "payment",
-          "reference",
-          "order-1043"
+          "payments"
         ],
-        "query": [],
-        "rawQuery": "",
+        "query": [
+          [
+            "reference",
+            "order-1043"
+          ]
+        ],
+        "rawQuery": "reference=order-1043",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "refunded": true,
+          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "type": "bill"
+        }
+      },
+      "method": "transactions.list",
+      "name": "transactions.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transactions",
+        "pathSegments": [
+          "transactions"
+        ],
+        "query": [
+          [
+            "includeMembers",
+            "true"
+          ],
+          [
+            "refunded",
+            "true"
+          ],
+          [
+            "subscriptionUuid",
+            "sub@01a05cd7-2a00-7000-8000-000000000003"
+          ],
+          [
+            "type",
+            "bill"
+          ]
+        ],
+        "rawQuery": "includeMembers=true&refunded=true&subscriptionUuid=sub%4001a05cd7-2a00-7000-8000-000000000003&type=bill",
         "verb": "GET"
       }
     },
@@ -812,10 +902,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/failures",
+        "path": "/payment-failures",
         "pathSegments": [
-          "transaction",
-          "failures"
+          "payment-failures"
         ],
         "query": [
           [
@@ -859,9 +948,8 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscriptions",
+        "path": "/subscriptions",
         "pathSegments": [
-          "transaction",
           "subscriptions"
         ],
         "query": [
@@ -901,10 +989,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscription/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003",
         "pathSegments": [
-          "transaction",
-          "subscription",
+          "subscriptions",
           "sub@01a05cd7-2a00-7000-8000-000000000003"
         ],
         "query": [
@@ -933,23 +1020,61 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscription/reference/subscription/customer-7731",
+        "path": "/subscriptions",
         "pathSegments": [
-          "transaction",
-          "subscription",
-          "reference",
-          "subscription",
-          "customer-7731"
+          "subscriptions"
         ],
-        "query": [],
-        "rawQuery": "",
+        "query": [
+          [
+            "reference",
+            "customer-7731"
+          ]
+        ],
+        "rawQuery": "reference=customer-7731",
         "verb": "GET"
       }
     },
     {
       "args": {
         "params": {
-          "cursor": "01a0f755-f200-7000-8000-000000000004",
+          "metadata": {
+            "coupon": "",
+            "plan": "pro-annual"
+          }
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.update",
+      "name": "subscriptions.update",
+      "request": {
+        "body": {
+          "metadata": {
+            "coupon": "",
+            "plan": "pro-annual"
+          }
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "limit": 5
         },
         "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
@@ -966,24 +1091,23 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscription/sub@01a05cd7-2a00-7000-8000-000000000003/bills",
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/bills",
         "pathSegments": [
-          "transaction",
-          "subscription",
+          "subscriptions",
           "sub@01a05cd7-2a00-7000-8000-000000000003",
           "bills"
         ],
         "query": [
           [
             "cursor",
-            "01a0f755-f200-7000-8000-000000000004"
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
           ],
           [
             "limit",
             "5"
           ]
         ],
-        "rawQuery": "cursor=01a0f755-f200-7000-8000-000000000004&limit=5",
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&limit=5",
         "verb": "GET"
       }
     },
@@ -1003,40 +1127,10 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscription/bill/sub-hist@01a0f755-f200-7000-8000-000000000005",
+        "path": "/bills/sub-hist@01a0f755-f200-7000-8000-000000000005",
         "pathSegments": [
-          "transaction",
-          "subscription",
-          "bill",
+          "bills",
           "sub-hist@01a0f755-f200-7000-8000-000000000005"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {
-        "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
-      },
-      "method": "subscriptions.getPublicHistory",
-      "name": "subscriptions.getPublicHistory",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/transaction/subscription/history/sub@01a05cd7-2a00-7000-8000-000000000003",
-        "pathSegments": [
-          "transaction",
-          "subscription",
-          "history",
-          "sub@01a05cd7-2a00-7000-8000-000000000003"
         ],
         "query": [],
         "rawQuery": "",
@@ -1062,13 +1156,11 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscription/processing/force-cancel/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/cancel",
         "pathSegments": [
-          "transaction",
-          "subscription",
-          "processing",
-          "force-cancel",
-          "sub@01a05cd7-2a00-7000-8000-000000000003"
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "cancel"
         ],
         "query": [
           [
@@ -1084,8 +1176,8 @@
       "args": {
         "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
       },
-      "method": "subscriptions.executeTestBilling",
-      "name": "subscriptions.executeTestBilling",
+      "method": "subscriptions.testBill",
+      "name": "subscriptions.testBill",
       "request": {
         "body": null,
         "headers": {
@@ -1096,13 +1188,11 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscription/processing/execute-billing/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/test-bill",
         "pathSegments": [
-          "transaction",
-          "subscription",
-          "processing",
-          "execute-billing",
-          "sub@01a05cd7-2a00-7000-8000-000000000003"
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "test-bill"
         ],
         "query": [],
         "rawQuery": "",
@@ -1112,8 +1202,15 @@
     {
       "args": {
         "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "held": false,
-          "includeMembers": true
+          "includeMembers": true,
+          "limit": 25,
+          "status": [
+            "approved",
+            "rejected"
+          ],
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
       "method": "refunds.list",
@@ -1128,13 +1225,15 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/refunds/all",
+        "path": "/refunds",
         "pathSegments": [
-          "transaction",
-          "refunds",
-          "all"
+          "refunds"
         ],
         "query": [
+          [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
           [
             "held",
             "false"
@@ -1142,22 +1241,34 @@
           [
             "includeMembers",
             "true"
+          ],
+          [
+            "limit",
+            "25"
+          ],
+          [
+            "status",
+            "approved"
+          ],
+          [
+            "status",
+            "rejected"
+          ],
+          [
+            "txUuid",
+            "pay@01a0f22f-9600-7000-8000-000000000008"
           ]
         ],
-        "rawQuery": "held=false&includeMembers=true",
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&held=false&includeMembers=true&limit=25&status=approved&status=rejected&txUuid=pay%4001a0f22f-9600-7000-8000-000000000008",
         "verb": "GET"
       }
     },
     {
       "args": {
-        "params": {
-          "cursor": "01a0f22f-9600-7000-8000-000000000008",
-          "limit": 25,
-          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
-        }
+        "uuid": "refund@01a0f755-f200-7000-8000-000000000007"
       },
-      "method": "refunds.listInactive",
-      "name": "refunds.listInactive",
+      "method": "refunds.get",
+      "name": "refunds.get",
       "request": {
         "body": null,
         "headers": {
@@ -1168,28 +1279,13 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/refunds/all/inactive",
+        "path": "/refunds/refund@01a0f755-f200-7000-8000-000000000007",
         "pathSegments": [
-          "transaction",
           "refunds",
-          "all",
-          "inactive"
+          "refund@01a0f755-f200-7000-8000-000000000007"
         ],
-        "query": [
-          [
-            "cursor",
-            "01a0f22f-9600-7000-8000-000000000008"
-          ],
-          [
-            "limit",
-            "25"
-          ],
-          [
-            "userUuid",
-            "019eca82-5680-7b00-8000-0000000000b1"
-          ]
-        ],
-        "rawQuery": "cursor=01a0f22f-9600-7000-8000-000000000008&limit=25&userUuid=019eca82-5680-7b00-8000-0000000000b1",
+        "query": [],
+        "rawQuery": "",
         "verb": "GET"
       }
     },
@@ -1198,17 +1294,17 @@
         "params": {
           "merchantMessage": "Sorry!",
           "reason": "Damaged item",
-          "refundPercent": 50,
+          "refundPercent": "50",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate",
+      "method": "refunds.create",
+      "name": "refunds.create",
       "request": {
         "body": {
           "merchantMessage": "Sorry!",
           "reason": "Damaged item",
-          "refundPercent": 50,
+          "refundPercent": "50",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         },
         "headers": {
@@ -1219,11 +1315,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/refunds/initiate",
+        "path": "/refunds",
         "pathSegments": [
-          "transaction",
-          "refunds",
-          "initiate"
+          "refunds"
         ],
         "query": [],
         "rawQuery": "",
@@ -1291,7 +1385,7 @@
     {
       "args": {
         "params": {
-          "organizationFeePercent": 7.5
+          "organizationFeePercent": "7.5"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
       },
@@ -1299,7 +1393,7 @@
       "name": "members.update",
       "request": {
         "body": {
-          "organizationFeePercent": 7.5
+          "organizationFeePercent": "7.5"
         },
         "headers": {
           "Accept": "application/json",
@@ -1316,7 +1410,7 @@
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
       }
     },
     {
@@ -1437,9 +1531,8 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/user/held-funds",
+        "path": "/held-funds",
         "pathSegments": [
-          "user",
           "held-funds"
         ],
         "query": [],
@@ -1451,9 +1544,9 @@
       "args": {
         "params": {
           "email": "bob@example.com",
-          "organizationFeePercent": 5,
-          "redirectUrl": "https://app.example.com/welcome",
-          "trustLayer": true
+          "holdFunds": true,
+          "organizationFeePercent": "5",
+          "redirectUrl": "https://app.example.com/welcome"
         }
       },
       "method": "invitations.create",
@@ -1461,10 +1554,10 @@
       "request": {
         "body": {
           "email": "bob@example.com",
-          "organizationFeePercent": 5,
+          "holdFunds": true,
+          "organizationFeePercent": "5",
           "redirectUrl": "https://app.example.com/welcome",
-          "role": "user",
-          "trustLayer": true
+          "role": "user"
         },
         "headers": {
           "Accept": "application/json",
@@ -1559,10 +1652,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/wallet/user",
+        "path": "/wallets",
         "pathSegments": [
-          "wallet",
-          "user"
+          "wallets"
         ],
         "query": [
           [
@@ -1590,11 +1682,11 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/wallet/user/019eca82-5680-7b00-8000-0000000000b1",
+        "path": "/members/019eca82-5680-7b00-8000-0000000000b1/wallets",
         "pathSegments": [
-          "wallet",
-          "user",
-          "019eca82-5680-7b00-8000-0000000000b1"
+          "members",
+          "019eca82-5680-7b00-8000-0000000000b1",
+          "wallets"
         ],
         "query": [],
         "rawQuery": "",
@@ -1607,8 +1699,8 @@
           "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
         }
       },
-      "method": "wallets.listSupportedCurrencies",
-      "name": "wallets.listSupportedCurrencies",
+      "method": "wallets.listAcceptedCurrencies",
+      "name": "wallets.listAcceptedCurrencies",
       "request": {
         "body": null,
         "headers": {
@@ -1619,10 +1711,10 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/wallet/supported-currencies",
+        "path": "/wallets/accepted-currencies",
         "pathSegments": [
-          "wallet",
-          "supported-currencies"
+          "wallets",
+          "accepted-currencies"
         ],
         "query": [
           [
@@ -1747,7 +1839,12 @@
       }
     },
     {
-      "args": {},
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "limit": 10
+        }
+      },
       "method": "webhooks.endpoints.list",
       "name": "webhooks.endpoints.list",
       "request": {
@@ -1765,8 +1862,17 @@
           "webhooks",
           "endpoints"
         ],
-        "query": [],
-        "rawQuery": "",
+        "query": [
+          [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
+          [
+            "limit",
+            "10"
+          ]
+        ],
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&limit=10",
         "verb": "GET"
       }
     },
@@ -1874,7 +1980,7 @@
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
       }
     },
     {
@@ -1907,7 +2013,7 @@
     {
       "args": {
         "params": {
-          "cursor": "evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f",
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "includeMembers": true,
           "limit": 10,
           "type": "payment.completed"
@@ -1933,7 +2039,7 @@
         "query": [
           [
             "cursor",
-            "evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f"
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
           ],
           [
             "includeMembers",
@@ -1948,7 +2054,7 @@
             "payment.completed"
           ]
         ],
-        "rawQuery": "cursor=evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f&includeMembers=true&limit=10&type=payment.completed",
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&includeMembers=true&limit=10&type=payment.completed",
         "verb": "GET"
       }
     },
@@ -1981,208 +2087,11 @@
     },
     {
       "args": {
-        "params": {
-          "test": true
-        }
-      },
-      "method": "currencies.listAvailable",
-      "name": "currencies.listAvailable",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/utils/all-available-currencies",
-        "pathSegments": [
-          "utils",
-          "all-available-currencies"
-        ],
-        "query": [
-          [
-            "test",
-            "true"
-          ]
-        ],
-        "rawQuery": "test=true",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {},
-      "method": "currencies.listMain",
-      "name": "currencies.listMain",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/utils/all-main-currencies",
-        "pathSegments": [
-          "utils",
-          "all-main-currencies"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {
-        "id": 8
-      },
-      "method": "currencies.get",
-      "name": "currencies.get",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/utils/currency/id/8",
-        "pathSegments": [
-          "utils",
-          "currency",
-          "id",
-          "8"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {
-        "reference": "a/b c@d"
-      },
-      "method": "products.getByReference",
-      "name": "path: reference with slash, space and @",
-      "note": "a / inside a segment is escaped, never a separator",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/product/reference/a%2Fb%20c@d",
-        "pathSegments": [
-          "product",
-          "reference",
-          "a/b c@d"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {
-        "reference": "x?y#z%25+1"
-      },
-      "method": "payments.getByReference",
-      "name": "path: reference with ? # % +",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/transaction/payment/reference/x%3Fy%23z%2525+1",
-        "pathSegments": [
-          "transaction",
-          "payment",
-          "reference",
-          "x?y#z%25+1"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {
-        "reference": "..."
-      },
-      "method": "subscriptions.getByReference",
-      "name": "path: reference of three dots",
-      "note": "an ordinary value; only exactly . and .. are refused (validation.json)",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/transaction/subscription/reference/subscription/%2E%2E%2E",
-        "pathSegments": [
-          "transaction",
-          "subscription",
-          "reference",
-          "subscription",
-          "..."
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {
-        "email": "Ünïcode+tag@exämple.com"
-      },
-      "method": "customers.getByEmail",
-      "name": "path: email with + and @",
-      "request": {
-        "body": null,
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": null,
-          "Idempotency-Key": null,
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/customer/email/%C3%9Cn%C3%AFcode+tag@ex%C3%A4mple.com",
-        "pathSegments": [
-          "customer",
-          "email",
-          "Ünïcode+tag@exämple.com"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "GET"
-      }
-    },
-    {
-      "args": {
         "id": "evt_a/b"
       },
       "method": "webhooks.events.get",
-      "name": "path: event id",
+      "name": "path: event id with a slash",
+      "note": "a / inside a segment is escaped, never a separator",
       "request": {
         "body": null,
         "headers": {
@@ -2206,6 +2115,209 @@
     },
     {
       "args": {
+        "id": "evt_x?y#z%25+1"
+      },
+      "method": "webhooks.events.get",
+      "name": "path: event id with ? # % +",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/events/evt_x%3Fy%23z%2525+1",
+        "pathSegments": [
+          "webhooks",
+          "events",
+          "evt_x?y#z%25+1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "id": "..."
+      },
+      "method": "webhooks.events.get",
+      "name": "path: event id of three dots",
+      "note": "an ordinary value; only exactly . and .. are refused (validation.json)",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/events/%2E%2E%2E",
+        "pathSegments": [
+          "webhooks",
+          "events",
+          "..."
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "uuid": "01a0f22f-9600-7000-8000-000000000008"
+      },
+      "method": "payments.get",
+      "name": "path: bare uuid on a tx id route",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/payments/01a0f22f-9600-7000-8000-000000000008",
+        "pathSegments": [
+          "payments",
+          "01a0f22f-9600-7000-8000-000000000008"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "uuid": "release@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "method": "checkoutSessions.get",
+      "name": "path: release@ id",
+      "note": "every documented prefix passes the tx id check (the API answers 404 for a wrong kind)",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/release@01a0f22f-9600-7000-8000-000000000008",
+        "pathSegments": [
+          "checkout-sessions",
+          "release@01a0f22f-9600-7000-8000-000000000008"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "reference": "Ref.A_z:0@9-x"
+      },
+      "method": "products.getByReference",
+      "name": "query: getByReference with every reference character",
+      "note": "a getByReference is the list's ?reference= filter: query-encoded, never a path segment",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [
+          [
+            "reference",
+            "Ref.A_z:0@9-x"
+          ]
+        ],
+        "rawQuery": "reference=Ref.A_z%3A0%409-x",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "reference": ".."
+      },
+      "method": "subscriptions.getByReference",
+      "name": "query: getByReference of two dots",
+      "note": "\"..\" matches the reference rule and is harmless in a query",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions",
+        "pathSegments": [
+          "subscriptions"
+        ],
+        "query": [
+          [
+            "reference",
+            ".."
+          ]
+        ],
+        "rawQuery": "reference=..",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "email": "Ünïcode+tag@exämple.com"
+        }
+      },
+      "method": "customers.list",
+      "name": "query: email filter with + and non-ASCII",
+      "note": "the + is %2B in the raw query",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers",
+        "pathSegments": [
+          "customers"
+        ],
+        "query": [
+          [
+            "email",
+            "Ünïcode+tag@exämple.com"
+          ]
+        ],
+        "rawQuery": "email=%C3%9Cn%C3%AFcode%2Btag%40ex%C3%A4mple.com",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
         "params": {
           "createdAfter": "2026-09-01T08:00:00.123456+02:00",
           "createdBefore": "2026-09-30T23:59:59-05:30",
@@ -2224,9 +2336,8 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscriptions",
+        "path": "/subscriptions",
         "pathSegments": [
-          "transaction",
           "subscriptions"
         ],
         "query": [
@@ -2265,10 +2376,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/customer/all",
+        "path": "/customers",
         "pathSegments": [
-          "customer",
-          "all"
+          "customers"
         ],
         "query": [
           [
@@ -2298,9 +2408,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product",
+        "path": "/products",
         "pathSegments": [
-          "product"
+          "products"
         ],
         "query": [
           [
@@ -2315,12 +2425,14 @@
     {
       "args": {
         "params": {
-          "held": true,
-          "includeMembers": false
+          "status": [
+            "pending"
+          ]
         }
       },
       "method": "refunds.list",
-      "name": "query: refunds.list ignores paging",
+      "name": "query: refunds.list one status",
+      "note": "pending: the refunds awaiting an answer",
       "request": {
         "body": null,
         "headers": {
@@ -2331,11 +2443,42 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/refunds/all",
+        "path": "/refunds",
         "pathSegments": [
-          "transaction",
-          "refunds",
-          "all"
+          "refunds"
+        ],
+        "query": [
+          [
+            "status",
+            "pending"
+          ]
+        ],
+        "rawQuery": "status=pending",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "held": true,
+          "includeMembers": false
+        }
+      },
+      "method": "refunds.list",
+      "name": "query: refunds.list includeMembers false and held",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/refunds",
+        "pathSegments": [
+          "refunds"
         ],
         "query": [
           [
@@ -2348,6 +2491,122 @@
           ]
         ],
         "rawQuery": "held=true&includeMembers=false",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "limit": 100,
+          "type": "payment"
+        }
+      },
+      "method": "transactions.list",
+      "name": "query: transactions.list type payment",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transactions",
+        "pathSegments": [
+          "transactions"
+        ],
+        "query": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "type",
+            "payment"
+          ]
+        ],
+        "rawQuery": "limit=100&type=payment",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "method": "currencies.list",
+      "name": "query: currencies.list no params",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/currencies",
+        "pathSegments": [
+          "currencies"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "main": true
+        }
+      },
+      "method": "currencies.list",
+      "name": "query: currencies.list main only",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/currencies",
+        "pathSegments": [
+          "currencies"
+        ],
+        "query": [
+          [
+            "main",
+            "true"
+          ]
+        ],
+        "rawQuery": "main=true",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "method": "webhooks.endpoints.list",
+      "name": "query: endpoints.list no params",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/endpoints",
+        "pathSegments": [
+          "webhooks",
+          "endpoints"
+        ],
+        "query": [],
+        "rawQuery": "",
         "verb": "GET"
       }
     },
@@ -2367,13 +2626,11 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscription/processing/force-cancel/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/cancel",
         "pathSegments": [
-          "transaction",
-          "subscription",
-          "processing",
-          "force-cancel",
-          "sub@01a05cd7-2a00-7000-8000-000000000003"
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "cancel"
         ],
         "query": [],
         "rawQuery": "",
@@ -2399,13 +2656,11 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/subscription/processing/force-cancel/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/cancel",
         "pathSegments": [
-          "transaction",
-          "subscription",
-          "processing",
-          "force-cancel",
-          "sub@01a05cd7-2a00-7000-8000-000000000003"
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "cancel"
         ],
         "query": [
           [
@@ -2431,9 +2686,8 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/payments",
+        "path": "/payments",
         "pathSegments": [
-          "transaction",
           "payments"
         ],
         "query": [],
@@ -2445,15 +2699,17 @@
       "args": {
         "params": {
           "address": "",
+          "lastName": "",
           "phoneNumber": ""
         },
         "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
       },
       "method": "customers.update",
-      "name": "body: update clears phoneNumber and address with empty strings",
+      "name": "body: update clears lastName, phoneNumber and address with empty strings",
       "request": {
         "body": {
           "address": "",
+          "lastName": "",
           "phoneNumber": ""
         },
         "headers": {
@@ -2464,14 +2720,14 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/customer/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
         "pathSegments": [
-          "customer",
+          "customers",
           "01a05cd7-2a00-7d00-8000-0000000000d1"
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
       }
     },
     {
@@ -2491,14 +2747,79 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/customer/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
         "pathSegments": [
-          "customer",
+          "customers",
           "01a05cd7-2a00-7d00-8000-0000000000d1"
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "oldKey": "",
+            "tier": "gold"
+          }
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "method": "customers.update",
+      "name": "body: customer update metadata merge (empty value deletes)",
+      "request": {
+        "body": {
+          "metadata": {
+            "oldKey": "",
+            "tier": "gold"
+          }
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "pathSegments": [
+          "customers",
+          "01a05cd7-2a00-7d00-8000-0000000000d1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.update",
+      "name": "body: subscription update without metadata",
+      "note": "nothing to change: {} is sent",
+      "request": {
+        "body": {},
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
       }
     },
     {
@@ -2522,14 +2843,14 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product/019cadfd-8900-7c00-8000-0000000000c1",
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
         "pathSegments": [
-          "product",
+          "products",
           "019cadfd-8900-7c00-8000-0000000000c1"
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
       }
     },
     {
@@ -2565,14 +2886,14 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product/019cadfd-8900-7c00-8000-0000000000c1",
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
         "pathSegments": [
-          "product",
+          "products",
           "019cadfd-8900-7c00-8000-0000000000c1"
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
       }
     },
     {
@@ -2604,22 +2925,23 @@
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
       }
     },
     {
       "args": {
         "params": {
-          "email": "bob@example.com"
+          "email": "bob@example.com",
+          "holdFunds": false
         }
       },
       "method": "invitations.create",
-      "name": "body: invitation without optional fields (role user always sent)",
+      "name": "body: invitation without optional fields (role user and holdFunds always sent)",
       "request": {
         "body": {
           "email": "bob@example.com",
-          "role": "user",
-          "trustLayer": false
+          "holdFunds": false,
+          "role": "user"
         },
         "headers": {
           "Accept": "application/json",
@@ -2641,15 +2963,15 @@
     {
       "args": {
         "params": {
-          "organizationFeePercent": 0
+          "organizationFeePercent": "0"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
       },
       "method": "members.update",
-      "name": "body: organizationFeePercent 0 is sent",
+      "name": "body: organizationFeePercent \"0\" is sent",
       "request": {
         "body": {
-          "organizationFeePercent": 0
+          "organizationFeePercent": "0"
         },
         "headers": {
           "Accept": "application/json",
@@ -2666,7 +2988,38 @@
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "12.50"
+        }
+      },
+      "method": "products.create",
+      "name": "body: money strings sent verbatim (trailing zeros kept)",
+      "request": {
+        "body": {
+          "name": "Pro plan",
+          "priceUsd": "12.50"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
       }
     },
     {
@@ -2691,11 +3044,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/payment",
+        "path": "/checkout-sessions/payment",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "payment"
         ],
         "query": [],
@@ -2711,14 +3062,14 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 0.75,
+                "amountUsd": "0.75",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
             ],
             "processingFee": true
           },
-          "price": 3.99,
+          "priceUsd": "3.99",
           "productName": "T-shirt",
           "reference": "order-1044",
           "successUrl": "https://shop.example.com/orders/success?uuid={{UUID}}"
@@ -2733,14 +3084,14 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 0.75,
+                "amountUsd": "0.75",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
             ],
             "processingFee": true
           },
-          "price": 3.99,
+          "priceUsd": "3.99",
           "productName": "T-shirt",
           "reference": "order-1044",
           "successUrl": "https://shop.example.com/orders/success?uuid={{UUID}}"
@@ -2753,11 +3104,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/payment",
+        "path": "/checkout-sessions/payment",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "payment"
         ],
         "query": [],
@@ -2771,7 +3120,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 20,
+                "amountUsd": "20",
                 "label": "VAT (20%)"
               }
             ],
@@ -2788,7 +3137,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 20,
+                "amountUsd": "20",
                 "label": "VAT (20%)"
               }
             ],
@@ -2804,11 +3153,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/payment",
+        "path": "/checkout-sessions/payment",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "payment"
         ],
         "query": [],
@@ -2822,11 +3169,11 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 20,
+                "amountUsd": "20",
                 "label": "VAT (20%)"
               },
               {
-                "amountUsd": 4.5,
+                "amountUsd": "4.5",
                 "description": "Express",
                 "label": "Shipping"
               }
@@ -2843,11 +3190,11 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 20,
+                "amountUsd": "20",
                 "label": "VAT (20%)"
               },
               {
-                "amountUsd": 4.5,
+                "amountUsd": "4.5",
                 "description": "Express",
                 "label": "Shipping"
               }
@@ -2863,11 +3210,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/payment",
+        "path": "/checkout-sessions/payment",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "payment"
         ],
         "query": [],
@@ -2902,11 +3247,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/payment",
+        "path": "/checkout-sessions/payment",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "payment"
         ],
         "query": [],
@@ -2937,11 +3280,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/payment",
+        "path": "/checkout-sessions/payment",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "payment"
         ],
         "query": [],
@@ -2955,15 +3296,15 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 0.01,
+                "amountUsd": "0.01",
                 "label": "A"
               },
               {
-                "amountUsd": 19.9,
+                "amountUsd": "19.90",
                 "label": "B"
               },
               {
-                "amountUsd": 1000000,
+                "amountUsd": "1000000",
                 "label": "C"
               }
             ]
@@ -2972,22 +3313,22 @@
         }
       },
       "method": "checkoutSessions.createPayment",
-      "name": "body: fees amountUsd numbers",
-      "note": "a number is sent as a JSON number",
+      "name": "body: fees amountUsd strings",
+      "note": "a money input is always sent as a JSON string, verbatim (never a number)",
       "request": {
         "body": {
           "fees": {
             "items": [
               {
-                "amountUsd": 0.01,
+                "amountUsd": "0.01",
                 "label": "A"
               },
               {
-                "amountUsd": 19.9,
+                "amountUsd": "19.90",
                 "label": "B"
               },
               {
-                "amountUsd": 1000000,
+                "amountUsd": "1000000",
                 "label": "C"
               }
             ]
@@ -3002,11 +3343,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/payment",
+        "path": "/checkout-sessions/payment",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "payment"
         ],
         "query": [],
@@ -3035,11 +3374,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/payment",
+        "path": "/checkout-sessions/payment",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "payment"
         ],
         "query": [],
@@ -3053,7 +3390,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 2,
+                "amountUsd": "2",
                 "description": "French VAT",
                 "label": "VAT (20%)"
               }
@@ -3064,7 +3401,7 @@
             "unit": "months",
             "value": 1
           },
-          "price": 9.99,
+          "priceUsd": "9.99",
           "productName": "Pro"
         }
       },
@@ -3075,7 +3412,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 2,
+                "amountUsd": "2",
                 "description": "French VAT",
                 "label": "VAT (20%)"
               }
@@ -3086,7 +3423,7 @@
             "unit": "months",
             "value": 1
           },
-          "price": 9.99,
+          "priceUsd": "9.99",
           "productName": "Pro"
         },
         "headers": {
@@ -3097,11 +3434,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/subscription",
+        "path": "/checkout-sessions/subscription",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "subscription"
         ],
         "query": [],
@@ -3136,11 +3471,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/subscription",
+        "path": "/checkout-sessions/subscription",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "subscription"
         ],
         "query": [],
@@ -3169,11 +3502,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/session-checkout/new/subscription",
+        "path": "/checkout-sessions/subscription",
         "pathSegments": [
-          "transaction",
-          "session-checkout",
-          "new",
+          "checkout-sessions",
           "subscription"
         ],
         "query": [],
@@ -3187,7 +3518,7 @@
           "txUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
         }
       },
-      "method": "refunds.initiate",
+      "method": "refunds.create",
       "name": "body: refund without refundPercent",
       "request": {
         "body": {
@@ -3201,11 +3532,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/refunds/initiate",
+        "path": "/refunds",
         "pathSegments": [
-          "transaction",
-          "refunds",
-          "initiate"
+          "refunds"
         ],
         "query": [],
         "rawQuery": "",
@@ -3215,16 +3544,22 @@
     {
       "args": {
         "params": {
+          "metadata": {
+            "note": "très bien ☕"
+          },
           "name": "Café ☕ 😀",
-          "price": 0.5
+          "priceUsd": "0.5"
         }
       },
       "method": "products.create",
       "name": "body: non-ASCII strings",
       "request": {
         "body": {
+          "metadata": {
+            "note": "très bien ☕"
+          },
           "name": "Café ☕ 😀",
-          "price": 0.5
+          "priceUsd": "0.5"
         },
         "headers": {
           "Accept": "application/json",
@@ -3234,9 +3569,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product",
+        "path": "/products",
         "pathSegments": [
-          "product"
+          "products"
         ],
         "query": [],
         "rawQuery": "",
@@ -3290,9 +3625,8 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/transaction/payments",
+        "path": "/payments",
         "pathSegments": [
-          "transaction",
           "payments"
         ],
         "query": [],
@@ -3317,9 +3651,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product",
+        "path": "/products",
         "pathSegments": [
-          "product"
+          "products"
         ],
         "query": [],
         "rawQuery": "",
@@ -3348,10 +3682,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product/uuid/019cadfd-8900-7c00-8000-0000000000c1",
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
         "pathSegments": [
-          "product",
-          "uuid",
+          "products",
           "019cadfd-8900-7c00-8000-0000000000c1"
         ],
         "query": [],
@@ -3366,6 +3699,7 @@
       },
       "method": "members.list",
       "name": "options: empty request onBehalfOf forces organization level",
+      "note": "the header is omitted, never sent blank",
       "options": {
         "onBehalfOf": ""
       },
@@ -3431,10 +3765,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/wallet/user",
+        "path": "/wallets",
         "pathSegments": [
-          "wallet",
-          "user"
+          "wallets"
         ],
         "query": [],
         "rawQuery": "",
@@ -3445,7 +3778,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "method": "customers.create",
@@ -3456,7 +3789,7 @@
       "request": {
         "body": {
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         },
         "headers": {
           "Accept": "application/json",
@@ -3466,9 +3799,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/customer",
+        "path": "/customers",
         "pathSegments": [
-          "customer"
+          "customers"
         ],
         "query": [],
         "rawQuery": "",
@@ -3499,14 +3832,14 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product/019cadfd-8900-7c00-8000-0000000000c1",
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
         "pathSegments": [
-          "product",
+          "products",
           "019cadfd-8900-7c00-8000-0000000000c1"
         ],
         "query": [],
         "rawQuery": "",
-        "verb": "PUT"
+        "verb": "PATCH"
       }
     },
     {
@@ -3528,10 +3861,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/product/uuid/019cadfd-8900-7c00-8000-0000000000c1",
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
         "pathSegments": [
-          "product",
-          "uuid",
+          "products",
           "019cadfd-8900-7c00-8000-0000000000c1"
         ],
         "query": [],
@@ -3568,11 +3900,11 @@
     {
       "args": {
         "params": {
-          "refundPercent": 100,
+          "refundPercent": "100",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
-      "method": "refunds.initiate",
+      "method": "refunds.create",
       "name": "options: all three on an idempotent create",
       "options": {
         "idempotencyKey": "refund-01a0f22f-9600-7000-8000-000000000008",
@@ -3581,7 +3913,7 @@
       },
       "request": {
         "body": {
-          "refundPercent": 100,
+          "refundPercent": "100",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         },
         "headers": {
@@ -3592,11 +3924,9 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": "trace-1"
         },
-        "path": "/transaction/refunds/initiate",
+        "path": "/refunds",
         "pathSegments": [
-          "transaction",
-          "refunds",
-          "initiate"
+          "refunds"
         ],
         "query": [],
         "rawQuery": "",

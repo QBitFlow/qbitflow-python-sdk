@@ -7,11 +7,11 @@ type (``PaymentCompletedEvent`` with ``data: PaymentCompleted``, …), or :class
 ``event.type``)::
 
     if isinstance(event, PaymentCompletedEvent):
-        print(event.data.reference, event.data.amount)
+        print(event.data.reference, event.data.amount_usd)
 
 Webhook data never carries what only API reads return (``customer``, ``refund``,
-``refundable``, ``not_refundable_reason``, ``dunning``, ``approval``, ``product_name``): those
-fields are ``None`` on events.
+``refundable``, ``not_refundable_reason``, ``dunning``, ``approval``, a refund's
+``customer_uuid`` and ``product_name``): those fields are ``None`` on events.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from typing import Annotated, Any, List, Literal, Optional, Union
 
 from pydantic import Discriminator, Field, Tag, model_validator
 
-from ._base import ZERO_TIME, Bool, Float, Model, Str, Time, UInt
+from ._base import ZERO_TIME, Bool, Model, Str, Time, UInt
 from ._fields import (
     ActionRequiredT,
     BillingFailureReasonT,
@@ -29,7 +29,7 @@ from ._fields import (
     WebhookPayloadVersionT,
 )
 from .checkout import PaymentSessionData, SubscriptionSessionData
-from .common import TxMetadata
+from .common import TransferSettlement
 from .enums import EventType, TransactionType
 from .payments import Bill, Payment, Transfer
 from .resources import EndpointDelivery, LedgerEntry, Member, Refund
@@ -38,7 +38,6 @@ from .subscriptions import Subscription
 __all__ = [
     # Data
     "PaymentCompleted",
-    "SubscriptionCreated",
     "SubscriptionBilled",
     "SubscriptionStatusChanged",
     "SubscriptionActionRequiredChanged",
@@ -58,8 +57,8 @@ __all__ = [
     "SubscriptionBillingFailedEvent",
     "SubscriptionUpcomingBillEvent",
     "RefundRequestedEvent",
-    "RefundCompletedEvent",
-    "RefundDeniedEvent",
+    "RefundApprovedEvent",
+    "RefundRejectedEvent",
     "MemberJoinedEvent",
     "MemberRemovedEvent",
     "HeldFundsReleasedEvent",
@@ -75,105 +74,126 @@ __all__ = [
 
 
 class PaymentCompleted(Payment):
-    """``payment.completed``'s data: the payment, confirmed."""
+    """``payment.completed``'s data: the payment, confirmed, as ``payments.get`` returns it to
+    its owner (its refund state excepted: API reads only), and its customer page. Fulfil the
+    order: ``uuid`` is the checkout session's ``pay@…``, ``reference`` and ``metadata`` yours."""
 
     #: The payment's page for its customer.
     management_page_link: Optional[Str] = Field(default=None, alias="managementPageLink")
 
 
-class SubscriptionCreated(Subscription):
-    """``subscription.created``'s data (status ``active``, or ``trial``)."""
+class SubscriptionBilled(Model):
+    """``subscription.billed``'s data: the bill paid, and its subscription as the bill leaves it.
+    Access is paid until ``bill.period_end``, unless ``subscription.status`` is ``cancelled`` (a
+    charge that landed just after a cancellation: record it, grant nothing)."""
 
-    management_page_link: Optional[Str] = Field(default=None, alias="managementPageLink")
-
-
-class SubscriptionBilled(Bill):
-    """``subscription.billed``'s data: the paid bill."""
-
-    #: The subscription's merchant reference, if it has one.
-    subscription_reference: Optional[Str] = Field(default=None, alias="subscriptionReference")
-    #: The subscription's status once the bill is paid.
-    subscription_status: SubscriptionStatusT = Field(default="", alias="subscriptionStatus")
+    #: The bill paid (as ``subscriptions.get_bill`` returns it): its currency, settlement, and
+    #: the period it pays, ``period_start`` → ``period_end``.
+    bill: Bill = Field(default_factory=Bill)
+    #: The subscription once the bill is paid: active (stopped, paused or cancelled if that
+    #: happened while the charge was on its way), its next bill, its allowance, its reference
+    #: and its metadata.
+    subscription: Subscription = Field(default_factory=Subscription)
 
 
 class SubscriptionStatusChanged(Subscription):
-    """``subscription.statusChanged``'s data."""
+    """``subscription.statusChanged``'s data: the subscription with its new ``status``, and the
+    one before. Every status change sends it, once."""
 
     #: The status before the change.
     previous_status: SubscriptionStatusT = Field(default="", alias="previousStatus")
-    management_page_link: Optional[Str] = Field(default=None, alias="managementPageLink")
 
 
 class SubscriptionActionRequiredChanged(Subscription):
-    """``subscription.actionRequiredChanged``'s data."""
+    """``subscription.actionRequiredChanged``'s data: the subscription with its new
+    ``action_required`` (``None`` = nothing to do anymore), and the one before. Its
+    ``management_page_link`` is where the customer acts."""
 
     #: What its customer had to do before (``None``: nothing).
     previous_action_required: Optional[ActionRequiredT] = Field(
         default=None, alias="previousActionRequired"
     )
-    management_page_link: Optional[Str] = Field(default=None, alias="managementPageLink")
 
 
 class SubscriptionBillingFailed(Subscription):
-    """``subscription.billingFailed``'s data: a bill attempt failed."""
+    """``subscription.billingFailed``'s data: the subscription as a failed bill attempt leaves
+    it, and the failure. Its ``management_page_link`` is where the customer fixes it. Sent once
+    per failed attempt (pastDue), and once when a bill above the customer's maximum starts
+    waiting for a new one (``maxAmountExceeded``: no attempt spent)."""
 
-    #: insufficientBalance, allowanceExhausted, approvalRevoked, maxAmountExceeded or other.
+    #: What the customer does: insufficientBalance (add funds to the wallet), allowanceExhausted
+    #: (top up the allowance), approvalRevoked (approve the token again), maxAmountExceeded (sign
+    #: a new maximum) or other (the network refused the charge).
     reason: BillingFailureReasonT = ""
-    #: The charge's error code (e.g. ``insufficient_funds``).
+    #: The charge's error code (e.g. ``insufficient_funds``, ``insufficient_allowance``).
     failure_code: Optional[Str] = Field(default=None, alias="failureCode")
-    #: The bill that failed (``sub-hist@…``).
+    #: The bill that failed: the ``sub-hist@…`` its ``subscription.billed`` has once it is paid.
     bill_uuid: Str = Field(default="", alias="billUuid")
-    #: The bill, in USD: a decimal **string** here (a number on ``subscription.upcomingBill``).
+    #: The bill, in USD, a decimal string: its ``price_usd`` plus its ``fees`` lines.
     amount_usd: Str = Field(default="", alias="amountUsd")
-    #: This bill's failed attempts so far, this one included.
+    #: This bill's failed attempts so far, this one included (``maxAmountExceeded`` spends none).
     attempt: UInt = 0
+    #: The attempts left (retried 1, 3, 5 and 7 days after the first failed attempt). 0: this was
+    #: the last; its cancellation follows (``subscription.statusChanged``).
     remaining_attempts: UInt = Field(default=0, alias="remainingAttempts")
-    #: When the bill is tried again at the latest.
+    #: When the bill is tried again at the latest (``maxAmountExceeded``: when it stops waiting
+    #: for a new maximum); ``None`` after the last attempt.
     next_attempt_at: Optional[Time] = Field(default=None, alias="nextAttemptAt")
-    #: The subscription's management page, where its customer fixes it.
-    management_page_link: Optional[Str] = Field(default=None, alias="managementPageLink")
 
 
 class SubscriptionUpcomingBill(Subscription):
-    """``subscription.upcomingBill``'s data: a bill (or a trial's end) is near."""
+    """``subscription.upcomingBill``'s data: a bill (or a trial's end) is near, sent once per
+    bill some days before (3 by default). Remind the customer when ``balance_sufficient`` or
+    ``allowance_sufficient`` is False, or when ``trial_ending``."""
 
     #: When it is billed (for a trial: when the trial ends).
-    billing_date: Time = Field(default=ZERO_TIME, alias="billingDate")
-    #: The bill, in USD: a **number** here (a string on ``subscription.billingFailed``): its
-    #: ``price_usd`` plus its ``fees`` lines.
-    amount_usd: Float = Field(default=0.0, alias="amountUsd")
-    #: True when the trial ends then: the customer must confirm it to be billed.
+    billing_at: Time = Field(default=ZERO_TIME, alias="billingAt")
+    #: What the bill charges, in USD, a decimal string: its ``price_usd`` plus its ``fees``
+    #: lines.
+    amount_usd: Str = Field(default="", alias="amountUsd")
+    #: True when the trial ends then: the customer confirms the subscription (its
+    #: ``management_page_link``) to be billed.
     trial_ending: Bool = Field(default=False, alias="trialEnding")
-    #: Whether the wallet holds the bill; ``None`` for a trial.
+    #: Whether the wallet holds the bill at today's price; ``None`` for a trial, or when it
+    #: couldn't be checked.
     balance_sufficient: Optional[Bool] = Field(default=None, alias="balanceSufficient")
-    #: Whether the remaining allowance covers the bill; ``None`` for a trial.
+    #: Whether the remaining allowance covers the bill; ``None`` for a trial, or without a price.
     allowance_sufficient: Optional[Bool] = Field(default=None, alias="allowanceSufficient")
 
 
 class MemberJoined(Member):
-    """``member.joined``'s data: the member, and the invitation they accepted."""
+    """``member.joined``'s data: the member, in the mode they joined, and the invitation they
+    accepted. Store ``user_uuid`` for ``on_behalf_of``."""
 
-    #: The invitation they accepted (``invitations.create``'s).
+    #: The invitation they accepted (``invitations.create``'s ``uuid``): match the event to it.
     invitation_uuid: Str = Field(default="", alias="invitationUuid")
 
 
 class HeldFundsReleased(Transfer):
     """``heldFunds.released``'s data: the transfer paying a member the funds the organization
-    held for them (``uuid`` is ``transfer@…``), and the lines it settled."""
+    held for them (in the member's space: the envelope's ``user_uuid``), and the lines it
+    settled. ``uuid`` is the transfer's id (``transfer@…``), ``from_`` the organization's wallet,
+    ``to`` the member's; ``amount`` is what the member received, in the currency's units, exact:
+    the sum of the lines' ``owed`` (``amount_usd`` at the release's price)."""
 
     #: True once the recipient received it.
     received: Bool = False
     #: ``heldFundsRelease``.
     type: TransferTypeT = ""
-    tx_metadata: TxMetadata = Field(default_factory=TxMetadata, alias="txMetadata")
-    #: The held-funds lines it settled.
+    #: The transfer's transaction: its block and what it cost its sender.
+    settlement: TransferSettlement = Field(default_factory=TransferSettlement)
+    #: The lines it settled, oldest first: the payments and bills it paid (positive) and the
+    #: refunds of them it took off (negative, type refund), each with what it counted for
+    #: (``owed``, ``owed_min_units``, ``owed_usd``).
     ledgers: List[LedgerEntry] = Field(default_factory=list)
 
 
 class WebhookTest(Model):
     """``webhook.test``'s data (the dashboard's test delivery)."""
 
+    #: The endpoint tested.
     endpoint_uuid: Str = Field(default="", alias="endpointUuid")
+    #: The test's message.
     message: Str = ""
 
 
@@ -207,9 +227,9 @@ class BaseEvent(Model):
 
     #: The event's id (``evt_…``): the same on every retry, deduplicate on it.
     id: Str = ""
-    #: The payload version (``v2``).
+    #: The payload version: ``v2``, the only one.
     version: WebhookPayloadVersionT = ""
-    #: When it happened.
+    #: When it happened (at most millisecond precision).
     created_at: Time = Field(default=ZERO_TIME, alias="createdAt")
     #: True when it happened in test mode.
     test: Bool = False
@@ -225,14 +245,16 @@ class PaymentCompletedEvent(BaseEvent):
 
 
 class SubscriptionCreatedEvent(BaseEvent):
-    """``subscription.created``: a subscription started (paid, or in trial)."""
+    """``subscription.created``: a subscription started (status ``active``, or ``trial``). Its
+    data is the subscription, as ``subscriptions.get`` returns it, its ``management_page_link``
+    included: grant access until ``current_period_end``."""
 
     type: Literal["subscription.created"] = "subscription.created"
-    data: SubscriptionCreated = Field(default_factory=SubscriptionCreated)
+    data: Subscription = Field(default_factory=Subscription)
 
 
 class SubscriptionBilledEvent(BaseEvent):
-    """``subscription.billed``: a bill was paid."""
+    """``subscription.billed``: a bill was paid (``data.bill``, ``data.subscription``)."""
 
     type: Literal["subscription.billed"] = "subscription.billed"
     data: SubscriptionBilled = Field(default_factory=SubscriptionBilled)
@@ -269,23 +291,27 @@ class SubscriptionUpcomingBillEvent(BaseEvent):
 
 
 class RefundRequestedEvent(BaseEvent):
-    """``refund.requested``: a pending refund."""
+    """``refund.requested``: a new pending refund, a customer's request (``initiated_by``
+    ``customer``) or a merchant's own (``refunds.create``)."""
 
     type: Literal["refund.requested"] = "refund.requested"
     data: Refund = Field(default_factory=Refund)
 
 
-class RefundCompletedEvent(BaseEvent):
-    """``refund.completed``: an approved refund was sent."""
+class RefundApprovedEvent(BaseEvent):
+    """``refund.approved`` (was ``refund.completed``): the refund, approved, its transfer
+    confirmed (``tx_hash``, ``settlement.transaction``); ``refund_percent`` and ``amount`` are the
+    share actually paid back. Reverse the order, in full or in part."""
 
-    type: Literal["refund.completed"] = "refund.completed"
+    type: Literal["refund.approved"] = "refund.approved"
     data: Refund = Field(default_factory=Refund)
 
 
-class RefundDeniedEvent(BaseEvent):
-    """``refund.denied``: a refund was rejected."""
+class RefundRejectedEvent(BaseEvent):
+    """``refund.rejected`` (was ``refund.denied``): a customer's request rejected by whoever
+    decides it. A decision, final."""
 
-    type: Literal["refund.denied"] = "refund.denied"
+    type: Literal["refund.rejected"] = "refund.rejected"
     data: Refund = Field(default_factory=Refund)
 
 
@@ -342,8 +368,8 @@ _EVENT_CLASSES = {
         SubscriptionBillingFailedEvent,
         SubscriptionUpcomingBillEvent,
         RefundRequestedEvent,
-        RefundCompletedEvent,
-        RefundDeniedEvent,
+        RefundApprovedEvent,
+        RefundRejectedEvent,
         MemberJoinedEvent,
         MemberRemovedEvent,
         HeldFundsReleasedEvent,
@@ -375,8 +401,8 @@ Event = Annotated[
         Annotated[SubscriptionBillingFailedEvent, Tag("subscription.billingFailed")],
         Annotated[SubscriptionUpcomingBillEvent, Tag("subscription.upcomingBill")],
         Annotated[RefundRequestedEvent, Tag("refund.requested")],
-        Annotated[RefundCompletedEvent, Tag("refund.completed")],
-        Annotated[RefundDeniedEvent, Tag("refund.denied")],
+        Annotated[RefundApprovedEvent, Tag("refund.approved")],
+        Annotated[RefundRejectedEvent, Tag("refund.rejected")],
         Annotated[MemberJoinedEvent, Tag("member.joined")],
         Annotated[MemberRemovedEvent, Tag("member.removed")],
         Annotated[HeldFundsReleasedEvent, Tag("heldFunds.released")],

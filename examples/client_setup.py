@@ -38,7 +38,8 @@ def main() -> None:
     if not os.environ.get("QBITFLOW_BASE_URL"):
         client_init().close()
     with config_from_env() as client:
-        print("from the environment:", client.me().role)
+        me = client.me()
+        print("from the environment:", me.role, "on behalf of", me.on_behalf_of_user_uuid)
 
 
 if __name__ == "__main__":

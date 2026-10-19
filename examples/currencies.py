@@ -10,10 +10,11 @@ import qbitflow
 
 def list_currencies(client: qbitflow.QBitFlow) -> None:
     # docs:start currencies-list
-    # A public route limited to 60 requests a minute: cache the list at start-up.
-    currencies = client.currencies.list_available()
+    # A public route limited to 60 requests a minute: cache the list at start-up. One bounded
+    # list: the live currencies; test=True the test networks'; main=True the native coins only.
+    currencies = client.currencies.list()
     for currency in currencies:
-        print(currency.id, currency.symbol, currency.name, currency.decimals)
+        print(currency.id, currency.code, currency.name, currency.chain, currency.decimals)
     # docs:end currencies-list
 
 

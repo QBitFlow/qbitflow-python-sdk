@@ -3,7 +3,6 @@ server and checks which fields fail (or that the request is sent)."""
 
 from __future__ import annotations
 
-import math
 from decimal import Decimal
 from typing import Any, Callable, List, Tuple
 
@@ -16,11 +15,13 @@ from qbitflow import (
     DurationUnit,
     EventType,
     FeeItem,
+    NotFoundError,
     QBitFlow,
+    RefundStatus,
     ServerError,
     SubscriptionTermsParams,
+    TransactionKind,
     ValidationError,
-    WebhookPayloadVersion,
 )
 from qbitflow._validation import (
     Validator,
@@ -50,8 +51,8 @@ def fields(call: Callable[[], Any]) -> List[str]:
         for f in exc.field_errors:
             assert f.message.startswith(f.field + " "), f
         return [f.field for f in exc.field_errors]
-    except ServerError:
-        pass  # sent; the stub's {} may not fit the answer
+    except (ServerError, NotFoundError):
+        pass  # sent; the stub's {} may not fit the answer (an empty page for get_by_reference)
     return []
 
 
@@ -92,39 +93,47 @@ BAD_NAMES = [
 
 @pytest.mark.parametrize("name", GOOD_NAMES)
 def test_name_good(client: QBitFlow, name: str) -> None:
-    assert fields(lambda: client.products.create(name=name, price=1)) == []
+    assert fields(lambda: client.products.create(name=name, price_usd="1")) == []
 
 
 @pytest.mark.parametrize("name", BAD_NAMES)
 def test_name_bad(client: QBitFlow, name: str) -> None:
-    assert fields(lambda: client.products.create(name=name, price=1)) == ["name"]
+    assert fields(lambda: client.products.create(name=name, price_usd="1")) == ["name"]
 
 
-def test_last_name(client: QBitFlow) -> None:
-    assert fields(lambda: client.customers.create(name="Ada", last_name="L", email="a@b.co")) == []
-    assert fields(lambda: client.customers.create(name="Ada", last_name="L\n", email="a@b.co")) == [
-        "lastName"
-    ]
+def test_first_and_last_name(client: QBitFlow) -> None:
+    assert (
+        fields(lambda: client.customers.create(first_name="Ada", last_name="L", email="a@b.co"))
+        == []
+    )
+    assert fields(
+        lambda: client.customers.create(first_name="Ada", last_name="L\n", email="a@b.co")
+    ) == ["lastName"]
+    assert fields(lambda: client.customers.create(first_name="A", email="a@b.co")) == ["firstName"]
+    assert fields(lambda: client.customers.create(first_name=None, email="a@b.co")) == ["firstName"]
+    assert fields(lambda: client.customers.update(MEMBER_UUID, first_name="<x>")) == ["firstName"]
 
 
 @pytest.mark.parametrize(
     "text", ["Two\nlines\r\nand\ttab", "Lifetime access (Pro) & more: 100%", "ok"]
 )
 def test_text_good(client: QBitFlow, text: str) -> None:
-    assert fields(lambda: client.products.create(name="Pro", price=1, description=text)) == []
+    assert fields(lambda: client.products.create(name="Pro", price_usd="1", description=text)) == []
 
 
 @pytest.mark.parametrize("text", ["   ", "\n\n", "<script>", "x\x07bell", "x" * 501, "a"])
 def test_text_bad(client: QBitFlow, text: str) -> None:
-    assert fields(lambda: client.products.create(name="Pro", price=1, description=text)) == [
+    assert fields(lambda: client.products.create(name="Pro", price_usd="1", description=text)) == [
         "description"
     ]
 
 
 def test_text_bounds(client: QBitFlow) -> None:
-    assert fields(lambda: client.customers.create(name="Ada", email="a@b.co", address="x")) == []
+    assert (
+        fields(lambda: client.customers.create(first_name="Ada", email="a@b.co", address="x")) == []
+    )
     assert fields(
-        lambda: client.customers.create(name="Ada", email="a@b.co", address="x" * 501)
+        lambda: client.customers.create(first_name="Ada", email="a@b.co", address="x" * 501)
     ) == ["address"]
     assert fields(
         lambda: client.webhooks.endpoints.create(url="https://x.io", description="x" * 201)
@@ -132,27 +141,30 @@ def test_text_bounds(client: QBitFlow) -> None:
     tx = "pay@" + MEMBER_UUID
     assert (
         fields(
-            lambda: client.refunds.initiate(
+            lambda: client.refunds.create(
                 tx_uuid=tx, reason="Broken, can you refund?", merchant_message="Sorry\nTeam"
             )
         )
         == []
     )
     assert fields(
-        lambda: client.refunds.initiate(tx_uuid=tx, reason="{x}", merchant_message="m" * 501)
+        lambda: client.refunds.create(tx_uuid=tx, reason="{x}", merchant_message="m" * 501)
     ) == ["reason", "merchantMessage"]
 
 
 @pytest.mark.parametrize("ref", ["order-1042", "INV_2026.10:01@shop", "a", "r" * 100])
 def test_reference_good(client: QBitFlow, ref: str) -> None:
-    assert fields(lambda: client.customers.create(name="Ada", email="a@b.co", reference=ref)) == []
+    assert (
+        fields(lambda: client.customers.create(first_name="Ada", email="a@b.co", reference=ref))
+        == []
+    )
 
 
 @pytest.mark.parametrize("ref", ["has space", "slash/x", "é", "#1", "r" * 101])
 def test_reference_bad(client: QBitFlow, ref: str) -> None:
-    assert fields(lambda: client.customers.create(name="Ada", email="a@b.co", reference=ref)) == [
-        "reference"
-    ]
+    assert fields(
+        lambda: client.customers.create(first_name="Ada", email="a@b.co", reference=ref)
+    ) == ["reference"]
 
 
 def test_reference_session_and_filter(client: QBitFlow) -> None:
@@ -162,7 +174,33 @@ def test_reference_session_and_filter(client: QBitFlow) -> None:
         )
     )
     assert got == ["reference", "productReference", "customerReference"]
-    assert fields(lambda: client.subscriptions.list(reference="bad ref")) == ["reference"]
+    for lister in (
+        client.subscriptions.list,
+        client.products.list,
+        client.customers.list,
+        client.payments.list,
+    ):
+        assert fields(lambda: lister(reference="bad ref")) == ["reference"]
+        assert fields(lambda: lister(reference="crm:42@shop.v1")) == []
+
+
+@pytest.mark.parametrize(
+    "lookup", ["products", "customers", "payments", "subscriptions"], ids=lambda n: n
+)
+@pytest.mark.parametrize("ref", ["bad ref", "", " ", "r" * 101, "a/b", None, 42], ids=repr)
+def test_get_by_reference_checks_the_reference(lookup: str, ref: Any) -> None:
+    client, server, _ = make_client(static(200, '{"items":[],"hasMore":false}'))
+    service = getattr(client, lookup)
+    assert fields(lambda: service.get_by_reference(ref)) == ["reference"]
+    assert server.requests == []
+
+
+@pytest.mark.parametrize("ref", [".", "..", "...", "r" * 100, "INV_2026.10:01@shop"])
+def test_get_by_reference_valid_references_are_sent(ref: str) -> None:
+    client, server, _ = make_client(static(200, '{"items":[],"hasMore":false}'))
+    with pytest.raises(NotFoundError):
+        client.products.get_by_reference(ref)
+    assert len(server.requests) == 1 and server.requests[0].path == "/products"
 
 
 @pytest.mark.parametrize(
@@ -170,7 +208,9 @@ def test_reference_session_and_filter(client: QBitFlow) -> None:
 )
 def test_phone_good(client: QBitFlow, phone: str) -> None:
     assert (
-        fields(lambda: client.customers.create(name="Ada", email="a@b.co", phone_number=phone))
+        fields(
+            lambda: client.customers.create(first_name="Ada", email="a@b.co", phone_number=phone)
+        )
         == []
     )
 
@@ -180,13 +220,13 @@ def test_phone_good(client: QBitFlow, phone: str) -> None:
 )
 def test_phone_bad(client: QBitFlow, phone: str) -> None:
     assert fields(
-        lambda: client.customers.create(name="Ada", email="a@b.co", phone_number=phone)
+        lambda: client.customers.create(first_name="Ada", email="a@b.co", phone_number=phone)
     ) == ["phoneNumber"]
 
 
 @pytest.mark.parametrize("email", ["a@b.co", "First.Last+tag@Example.COM", "x@sub.domain.io"])
 def test_email_good(client: QBitFlow, email: str) -> None:
-    assert fields(lambda: client.customers.create(name="Ada", email=email)) == []
+    assert fields(lambda: client.customers.create(first_name="Ada", email=email)) == []
 
 
 @pytest.mark.parametrize(
@@ -204,12 +244,13 @@ def test_email_good(client: QBitFlow, email: str) -> None:
     ],
 )
 def test_email_bad(client: QBitFlow, email: str) -> None:
-    assert fields(lambda: client.customers.create(name="Ada", email=email)) == ["email"]
+    assert fields(lambda: client.customers.create(first_name="Ada", email=email)) == ["email"]
 
 
 def test_email_elsewhere(client: QBitFlow) -> None:
-    assert fields(lambda: client.customers.create(name="Ada", email=None)) == ["email"]
-    assert fields(lambda: client.invitations.create(email="nope")) == ["email"]
+    assert fields(lambda: client.customers.create(first_name="Ada", email=None)) == ["email"]
+    assert fields(lambda: client.customers.update(MEMBER_UUID, email="nope")) == ["email"]
+    assert fields(lambda: client.invitations.create(email="nope", hold_funds=True)) == ["email"]
     assert fields(lambda: client.customers.list(email="nope")) == ["email"]
 
 
@@ -250,54 +291,271 @@ def test_url_bad(client: QBitFlow, url: str) -> None:
 
 
 def test_url_elsewhere(client: QBitFlow) -> None:
-    assert fields(lambda: client.invitations.create(email="a@b.co", redirect_url="nope")) == [
-        "redirectUrl"
-    ]
+    assert fields(
+        lambda: client.invitations.create(email="a@b.co", hold_funds=True, redirect_url="nope")
+    ) == ["redirectUrl"]
     assert fields(lambda: client.webhooks.endpoints.create(url="")) == ["url"]
     assert fields(lambda: client.webhooks.endpoints.update(MEMBER_UUID, url="x")) == ["url"]
 
 
-@pytest.mark.parametrize("price", [0.01, 5, 1e6])
-def test_price_good(client: QBitFlow, price: float) -> None:
-    assert fields(lambda: client.products.create(name="Pro", price=price)) == []
+# ── Money: decimal strings (or Decimal), never float/int ─────────────────────
+
+GOOD_PRICES: List[Any] = [
+    "0.01",
+    "5",
+    "9.99",
+    "12.50",
+    "007.5",
+    "1000000",
+    "1000000.00",
+    Decimal("9.99"),
+    Decimal("1000000"),
+]
+BAD_PRICES: List[Any] = [
+    "0",
+    "0.00",
+    "-1",
+    "+1",
+    "1e2",
+    "1E2",
+    ".5",
+    "5.",
+    "1.999",
+    "1,5",
+    " 9.99",
+    "9.99 ",
+    "1000000.01",
+    "1000001",
+    "NaN",
+    "Infinity",
+    "٤",
+    "abc",
+    Decimal("1E+2"),
+    Decimal("4.990"),
+    Decimal("-1"),
+    Decimal("NaN"),
+    9.99,
+    10,
+    0.1,
+    True,
+    [1],
+]
 
 
-@pytest.mark.parametrize("price", [0, -1, math.nan, math.inf, "5", True, None])
+@pytest.mark.parametrize("price", GOOD_PRICES, ids=repr)
+def test_price_good(client: QBitFlow, price: Any) -> None:
+    assert fields(lambda: client.products.create(name="Pro", price_usd=price)) == []
+
+
+@pytest.mark.parametrize("price", BAD_PRICES + [None, "", "  "], ids=repr)
 def test_price_bad(client: QBitFlow, price: Any) -> None:
-    assert fields(lambda: client.products.create(name="Pro", price=price)) == ["price"]
+    assert fields(lambda: client.products.create(name="Pro", price_usd=price)) == ["priceUsd"]
+
+
+def test_money_messages(client: QBitFlow) -> None:
+    with pytest.raises(ValidationError) as info:
+        client.products.create(name="Pro", price_usd=9.99)
+    assert info.value.field_errors[0].message == (
+        'priceUsd must be a decimal string (e.g. "12.50") or a decimal.Decimal, not a number '
+        "(money is never a float or an int: a float cannot carry 0.1)"
+    )
+    with pytest.raises(ValidationError) as info:
+        client.products.create(name="Pro", price_usd=[1])
+    assert info.value.field_errors[0].message.endswith("not a list")
+    with pytest.raises(ValidationError) as info:
+        client.products.create(name="Pro", price_usd="1e2")
+    assert info.value.field_errors[0].message == (
+        'priceUsd must be an amount in USD as a decimal string (e.g. "12.50"): above 0, at most '
+        "1000000, with at most 2 decimals"
+    )
+    with pytest.raises(ValidationError) as info:
+        client.products.create(name="Pro", price_usd=None)
+    assert info.value.field_errors[0].message == "priceUsd is required"
 
 
 def test_price_update(client: QBitFlow) -> None:
-    assert fields(lambda: client.products.update(MEMBER_UUID, price=0.0)) == ["price"]
+    assert fields(lambda: client.products.update(MEMBER_UUID, price_usd="0")) == ["priceUsd"]
+    assert fields(lambda: client.products.update(MEMBER_UUID, price_usd=0.0)) == ["priceUsd"]
+    assert fields(lambda: client.products.update(MEMBER_UUID, price_usd=12)) == ["priceUsd"]
+    assert fields(lambda: client.products.update(MEMBER_UUID, price_usd="")) == []  # unchanged
+    assert fields(lambda: client.products.update(MEMBER_UUID, price_usd=Decimal("12.5"))) == []
     assert fields(lambda: client.products.update(MEMBER_UUID)) == []
 
 
-@pytest.mark.parametrize("pct", [0.01, 1.5, 33.33, 100])
-def test_refund_percent_good(client: QBitFlow, pct: float) -> None:
-    assert fields(lambda: client.refunds.initiate(tx_uuid=MEMBER_UUID, refund_percent=pct)) == []
+@pytest.mark.parametrize(
+    "pct",
+    ["0.01", "1.5", "33.33", "100", "100.00", "0000000000000050", Decimal("50"), Decimal("0.5")],
+    ids=repr,
+)
+def test_refund_percent_good(client: QBitFlow, pct: Any) -> None:
+    assert fields(lambda: client.refunds.create(tx_uuid=MEMBER_UUID, refund_percent=pct)) == []
 
 
-@pytest.mark.parametrize("pct", [0, -1, 100.01, 1.155, 0.1 + 0.2, math.nan, math.inf])
-def test_refund_percent_bad(client: QBitFlow, pct: float) -> None:
-    assert fields(lambda: client.refunds.initiate(tx_uuid=MEMBER_UUID, refund_percent=pct)) == [
+@pytest.mark.parametrize(
+    "pct",
+    [
+        "0",
+        "0.00",
+        "-1",
+        "100.01",
+        "101",
+        "1.155",
+        "1e2",
+        ".5",
+        "00000000000000050",  # 17 characters: over the 16 a percentage may have
+        Decimal("0"),
+        Decimal("1E+1"),
+        50,
+        0.5,
+        0.1 + 0.2,
+        True,
+    ],
+    ids=repr,
+)
+def test_refund_percent_bad(client: QBitFlow, pct: Any) -> None:
+    assert fields(lambda: client.refunds.create(tx_uuid=MEMBER_UUID, refund_percent=pct)) == [
         "refundPercent"
     ]
 
 
-@pytest.mark.parametrize("pct", [0, 0.05, 1.5, 50])
-def test_fee_good(client: QBitFlow, pct: float) -> None:
+def test_refund_percent_unset(client: QBitFlow) -> None:
+    assert fields(lambda: client.refunds.create(tx_uuid=MEMBER_UUID, refund_percent=None)) == []
+    assert fields(lambda: client.refunds.create(tx_uuid=MEMBER_UUID, refund_percent="")) == []
+
+
+@pytest.mark.parametrize(
+    "pct", ["0", "0.00", "0.05", "1.5", "50", "50.00", Decimal("7.5")], ids=repr
+)
+def test_fee_good(client: QBitFlow, pct: Any) -> None:
     assert fields(lambda: client.members.update(MEMBER_UUID, organization_fee_percent=pct)) == []
     assert (
-        fields(lambda: client.invitations.create(email="a@b.co", organization_fee_percent=pct))
+        fields(
+            lambda: client.invitations.create(
+                email="a@b.co", hold_funds=False, organization_fee_percent=pct
+            )
+        )
         == []
     )
 
 
-@pytest.mark.parametrize("pct", [-0.01, 50.01, 1.234])
-def test_fee_bad(client: QBitFlow, pct: float) -> None:
+@pytest.mark.parametrize(
+    "pct", ["-0.01", "50.01", "51", "1.234", "x", 5, 0.0, Decimal("-1")], ids=repr
+)
+def test_fee_bad(client: QBitFlow, pct: Any) -> None:
     assert fields(lambda: client.members.update(MEMBER_UUID, organization_fee_percent=pct)) == [
         "organizationFeePercent"
     ]
+    assert fields(
+        lambda: client.invitations.create(
+            email="a@b.co", hold_funds=False, organization_fee_percent=pct
+        )
+    ) == ["organizationFeePercent"]
+
+
+def test_fee_required_on_member_update(client: QBitFlow) -> None:
+    for missing in (None, "", " "):
+        assert fields(
+            lambda: client.members.update(MEMBER_UUID, organization_fee_percent=missing)
+        ) == ["organizationFeePercent"]
+
+
+# ── Metadata ─────────────────────────────────────────────────────────────────
+
+
+def meta_fields(client: QBitFlow, metadata: Any) -> List[str]:
+    return fields(lambda: client.products.create(name="Pro", price_usd="1", metadata=metadata))
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        None,
+        {},
+        {"sku": "PRO-M"},
+        {"crm:id": "C-1", "a.b_c-d": "x", "K" * 40: "v"},
+        {"empty": ""},
+        {"note": "é" * 500},
+        {"note": "Zoë & Co (2026) <b>"},  # values have no character rule but controls and bidi
+        {f"k{i}": "v" for i in range(50)},
+    ],
+    ids=repr,
+)
+def test_metadata_good(client: QBitFlow, metadata: Any) -> None:
+    assert meta_fields(client, metadata) == []
+
+
+@pytest.mark.parametrize(
+    "metadata, want",
+    [
+        ({f"k{i}": "v" for i in range(51)}, ["metadata"]),
+        ({"a b": "x"}, ["metadata"]),
+        ({"": "x"}, ["metadata"]),
+        ({"K" * 41: "x"}, ["metadata"]),
+        ({"é": "x"}, ["metadata"]),
+        ({"k/1": "x"}, ["metadata"]),
+        ({5: "x"}, ["metadata"]),
+        ({"note": "é" * 501}, ["metadata.note"]),
+        ({"note": "a\tb"}, ["metadata.note"]),
+        ({"note": "line\nbreak"}, ["metadata.note"]),
+        ({"note": "nul\x00"}, ["metadata.note"]),
+        ({"note": "bidi\u202ex"}, ["metadata.note"]),
+        ({"note": "iso\u2066x"}, ["metadata.note"]),
+        ({"note": 5}, ["metadata.note"]),
+        ({"note": None}, ["metadata.note"]),
+        (["sku"], ["metadata"]),
+        ("sku=1", ["metadata"]),
+        # Sorted by key; the bad keys are reported once, last.
+        ({"z": "\x07", "bad key": "x", "a": "\u202a"}, ["metadata.a", "metadata.z", "metadata"]),
+    ],
+    ids=repr,
+)
+def test_metadata_bad(client: QBitFlow, metadata: Any, want: List[str]) -> None:
+    assert meta_fields(client, metadata) == want
+
+
+def test_metadata_bad_key_not_echoed(client: QBitFlow) -> None:
+    with pytest.raises(ValidationError) as info:
+        client.products.create(name="Pro", price_usd="1", metadata={"secret key!": "x"})
+    message = info.value.field_errors[0].message
+    assert "secret key!" not in message and "secret key!" not in str(info.value)
+    assert message == "metadata keys must be 1 to 40 characters among A-Z a-z 0-9 _ - . :"
+
+
+def test_metadata_everywhere(client: QBitFlow) -> None:
+    bad = {"bad key": "x"}
+    assert fields(
+        lambda: client.customers.create(first_name="Ada", email="a@b.co", metadata=bad)
+    ) == ["metadata"]
+    assert fields(
+        lambda: client.checkout_sessions.create_payment(product_uuid=MEMBER_UUID, metadata=bad)
+    ) == ["metadata"]
+    assert fields(
+        lambda: client.checkout_sessions.create_subscription(product_uuid=MEMBER_UUID, metadata=bad)
+    ) == ["metadata"]
+    assert fields(lambda: client.products.update(MEMBER_UUID, metadata=bad)) == ["metadata"]
+    assert fields(lambda: client.customers.update(MEMBER_UUID, metadata=bad)) == ["metadata"]
+    assert fields(lambda: client.subscriptions.update("sub@" + MEMBER_UUID, metadata=bad)) == [
+        "metadata"
+    ]
+    # An update's map is checked alone: deleting keys with "" is fine.
+    assert fields(lambda: client.subscriptions.update(MEMBER_UUID, metadata={"old": ""})) == []
+    assert fields(lambda: client.subscriptions.update(MEMBER_UUID)) == []
+
+
+# ── Cursors and ids ──────────────────────────────────────────────────────────
+
+
+def test_cursor(client: QBitFlow) -> None:
+    assert fields(lambda: client.customers.list(cursor="c" * 200)) == []
+    assert fields(lambda: client.customers.list(cursor="djF8MDFh")) == []
+    assert fields(lambda: client.customers.list(cursor="c" * 201)) == ["cursor"]
+    assert fields(lambda: client.customers.list(cursor=5)) == ["cursor"]
+    assert fields(lambda: client.webhooks.events.list(cursor="e" * 201)) == ["cursor"]
+    assert fields(lambda: client.products.list(cursor="p" * 201)) == ["cursor"]
+    assert fields(lambda: client.subscriptions.list_bills(MEMBER_UUID, cursor="b" * 201)) == [
+        "cursor"
+    ]
+    assert fields(lambda: client.webhooks.endpoints.list(cursor="e" * 201)) == ["cursor"]
 
 
 MONTH = Duration(value=1, unit=DurationUnit.MONTHS)
@@ -379,7 +637,10 @@ DURATION_CASES: List[Tuple[str, SubscriptionTermsParams, List[str]]] = [
 def test_duration(
     client: QBitFlow, name: str, terms: SubscriptionTermsParams, want: List[str]
 ) -> None:
-    assert fields(lambda: client.products.create(name="Pro", price=1, subscription=terms)) == want
+    assert (
+        fields(lambda: client.products.create(name="Pro", price_usd="1", subscription=terms))
+        == want
+    )
 
 
 def test_duration_on_sessions_and_updates(client: QBitFlow) -> None:
@@ -401,26 +662,35 @@ def test_duration_on_sessions_and_updates(client: QBitFlow) -> None:
         == []
     )
     assert fields(
-        lambda: client.products.create(name="Pro", price=1, subscription={"frequency": MONTH})
+        lambda: client.products.create(name="Pro", price_usd="1", subscription={"frequency": MONTH})
     ) == ["subscription"]
 
 
 SESSION_CASES: List[Tuple[str, dict, List[str]]] = [
     ("by uuid", {"product_uuid": MEMBER_UUID}, []),
     ("by reference", {"product_reference": "pro-plan"}, []),
-    ("inline", {"product_name": "Pro", "price": 10}, []),
-    ("inline + description", {"product_name": "Pro", "price": 10, "description": "Lifetime"}, []),
+    ("inline", {"product_name": "Pro", "price_usd": "10"}, []),
+    ("inline Decimal", {"product_name": "Pro", "price_usd": Decimal("4.99")}, []),
+    (
+        "inline + description",
+        {"product_name": "Pro", "price_usd": "10", "description": "Lifetime"},
+        [],
+    ),
     ("nothing", {}, ["productUuid"]),
     ("uuid + reference", {"product_uuid": MEMBER_UUID, "product_reference": "x"}, ["productUuid"]),
     (
         "uuid + inline",
-        {"product_uuid": MEMBER_UUID, "product_name": "Pro", "price": 1},
+        {"product_uuid": MEMBER_UUID, "product_name": "Pro", "price_usd": "1"},
         ["productUuid"],
     ),
+    ("uuid + price", {"product_uuid": MEMBER_UUID, "price_usd": "1"}, ["productUuid"]),
     ("uuid + description", {"product_uuid": MEMBER_UUID, "description": "x y"}, ["productUuid"]),
-    ("inline without price", {"product_name": "Pro"}, ["price"]),
-    ("inline without name", {"price": 3}, ["productName"]),
-    ("inline negative price", {"product_name": "Pro", "price": -3}, ["price"]),
+    ("inline without price", {"product_name": "Pro"}, ["priceUsd"]),
+    ("inline empty price", {"product_name": "Pro", "price_usd": ""}, ["priceUsd"]),
+    ("inline without name", {"price_usd": "3"}, ["productName"]),
+    ("inline negative price", {"product_name": "Pro", "price_usd": "-3"}, ["priceUsd"]),
+    ("inline zero Decimal", {"product_name": "Pro", "price_usd": Decimal("0")}, ["priceUsd"]),
+    ("inline float price", {"product_name": "Pro", "price_usd": 3.5}, ["priceUsd"]),
     ("bad uuid", {"product_uuid": "42"}, ["productUuid"]),
     ("bad customer uuid", {"product_uuid": MEMBER_UUID, "customer_uuid": "x"}, ["customerUuid"]),
     ("expires 10", {"product_uuid": MEMBER_UUID, "expires_in_minutes": 10}, []),
@@ -445,13 +715,15 @@ def test_subscription_session(client: QBitFlow) -> None:
     assert (
         fields(
             lambda: client.checkout_sessions.create_subscription(
-                product_name="Pro", price=9.99, frequency=month
+                product_name="Pro", price_usd="9.99", frequency=month
             )
         )
         == []
     )
     assert fields(
-        lambda: client.checkout_sessions.create_subscription(product_reference="pro", price=9.99)
+        lambda: client.checkout_sessions.create_subscription(
+            product_reference="pro", price_usd="9.99"
+        )
     ) == ["productUuid"]
 
 
@@ -461,27 +733,22 @@ def test_subscription_session(client: QBitFlow) -> None:
 def fee_fields(client: QBitFlow, fees: Any) -> List[str]:
     return fields(
         lambda: client.checkout_sessions.create_payment(
-            product_name="T-shirt", price=3.99, fees=fees
+            product_name="T-shirt", price_usd="3.99", fees=fees
         )
     )
 
 
-def one(label: Any = "Shipping", amount: Any = 0.75, description: Any = None) -> CheckoutFees:
+def one(label: Any = "Shipping", amount: Any = "0.75", description: Any = None) -> CheckoutFees:
     return CheckoutFees(items=[FeeItem(label=label, amount_usd=amount, description=description)])
 
 
 AMOUNT = "fees.items[0].amountUsd"
 GOOD_AMOUNTS: List[Any] = [
-    0.01,
-    0.75,
-    1,
-    19.9,
-    100.0,
-    1000000,
-    1000000.0,
     "0.01",
+    "0.75",
     "4.99",
     "19.9",
+    "100.00",
     "1000000",
     "1000000.00",
     "007.5",
@@ -489,18 +756,10 @@ GOOD_AMOUNTS: List[Any] = [
     Decimal("1000000"),
 ]
 BAD_AMOUNTS: List[Any] = [
-    0,
-    0.0,
-    -1,
-    -0.01,
-    1.999,
-    0.001,
-    1e-7,
-    1000000.01,
-    1000001,
-    math.nan,
-    math.inf,
-    -math.inf,
+    0.01,
+    0.75,
+    1,
+    1000000,
     True,
     None,
     "0",
@@ -543,9 +802,12 @@ def test_fee_amount_message(client: QBitFlow) -> None:
     with pytest.raises(ValidationError) as info:
         client.checkout_sessions.create_payment(product_uuid=MEMBER_UUID, fees=one(amount="1e2"))
     assert info.value.field_errors[0].message == (
-        "fees.items[0].amountUsd must be an amount in USD above 0 and at most 1000000, "
-        "with at most 2 decimals"
+        'fees.items[0].amountUsd must be an amount in USD as a decimal string (e.g. "12.50"): '
+        "above 0, at most 1000000, with at most 2 decimals"
     )
+    with pytest.raises(ValidationError) as info:
+        client.checkout_sessions.create_payment(product_uuid=MEMBER_UUID, fees=one(amount=0.75))
+    assert "not a number" in info.value.field_errors[0].message
 
 
 @pytest.mark.parametrize("label", ["a", "VAT (20%)", "Shipping", "é" * 40, "Zoë & Co"])
@@ -575,9 +837,9 @@ def test_fee_description_bad(client: QBitFlow, description: Any) -> None:
 
 
 def test_fee_items_count(client: QBitFlow) -> None:
-    ten = [FeeItem(f"Line {i}", 1) for i in range(10)]
+    ten = [FeeItem(f"Line {i}", "1") for i in range(10)]
     assert fee_fields(client, CheckoutFees(items=ten)) == []
-    eleven = ten + [FeeItem("Line 10", 1)]
+    eleven = ten + [FeeItem("Line 10", "1")]
     assert fee_fields(client, CheckoutFees(items=eleven)) == ["fees.items"]
     assert fee_fields(client, CheckoutFees(items=[])) == []
 
@@ -585,8 +847,8 @@ def test_fee_items_count(client: QBitFlow) -> None:
 def test_fee_paths_and_types(client: QBitFlow) -> None:
     fees = CheckoutFees(
         items=[
-            FeeItem("Shipping", 0.75),
-            FeeItem("", 0, "<x>"),
+            FeeItem("Shipping", "0.75"),
+            FeeItem("", "0", "<x>"),
             FeeItem("VAT", "1e2"),
         ]
     )
@@ -611,6 +873,19 @@ def test_fee_paths_and_types(client: QBitFlow) -> None:
     assert fee_fields(client, None) == []
 
 
+def test_fees_reported_last(client: QBitFlow) -> None:
+    got = fields(
+        lambda: client.checkout_sessions.create_payment(
+            product_name="Pro",
+            price_usd="0",
+            reference="a b",
+            metadata={"x": "\x00"},
+            fees=one(amount="0"),
+        )
+    )
+    assert got == ["reference", "metadata.x", "priceUsd", AMOUNT]
+
+
 def sub_fee_fields(client: QBitFlow, fees: Any, **kwargs: Any) -> List[str]:
     return fields(
         lambda: client.checkout_sessions.create_subscription(
@@ -620,29 +895,30 @@ def sub_fee_fields(client: QBitFlow, fees: Any, **kwargs: Any) -> List[str]:
 
 
 def test_subscription_fees(client: QBitFlow) -> None:
-    # A subscription checkout's fees follow the same rules, reported with the terms.
-    ten = [FeeItem(f"Line {i}", 1) for i in range(10)]
+    # A subscription checkout's fees follow the same rules, reported after the terms.
+    ten = [FeeItem(f"Line {i}", "1") for i in range(10)]
     assert sub_fee_fields(client, None) == []
     assert sub_fee_fields(client, CheckoutFees(processing_fee=True)) == []
     assert sub_fee_fields(client, CheckoutFees(processing_fee=False, items=ten)) == []
-    eleven = ten + [FeeItem("Line 10", 1)]
+    eleven = ten + [FeeItem("Line 10", "1")]
     assert sub_fee_fields(client, CheckoutFees(items=eleven)) == ["fees.items"]
-    bad = CheckoutFees(items=[FeeItem("a|b", 0.001, " ")])
+    bad = CheckoutFees(items=[FeeItem("a|b", "0.001", " ")])
     assert sub_fee_fields(client, bad) == [
         "fees.items[0].label",
         "fees.items[0].description",
         "fees.items[0].amountUsd",
     ]
     assert sub_fee_fields(
-        client, CheckoutFees(items=[FeeItem("Tax", -1)]), frequency=Duration(value=1)
+        client, CheckoutFees(items=[FeeItem("Tax", "-1")]), frequency=Duration(value=1)
     ) == ["frequency.unit", "fees.items[0].amountUsd"]
 
 
 def test_ids() -> None:
+    prefixes = ("pay", "sub", "payg", "sub-hist", "refund", "transfer", "release")
     for good in (
         MEMBER_UUID,
         "019ECA82-5680-7B00-8000-0000000000B1",
-        *(p + "@" + MEMBER_UUID for p in ("pay", "sub", "payg", "sub-hist", "refund", "transfer")),
+        *(p + "@" + MEMBER_UUID for p in prefixes),
     ):
         assert is_tx_id(good), good
     for bad in (
@@ -650,6 +926,7 @@ def test_ids() -> None:
         "pay@",
         "pay@x",
         "evt@" + MEMBER_UUID,
+        "releases@" + MEMBER_UUID,
         "@" + MEMBER_UUID,
         "PAY@" + MEMBER_UUID,
         MEMBER_UUID + "0",
@@ -664,20 +941,28 @@ def test_ids() -> None:
         with pytest.raises(ValidationError):
             check_path_uuid("uuid", bad_uuid)
     check_path_tx_id("uuid", "sub@" + MEMBER_UUID)
+    check_path_tx_id("uuid", "release@" + MEMBER_UUID)
     for bad_tx in ("", "x"):
         with pytest.raises(ValidationError):
             check_path_tx_id("uuid", bad_tx)
-    check_path_required("reference", "a/b")
-    with pytest.raises(ValidationError):
-        check_path_required("reference", " ")
+    check_path_required("id", "evt_a/b")
+    for bad_id in (" ", ".", ".."):
+        with pytest.raises(ValidationError):
+            check_path_required("id", bad_id)
 
 
 def test_tx_id_params(client: QBitFlow) -> None:
-    assert fields(lambda: client.refunds.initiate(tx_uuid=None)) == ["txUuid"]
-    assert fields(lambda: client.refunds.initiate(tx_uuid="order-1")) == ["txUuid"]
+    assert fields(lambda: client.refunds.create(tx_uuid=None)) == ["txUuid"]
+    assert fields(lambda: client.refunds.create(tx_uuid="order-1")) == ["txUuid"]
+    assert fields(lambda: client.refunds.create(tx_uuid="release@" + MEMBER_UUID)) == []
     assert fields(lambda: client.failures.list(subscription_uuid="sub@nope")) == [
         "subscriptionUuid"
     ]
+    assert fields(lambda: client.transactions.list(subscription_uuid="sub@nope")) == [
+        "subscriptionUuid"
+    ]
+    assert fields(lambda: client.refunds.list(tx_uuid="x")) == ["txUuid"]
+    assert fields(lambda: client.refunds.get("refund@nope")) == ["uuid"]
 
 
 def test_filters(client: QBitFlow) -> None:
@@ -688,32 +973,59 @@ def test_filters(client: QBitFlow) -> None:
     assert fields(
         lambda: client.subscriptions.list(customer_uuid="x", product_uuid="y", user_uuid="z")
     ) == ["customerUuid", "productUuid", "userUuid"]
-    assert fields(lambda: client.subscriptions.list(status="hibernating")) == ["status"]
+    # Subscription statuses and event types are not checked: newer values may appear.
+    assert fields(lambda: client.subscriptions.list(status="hibernating")) == []
     assert fields(lambda: client.subscriptions.list(status="cancelled")) == []
-    assert fields(lambda: client.payments.list_combined(source="subscription_history")) == [
-        "source"
-    ]
+    assert fields(lambda: client.webhooks.events.list(type="payment.done")) == []
+    assert fields(lambda: client.webhooks.events.list(type=EventType.WEBHOOK_TEST)) == []
+    # The transactions feed's type is: payment or bill.
+    assert fields(lambda: client.transactions.list(type="bill")) == []
+    assert fields(lambda: client.transactions.list(type=TransactionKind.PAYMENT)) == []
+    assert fields(lambda: client.transactions.list(type="subscriptionHistory")) == ["type"]
+    assert fields(
+        lambda: client.transactions.list(include_members=True, user_uuid=MEMBER_UUID)
+    ) == ["userUuid"]
     assert fields(lambda: client.failures.list(kind="refund", category="boom")) == [
         "kind",
         "category",
     ]
     assert fields(lambda: client.invitations.list(status="open")) == ["status"]
-    assert fields(lambda: client.webhooks.events.list(type="payment.done")) == ["type"]
-    assert fields(lambda: client.webhooks.events.list(type=EventType.WEBHOOK_TEST)) == []
     assert fields(lambda: client.refunds.list(include_members=True, user_uuid=MEMBER_UUID)) == [
         "userUuid"
     ]
     assert fields(lambda: client.refunds.list(include_members=False, user_uuid=MEMBER_UUID)) == []
-    assert fields(lambda: client.wallets.list_supported_currencies(user_uuid="x")) == ["userUuid"]
+    assert fields(lambda: client.wallets.list_accepted_currencies(user_uuid="x")) == ["userUuid"]
     assert fields(lambda: client.customers.list(limit=2.5)) == ["limit"]
     assert fields(lambda: client.customers.list(verified="yes")) == ["verified"]
+    assert fields(lambda: client.products.list(include_hidden="yes")) == ["includeHidden"]
+    assert fields(lambda: client.currencies.list(main="yes")) == ["main"]
+
+
+@pytest.mark.parametrize(
+    "status, want",
+    [
+        (None, []),
+        ([], []),
+        (["pending"], []),
+        ([RefundStatus.CANCELLED, RefundStatus.FAILED], []),
+        (["pending", "approved", "rejected", "cancelled", "failed"], []),
+        (["pending"] * 6, ["status"]),
+        (["pending", "", "nope"], ["status[1]", "status[2]"]),
+        (["completed"], ["status[0]"]),  # the retired refund.completed is no status
+        ([None], ["status[0]"]),
+        ("pending", ["status"]),
+    ],
+    ids=repr,
+)
+def test_refund_status_filter(client: QBitFlow, status: Any, want: List[str]) -> None:
+    assert fields(lambda: client.refunds.list(status=status)) == want
 
 
 @pytest.mark.parametrize(
     "start, end, ok",
     [
         ("2026-06-01", "2026-06-01", True),
-        ("2024-02-29", "2026-12-31", True),  # no window check (the API's)
+        ("2024-02-29", "2026-12-31", True),  # no window check (the API's: 92 days)
         ("2026-06-02", "2026-06-01", False),
         ("2026-13-01", "2026-12-01", False),
         ("2025-02-29", "2025-03-01", False),
@@ -739,12 +1051,12 @@ def test_endpoint_events(client: QBitFlow) -> None:
     assert fields(lambda: client.webhooks.endpoints.create(url="https://x.io", events=twenty)) == []
     assert fields(
         lambda: client.webhooks.endpoints.create(
-            url="https://x.io", events=twenty + ["refund.denied"]
+            url="https://x.io", events=twenty + ["refund.rejected"]
         )
     ) == ["events"]
     assert fields(
         lambda: client.webhooks.endpoints.create(
-            url="https://x.io", events=["refund.denied", "webhook.test"]
+            url="https://x.io", events=["refund.approved", "webhook.test"]
         )
     ) == ["events[1]"]
     assert fields(
@@ -759,12 +1071,25 @@ def test_endpoint_events(client: QBitFlow) -> None:
     assert fields(lambda: client.webhooks.endpoints.create(url="https://x.io", events=[""])) == [
         "events[0]"
     ]
-    assert fields(
-        lambda: client.webhooks.endpoints.update(
-            MEMBER_UUID, payload_version=WebhookPayloadVersion.V1
-        )
-    ) == ["payloadVersion"]
+    assert fields(lambda: client.webhooks.endpoints.update(MEMBER_UUID, payload_version="v1")) == [
+        "payloadVersion"
+    ]
     assert fields(lambda: client.webhooks.endpoints.update(MEMBER_UUID, payload_version="v2")) == []
+
+
+def test_invitation_hold_funds(client: QBitFlow) -> None:
+    assert fields(lambda: client.invitations.create(email="a@b.co", hold_funds=False)) == []
+    assert fields(lambda: client.invitations.create(email="a@b.co", hold_funds=True)) == []
+    assert fields(lambda: client.invitations.create(email="a@b.co", hold_funds=None)) == [
+        "holdFunds"
+    ]
+    assert fields(lambda: client.invitations.create(email="a@b.co", hold_funds="yes")) == [
+        "holdFunds"
+    ]
+    assert fields(lambda: client.invitations.create(email=None, hold_funds=None)) == [
+        "email",
+        "holdFunds",
+    ]
 
 
 def test_headers_rules() -> None:
@@ -778,25 +1103,38 @@ def test_headers_rules() -> None:
         assert not is_request_id(rid)
 
 
+SUB = "sub@" + MEMBER_UUID
 UPDATE_CASES: List[Tuple[str, Callable[[QBitFlow], Any], dict]] = [
     ("customer nothing", lambda c: c.customers.update(MEMBER_UUID), {}),
     (
         "customer clears",
-        lambda c: c.customers.update(MEMBER_UUID, phone_number="", address=""),
-        {"phoneNumber": "", "address": ""},
+        lambda c: c.customers.update(MEMBER_UUID, last_name="", phone_number="", address=""),
+        {"lastName": "", "phoneNumber": "", "address": ""},
     ),
     (
         "customer clears with None",
-        lambda c: c.customers.update(MEMBER_UUID, phone_number=None),
-        {"phoneNumber": ""},
+        lambda c: c.customers.update(MEMBER_UUID, phone_number=None, last_name=None),
+        {"phoneNumber": "", "lastName": ""},
     ),
     ("customer NOT_GIVEN", lambda c: c.customers.update(MEMBER_UUID, phone_number=NOT_GIVEN), {}),
     (
         "customer sets",
-        lambda c: c.customers.update(MEMBER_UUID, name="Ada", phone_number="+33 6 12 34 56 78"),
-        {"name": "Ada", "phoneNumber": "+33 6 12 34 56 78"},
+        lambda c: c.customers.update(
+            MEMBER_UUID, first_name="Ada", last_name="L", phone_number="+33 6 12 34 56 78"
+        ),
+        {"firstName": "Ada", "lastName": "L", "phoneNumber": "+33 6 12 34 56 78"},
     ),
-    ("customer name '' is unchanged", lambda c: c.customers.update(MEMBER_UUID, name=""), {}),
+    (
+        "customer first name '' is unchanged",
+        lambda c: c.customers.update(MEMBER_UUID, first_name=""),
+        {},
+    ),
+    (
+        "customer metadata merge",
+        lambda c: c.customers.update(MEMBER_UUID, metadata={"crm": "C-2", "old": ""}),
+        {"metadata": {"crm": "C-2", "old": ""}},
+    ),
+    ("customer empty metadata omitted", lambda c: c.customers.update(MEMBER_UUID, metadata={}), {}),
     ("product nothing", lambda c: c.products.update(MEMBER_UUID), {}),
     (
         "product clears description",
@@ -806,9 +1144,26 @@ UPDATE_CASES: List[Tuple[str, Callable[[QBitFlow], Any], dict]] = [
     (
         "product sets",
         lambda c: c.products.update(
-            MEMBER_UUID, price=9.99, is_active=False, remove_subscription=True
+            MEMBER_UUID, price_usd="9.99", is_active=False, remove_subscription=True
         ),
-        {"price": 9.99, "isActive": False, "removeSubscription": True},
+        {"priceUsd": "9.99", "isActive": False, "removeSubscription": True},
+    ),
+    (
+        "product Decimal price",
+        lambda c: c.products.update(MEMBER_UUID, price_usd=Decimal("12.50")),
+        {"priceUsd": "12.50"},
+    ),
+    ("product empty price unchanged", lambda c: c.products.update(MEMBER_UUID, price_usd=""), {}),
+    (
+        "product metadata merge",
+        lambda c: c.products.update(MEMBER_UUID, metadata={"sku": "PRO-M2", "legacy": ""}),
+        {"metadata": {"sku": "PRO-M2", "legacy": ""}},
+    ),
+    ("subscription nothing", lambda c: c.subscriptions.update(SUB), {}),
+    (
+        "subscription metadata merge",
+        lambda c: c.subscriptions.update(SUB, metadata={"plan": "pro-annual", "coupon": ""}),
+        {"metadata": {"plan": "pro-annual", "coupon": ""}},
     ),
     ("endpoint nothing", lambda c: c.webhooks.endpoints.update(MEMBER_UUID), {}),
     (
@@ -823,47 +1178,64 @@ UPDATE_CASES: List[Tuple[str, Callable[[QBitFlow], Any], dict]] = [
     ),
     (
         "member fee 0",
-        lambda c: c.members.update(MEMBER_UUID, organization_fee_percent=0),
-        {"organizationFeePercent": 0},
+        lambda c: c.members.update(MEMBER_UUID, organization_fee_percent="0"),
+        {"organizationFeePercent": "0"},
+    ),
+    (
+        "member fee Decimal",
+        lambda c: c.members.update(MEMBER_UUID, organization_fee_percent=Decimal("7.50")),
+        {"organizationFeePercent": "7.50"},
     ),
     (
         "invitation minimal",
-        lambda c: c.invitations.create(email="a@b.co"),
-        {"email": "a@b.co", "role": "user", "trustLayer": False},
+        lambda c: c.invitations.create(email="a@b.co", hold_funds=False),
+        {"email": "a@b.co", "role": "user", "holdFunds": False},
     ),
     (
         "invitation full",
         lambda c: c.invitations.create(
             email="a@b.co",
-            trust_layer=True,
-            organization_fee_percent=2.5,
+            hold_funds=True,
+            organization_fee_percent="2.5",
             redirect_url="https://x.io",
         ),
         {
             "email": "a@b.co",
             "role": "user",
-            "trustLayer": True,
-            "organizationFeePercent": 2.5,
+            "holdFunds": True,
+            "organizationFeePercent": "2.5",
             "redirectUrl": "https://x.io",
         },
     ),
     (
         "product create minimal",
-        lambda c: c.products.create(name="Pro", price=10),
-        {"name": "Pro", "price": 10},
+        lambda c: c.products.create(name="Pro", price_usd="10"),
+        {"name": "Pro", "priceUsd": "10"},
+    ),
+    (
+        "product create Decimal and metadata",
+        lambda c: c.products.create(
+            name="Pro", price_usd=Decimal("10.00"), metadata={"sku": "PRO", "skip": ""}
+        ),
+        {"name": "Pro", "priceUsd": "10.00", "metadata": {"sku": "PRO", "skip": ""}},
+    ),
+    (
+        "product create empty metadata omitted",
+        lambda c: c.products.create(name="Pro", price_usd="10", metadata={}),
+        {"name": "Pro", "priceUsd": "10"},
     ),
     (
         "product create terms",
         lambda c: c.products.create(
             name="Pro",
-            price=10,
+            price_usd="10",
             subscription=SubscriptionTermsParams(
                 frequency=Duration(value=1, unit="months"), trial_period=Duration(), min_periods=0
             ),
         ),
         {
             "name": "Pro",
-            "price": 10,
+            "priceUsd": "10",
             "subscription": {
                 "frequency": {"value": 1, "unit": "months"},
                 "trialPeriod": {"value": 0},
@@ -872,29 +1244,48 @@ UPDATE_CASES: List[Tuple[str, Callable[[QBitFlow], Any], dict]] = [
         },
     ),
     (
+        "customer create",
+        lambda c: c.customers.create(
+            first_name="Ada", email="a@b.co", reference="crm-1", metadata={"crm": "1"}
+        ),
+        {"firstName": "Ada", "email": "a@b.co", "reference": "crm-1", "metadata": {"crm": "1"}},
+    ),
+    (
         "session by uuid",
         lambda c: c.checkout_sessions.create_payment(product_uuid=MEMBER_UUID),
         {"productUuid": MEMBER_UUID},
     ),
     (
+        "session inline Decimal with metadata",
+        lambda c: c.checkout_sessions.create_payment(
+            product_name="T-shirt", price_usd=Decimal("4.99"), metadata={"orderId": "order-1042"}
+        ),
+        {"productName": "T-shirt", "priceUsd": "4.99", "metadata": {"orderId": "order-1042"}},
+    ),
+    (
         "subscription session",
         lambda c: c.checkout_sessions.create_subscription(
             product_name="Pro",
-            price=9.99,
+            price_usd="9.99",
             frequency=Duration(value=1, unit="weeks"),
             expires_in_minutes=30,
         ),
         {
             "productName": "Pro",
-            "price": 9.99,
+            "priceUsd": "9.99",
             "expiresInMinutes": 30,
             "frequency": {"value": 1, "unit": "weeks"},
         },
     ),
     (
         "refund minimal",
-        lambda c: c.refunds.initiate(tx_uuid="pay@" + MEMBER_UUID),
+        lambda c: c.refunds.create(tx_uuid="pay@" + MEMBER_UUID),
         {"txUuid": "pay@" + MEMBER_UUID},
+    ),
+    (
+        "refund Decimal percent",
+        lambda c: c.refunds.create(tx_uuid="pay@" + MEMBER_UUID, refund_percent=Decimal("33.5")),
+        {"txUuid": "pay@" + MEMBER_UUID, "refundPercent": "33.5"},
     ),
     (
         "endpoint create",
@@ -919,10 +1310,17 @@ def test_update_semantics_and_bodies(
     except ServerError:  # pragma: no cover - every call here answers an object
         pass
     assert server.requests[0].json() == body
+    # Money is a JSON string on the wire, never a number.
+    raw = server.requests[0].body.decode()
+    for key in ("priceUsd", "refundPercent", "organizationFeePercent"):
+        if key in body:
+            assert f'"{key}":"' in raw
 
 
 def test_update_validation(client: QBitFlow) -> None:
     assert fields(lambda: client.customers.update(MEMBER_UUID, phone_number="", address="")) == []
+    assert fields(lambda: client.customers.update(MEMBER_UUID, last_name="")) == []
+    assert fields(lambda: client.customers.update(MEMBER_UUID, last_name="a\nb")) == ["lastName"]
     assert fields(lambda: client.customers.update(MEMBER_UUID, phone_number="abc")) == [
         "phoneNumber"
     ]
@@ -940,17 +1338,26 @@ def test_update_validation(client: QBitFlow) -> None:
 def test_collects_all_fields(client: QBitFlow) -> None:
     with pytest.raises(ValidationError) as info:
         client.customers.create(
-            name="x", last_name="<", email="nope", phone_number="1", address=" ", reference="a b"
+            first_name="x",
+            last_name="<",
+            email="nope",
+            phone_number="1",
+            address=" ",
+            reference="a b",
+            metadata={"k": "\x00"},
         )
     assert [f.field for f in info.value.field_errors] == [
-        "name",
+        "firstName",
         "lastName",
         "email",
         "phoneNumber",
         "address",
         "reference",
+        "metadata.k",
     ]
-    assert str(info.value).startswith("validation failed; name: name must be 2 to 100 characters")
+    assert str(info.value).startswith(
+        "validation failed; firstName: firstName must be 2 to 100 characters"
+    )
 
 
 def test_duration_unit_type_checked() -> None:

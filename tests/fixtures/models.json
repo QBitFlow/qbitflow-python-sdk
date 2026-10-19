@@ -1,19 +1,22 @@
 {
   "Currency": {
     "id": 8,
-    "name": "USD Coin",
+    "code": "BASE:USDC",
     "symbol": "USDC",
+    "name": "USD Coin",
+    "chain": "BASE",
     "decimals": 6,
-    "address": "0x8335",
+    "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     "mainCurrencyId": 3,
-    "mainCurrency": {
-      "id": 3,
-      "name": "Base",
-      "symbol": "BASE",
-      "decimals": 18,
-      "address": "",
-      "test": false
-    },
+    "test": false
+  },
+  "Currency/native": {
+    "id": 1,
+    "code": "ETH",
+    "symbol": "ETH",
+    "name": "Ethereum",
+    "chain": "ETH",
+    "decimals": 18,
     "test": false
   },
   "Payment": {
@@ -21,24 +24,18 @@
     "createdAt": "2026-10-01T12:00:00Z",
     "from": "0xfrom",
     "to": "0xto",
-    "amount": 10,
+    "amount": "10",
     "amountMinUnits": "10000000",
-    "currencyId": 8,
+    "amountUsd": "10",
     "currency": {
       "id": 8,
-      "name": "USD Coin",
+      "code": "BASE:USDC",
       "symbol": "USDC",
+      "name": "USD Coin",
+      "chain": "BASE",
       "decimals": 6,
-      "address": "0x8335",
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       "mainCurrencyId": 3,
-      "mainCurrency": {
-        "id": 3,
-        "name": "Base",
-        "symbol": "BASE",
-        "decimals": 18,
-        "address": "",
-        "test": false
-      },
       "test": false
     },
     "txHash": "0xhash",
@@ -47,113 +44,129 @@
     "test": false,
     "userUuid": "m-1",
     "reference": "order-1",
-    "price": 8.5,
+    "priceUsd": "8.5",
     "fees": [
       {
         "type": "custom",
         "label": "VAT (20%)",
-        "description": "Standard rate",
-        "amountUsd": "1.35"
+        "description": "French VAT",
+        "amountUsd": "1.30"
       },
       {
         "type": "processingFee",
         "label": "Processing fee",
-        "amountUsd": "0.15"
+        "amountUsd": "0.20"
       }
     ],
-    "name": "Pro",
-    "description": "Lifetime",
+    "productName": "Pro",
+    "productDescription": "Lifetime",
+    "metadata": {
+      "orderId": "order-1",
+      "crm:customer": "C-5521"
+    },
     "productUuid": "p-1",
     "customerUuid": "c-1",
     "customerReference": "crm-1",
     "note": "thanks",
     "customer": {
       "uuid": "c-1",
-      "name": "Ada",
+      "firstName": "Ada",
       "lastName": "Lovelace",
       "email": "ada@example.com",
       "reference": "crm-1",
       "deleted": true
     },
-    "metadata": {
-      "feePercent": 1.5,
+    "settlement": {
+      "feePercent": "0.99",
       "organizationFee": {
-        "organization": "0xorg",
-        "feePercent": 10
+        "address": "0xorg",
+        "feePercent": "10"
       },
       "referralFee": {
-        "referrer": "0xref",
-        "feePercent": 20,
+        "address": "0xref",
+        "feePercent": "20",
         "deadline": "2027-01-01T00:00:00Z"
       },
-      "txMetadata": {
-        "networkFees": {
-          "amount": "1140000000000",
-          "unitsConsumed": 95000,
-          "l1Fee": "1000"
+      "split": {
+        "platform": {
+          "amount": "0.0792",
+          "amountMinUnits": "79200",
+          "amountUsd": "0.0792"
         },
-        "blockData": {
-          "number": "52468103",
-          "timestamp": 1790855998
+        "organization": {
+          "amount": "0.9901",
+          "amountMinUnits": "990100",
+          "amountUsd": "0.9901"
         },
-        "mainCurrencyPriceUsd": 4512.37
-      },
-      "txAmounts": {
-        "usd": {
-          "platform": 0.15,
-          "organization": 0.98,
-          "referral": 0.03,
-          "merchant": 8.87,
-          "networkFee": 0.0042
+        "referral": {
+          "amount": "0.0198",
+          "amountMinUnits": "19800",
+          "amountUsd": "0.0198"
         },
-        "minUnits": {
-          "platform": "150000",
-          "organization": "985000",
-          "referral": "30000",
-          "merchant": "8865000",
-          "networkFee": "4200"
+        "merchant": {
+          "amount": "8.9109",
+          "amountMinUnits": "8910900",
+          "amountUsd": "8.9109"
+        },
+        "networkFee": {
+          "amount": "0.0042",
+          "amountMinUnits": "4200",
+          "amountUsd": "0.0042"
         }
+      },
+      "transaction": {
+        "blockNumber": "52468103",
+        "blockTime": "2026-10-01T11:59:58Z",
+        "gasUsed": 95000,
+        "fee": {
+          "amount": "0.00000114",
+          "amountMinUnits": "1140000000000",
+          "amountUsd": "0.005144"
+        },
+        "l1Fee": {
+          "amount": "0.0000001",
+          "amountMinUnits": "100000000000",
+          "amountUsd": "0.00045"
+        },
+        "nativePriceUsd": "4512.37"
       }
     },
     "confirmedAt": "2026-10-01T11:59:58Z",
+    "paid": "10.0042",
     "paidMinUnits": "10004200",
-    "paidUsd": 10.0042,
+    "paidUsd": "10.0042",
     "refund": {
       "uuid": "refund@1",
-      "status": "pending",
+      "status": "cancelled",
       "initiatedBy": "merchant",
-      "refundPercent": 50,
-      "amountMinUnits": "5000000",
-      "amountUsd": 5,
-      "createdAt": "2026-10-01T12:00:00Z"
+      "refundPercent": "50",
+      "amount": "5.0021",
+      "amountMinUnits": "5002100",
+      "amountUsd": "5.0021",
+      "createdAt": "2026-10-01T12:00:00Z",
+      "respondedAt": "2026-10-01T13:00:00Z"
     },
     "refundable": false,
     "notRefundableReason": "refundExists",
     "checkoutOpenedAt": "2026-10-01T11:00:00Z"
   },
-  "Bill": {
-    "uuid": "sub-hist@1",
+  "PaymentCompleted": {
+    "uuid": "pay@1",
     "createdAt": "2026-10-01T12:00:00Z",
     "from": "0xfrom",
     "to": "0xto",
-    "amount": 10,
+    "amount": "10",
     "amountMinUnits": "10000000",
-    "currencyId": 8,
+    "amountUsd": "10",
     "currency": {
       "id": 8,
-      "name": "USD Coin",
+      "code": "BASE:USDC",
       "symbol": "USDC",
+      "name": "USD Coin",
+      "chain": "BASE",
       "decimals": 6,
-      "address": "0x8335",
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       "mainCurrencyId": 3,
-      "mainCurrency": {
-        "id": 3,
-        "name": "Base",
-        "symbol": "BASE",
-        "decimals": 18,
-        "address": "",
-        "test": false
-      },
       "test": false
     },
     "txHash": "0xhash",
@@ -161,103 +174,281 @@
     "explorerUrl": "https://basescan.org/tx/0xhash",
     "test": false,
     "userUuid": "m-1",
-    "name": "Pro",
-    "description": "Monthly",
+    "priceUsd": "10",
+    "fees": [],
+    "productName": "Pro",
+    "metadata": {},
+    "settlement": {
+      "feePercent": "0.99",
+      "organizationFee": {
+        "address": "0xorg",
+        "feePercent": "10"
+      },
+      "referralFee": {
+        "address": "0xref",
+        "feePercent": "20",
+        "deadline": "2027-01-01T00:00:00Z"
+      },
+      "split": {
+        "platform": {
+          "amount": "0.0792",
+          "amountMinUnits": "79200",
+          "amountUsd": "0.0792"
+        },
+        "organization": {
+          "amount": "0.9901",
+          "amountMinUnits": "990100",
+          "amountUsd": "0.9901"
+        },
+        "referral": {
+          "amount": "0.0198",
+          "amountMinUnits": "19800",
+          "amountUsd": "0.0198"
+        },
+        "merchant": {
+          "amount": "8.9109",
+          "amountMinUnits": "8910900",
+          "amountUsd": "8.9109"
+        },
+        "networkFee": {
+          "amount": "0.0042",
+          "amountMinUnits": "4200",
+          "amountUsd": "0.0042"
+        }
+      },
+      "transaction": {
+        "blockNumber": "52468103",
+        "blockTime": "2026-10-01T11:59:58Z",
+        "gasUsed": 95000,
+        "fee": {
+          "amount": "0.00000114",
+          "amountMinUnits": "1140000000000",
+          "amountUsd": "0.005144"
+        },
+        "l1Fee": {
+          "amount": "0.0000001",
+          "amountMinUnits": "100000000000",
+          "amountUsd": "0.00045"
+        },
+        "nativePriceUsd": "4512.37"
+      }
+    },
+    "managementPageLink": "https://qbitflow.app/user/s/manage?uuid=pay@1"
+  },
+  "SubscriptionSessionData": {
+    "uuid": "sub@1",
+    "reference": "order-1044",
+    "productUuid": "p-1",
+    "productReference": "tshirt",
+    "productName": "T-shirt",
+    "description": "Blue, size M",
+    "priceUsd": "3.99",
+    "fees": [
+      {
+        "type": "custom",
+        "label": "Shipping",
+        "description": "Standard",
+        "amountUsd": "0.75"
+      },
+      {
+        "type": "processingFee",
+        "label": "Processing fee",
+        "amountUsd": "0.07"
+      }
+    ],
+    "amountUsd": "4.81",
+    "successUrl": "https://x/ok",
+    "cancelUrl": "https://x/ko",
+    "redirectUrl": "https://x/thanks",
+    "organizationName": "Shop",
+    "userName": "Ada",
+    "test": true,
+    "txType": "createSubscription",
+    "availableCurrencies": [
+      {
+        "id": 8,
+        "code": "BASE:USDC",
+        "symbol": "USDC",
+        "name": "USD Coin",
+        "chain": "BASE",
+        "decimals": 6,
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "mainCurrencyId": 3,
+        "test": false
+      },
+      {
+        "id": 1,
+        "code": "ETH",
+        "symbol": "ETH",
+        "name": "Ethereum",
+        "chain": "ETH",
+        "decimals": 18,
+        "test": false
+      }
+    ],
+    "metadata": {
+      "orderId": "order-1044"
+    },
+    "createdAt": "2026-10-01T12:00:00Z",
+    "expiresAt": "2026-10-01T13:00:00Z",
+    "frequency": {
+      "value": 1,
+      "unit": "months"
+    },
+    "trialPeriod": {
+      "value": 14,
+      "unit": "days"
+    },
+    "minPeriods": 3,
+    "upgradingFromTrial": true
+  },
+  "Bill": {
+    "uuid": "sub-hist@1",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "from": "0xfrom",
+    "to": "0xto",
+    "amount": "10",
+    "amountMinUnits": "10000000",
+    "amountUsd": "10",
+    "currency": {
+      "id": 8,
+      "code": "BASE:USDC",
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "chain": "BASE",
+      "decimals": 6,
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "mainCurrencyId": 3,
+      "test": false
+    },
+    "txHash": "0xhash",
+    "chain": "BASE",
+    "explorerUrl": "https://basescan.org/tx/0xhash",
+    "test": false,
+    "userUuid": "m-1",
+    "productName": "Pro",
+    "productDescription": "Monthly",
     "productUuid": "p-1",
     "subscriptionUuid": "sub@1",
     "customerUuid": "c-1",
     "customerReference": "crm-1",
     "customer": {
       "uuid": "c-1",
-      "name": "Ada",
+      "firstName": "Ada",
       "lastName": "Lovelace",
       "email": "ada@example.com",
       "reference": "crm-1",
       "deleted": true
     },
-    "metadata": {
-      "feePercent": 1.5,
+    "settlement": {
+      "feePercent": "0.99",
       "organizationFee": {
-        "organization": "0xorg",
-        "feePercent": 10
+        "address": "0xorg",
+        "feePercent": "10"
       },
       "referralFee": {
-        "referrer": "0xref",
-        "feePercent": 20,
+        "address": "0xref",
+        "feePercent": "20",
         "deadline": "2027-01-01T00:00:00Z"
       },
-      "txMetadata": {
-        "networkFees": {
-          "amount": "1140000000000",
-          "unitsConsumed": 95000,
-          "l1Fee": "1000"
+      "split": {
+        "platform": {
+          "amount": "0.0792",
+          "amountMinUnits": "79200",
+          "amountUsd": "0.0792"
         },
-        "blockData": {
-          "number": "52468103",
-          "timestamp": 1790855998
+        "organization": {
+          "amount": "0.9901",
+          "amountMinUnits": "990100",
+          "amountUsd": "0.9901"
         },
-        "mainCurrencyPriceUsd": 4512.37
-      },
-      "txAmounts": {
-        "usd": {
-          "platform": 0.15,
-          "organization": 0.98,
-          "referral": 0.03,
-          "merchant": 8.87,
-          "networkFee": 0.0042
+        "referral": {
+          "amount": "0.0198",
+          "amountMinUnits": "19800",
+          "amountUsd": "0.0198"
         },
-        "minUnits": {
-          "platform": "150000",
-          "organization": "985000",
-          "referral": "30000",
-          "merchant": "8865000",
-          "networkFee": "4200"
+        "merchant": {
+          "amount": "8.9109",
+          "amountMinUnits": "8910900",
+          "amountUsd": "8.9109"
+        },
+        "networkFee": {
+          "amount": "0.0042",
+          "amountMinUnits": "4200",
+          "amountUsd": "0.0042"
         }
+      },
+      "transaction": {
+        "blockNumber": "52468103",
+        "blockTime": "2026-10-01T11:59:58Z",
+        "gasUsed": 95000,
+        "fee": {
+          "amount": "0.00000114",
+          "amountMinUnits": "1140000000000",
+          "amountUsd": "0.005144"
+        },
+        "l1Fee": {
+          "amount": "0.0000001",
+          "amountMinUnits": "100000000000",
+          "amountUsd": "0.00045"
+        },
+        "nativePriceUsd": "4512.37"
       }
     },
     "periodStart": "2026-10-01T12:00:00Z",
     "periodEnd": "2026-10-31T12:00:00Z",
     "confirmedAt": "2026-10-01T11:59:58Z",
-    "paidMinUnits": "1",
-    "paidUsd": 1,
+    "paid": "10.0042",
+    "paidMinUnits": "10004200",
+    "paidUsd": "10.0042",
     "refund": {
       "uuid": "refund@1",
-      "status": "pending",
+      "status": "cancelled",
       "initiatedBy": "merchant",
-      "refundPercent": 50,
-      "amountMinUnits": "5000000",
-      "amountUsd": 5,
-      "createdAt": "2026-10-01T12:00:00Z"
+      "refundPercent": "50",
+      "amount": "5.0021",
+      "amountMinUnits": "5002100",
+      "amountUsd": "5.0021",
+      "createdAt": "2026-10-01T12:00:00Z",
+      "respondedAt": "2026-10-01T13:00:00Z"
     },
-    "refundable": true,
-    "notRefundableReason": "heldFundsReleased"
+    "refundable": false,
+    "notRefundableReason": "refundExists"
   },
-  "CombinedPayment": {
-    "source": "subscriptionHistory",
+  "Transaction": {
+    "type": "bill",
     "uuid": "sub-hist@1",
     "createdAt": "2026-10-01T12:00:00Z",
     "from": "0xf",
     "to": "0xt",
-    "name": "Pro",
-    "description": "d",
-    "amount": 10,
+    "productName": "Pro",
+    "productDescription": "d",
+    "priceUsd": "8.5",
+    "fees": [
+      {
+        "type": "custom",
+        "label": "VAT (20%)",
+        "description": "French VAT",
+        "amountUsd": "1.30"
+      },
+      {
+        "type": "processingFee",
+        "label": "Processing fee",
+        "amountUsd": "0.20"
+      }
+    ],
+    "amount": "10",
     "amountMinUnits": "10000000",
-    "currencyId": 8,
+    "amountUsd": "10",
     "currency": {
       "id": 8,
-      "name": "USD Coin",
+      "code": "BASE:USDC",
       "symbol": "USDC",
+      "name": "USD Coin",
+      "chain": "BASE",
       "decimals": 6,
-      "address": "0x8335",
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       "mainCurrencyId": 3,
-      "mainCurrency": {
-        "id": 3,
-        "name": "Base",
-        "symbol": "BASE",
-        "decimals": 18,
-        "address": "",
-        "test": false
-      },
       "test": false
     },
     "productUuid": "p-1",
@@ -265,7 +456,7 @@
     "customerUuid": "c-1",
     "customer": {
       "uuid": "c-1",
-      "name": "Ada",
+      "firstName": "Ada",
       "lastName": "Lovelace",
       "email": "ada@example.com",
       "reference": "crm-1",
@@ -273,63 +464,89 @@
     },
     "customerReference": "crm-1",
     "subscriptionUuid": "sub@1",
+    "periodStart": "2026-10-01T12:00:00Z",
+    "periodEnd": "2026-10-31T12:00:00Z",
     "reference": "r",
     "subscriptionReference": "sr",
+    "metadata": {
+      "k": "v"
+    },
     "chain": "SOL",
     "explorerUrl": "https://x",
     "test": true,
     "userUuid": "m-1",
-    "refund": {
-      "uuid": "refund@1",
-      "status": "pending",
-      "initiatedBy": "merchant",
-      "refundPercent": 50,
-      "amountMinUnits": "5000000",
-      "amountUsd": 5,
-      "createdAt": "2026-10-01T12:00:00Z"
-    },
-    "refundable": false,
-    "notRefundableReason": "refundExists",
-    "metadata": {
-      "feePercent": 1.5,
+    "settlement": {
+      "feePercent": "0.99",
       "organizationFee": {
-        "organization": "0xorg",
-        "feePercent": 10
+        "address": "0xorg",
+        "feePercent": "10"
       },
       "referralFee": {
-        "referrer": "0xref",
-        "feePercent": 20,
+        "address": "0xref",
+        "feePercent": "20",
         "deadline": "2027-01-01T00:00:00Z"
       },
-      "txMetadata": {
-        "networkFees": {
-          "amount": "1140000000000",
-          "unitsConsumed": 95000,
-          "l1Fee": "1000"
+      "split": {
+        "platform": {
+          "amount": "0.0792",
+          "amountMinUnits": "79200",
+          "amountUsd": "0.0792"
         },
-        "blockData": {
-          "number": "52468103",
-          "timestamp": 1790855998
+        "organization": {
+          "amount": "0.9901",
+          "amountMinUnits": "990100",
+          "amountUsd": "0.9901"
         },
-        "mainCurrencyPriceUsd": 4512.37
-      },
-      "txAmounts": {
-        "usd": {
-          "platform": 0.15,
-          "organization": 0.98,
-          "referral": 0.03,
-          "merchant": 8.87,
-          "networkFee": 0.0042
+        "referral": {
+          "amount": "0.0198",
+          "amountMinUnits": "19800",
+          "amountUsd": "0.0198"
         },
-        "minUnits": {
-          "platform": "150000",
-          "organization": "985000",
-          "referral": "30000",
-          "merchant": "8865000",
-          "networkFee": "4200"
+        "merchant": {
+          "amount": "8.9109",
+          "amountMinUnits": "8910900",
+          "amountUsd": "8.9109"
+        },
+        "networkFee": {
+          "amount": "0.0042",
+          "amountMinUnits": "4200",
+          "amountUsd": "0.0042"
         }
+      },
+      "transaction": {
+        "blockNumber": "52468103",
+        "blockTime": "2026-10-01T11:59:58Z",
+        "gasUsed": 95000,
+        "fee": {
+          "amount": "0.00000114",
+          "amountMinUnits": "1140000000000",
+          "amountUsd": "0.005144"
+        },
+        "l1Fee": {
+          "amount": "0.0000001",
+          "amountMinUnits": "100000000000",
+          "amountUsd": "0.00045"
+        },
+        "nativePriceUsd": "4512.37"
       }
-    }
+    },
+    "confirmedAt": "2026-10-01T11:59:58Z",
+    "paid": "10.0042",
+    "paidMinUnits": "10004200",
+    "paidUsd": "10.0042",
+    "refund": {
+      "uuid": "refund@1",
+      "status": "cancelled",
+      "initiatedBy": "merchant",
+      "refundPercent": "50",
+      "amount": "5.0021",
+      "amountMinUnits": "5002100",
+      "amountUsd": "5.0021",
+      "createdAt": "2026-10-01T12:00:00Z",
+      "respondedAt": "2026-10-01T13:00:00Z"
+    },
+    "refundable": false,
+    "notRefundableReason": "refundExists"
   },
   "Failure": {
     "uuid": "f-1",
@@ -340,9 +557,20 @@
     "code": "insufficient_funds",
     "category": "insufficientBalance",
     "message": "m",
-    "attemptedUsd": 9.99,
+    "attempted": "9.99",
     "attemptedMinUnits": "9990000",
-    "currencyId": 8,
+    "attemptedUsd": "9.99",
+    "currency": {
+      "id": 8,
+      "code": "BASE:USDC",
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "chain": "BASE",
+      "decimals": 6,
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "mainCurrencyId": 3,
+      "test": false
+    },
     "from": "0xf",
     "txHash": "0xh",
     "customerUuid": "c-1",
@@ -350,7 +578,7 @@
     "createdAt": "2026-10-01T12:00:00Z",
     "customer": {
       "uuid": "c-1",
-      "name": "Ada",
+      "firstName": "Ada",
       "lastName": "Lovelace",
       "email": "ada@example.com",
       "reference": "crm-1",
@@ -359,7 +587,7 @@
     "test": false,
     "userUuid": "m-1"
   },
-  "CheckoutSession": {
+  "CreatedCheckoutSession": {
     "link": "https://qbitflow.app/checkout?uuid=pay@1",
     "uuid": "pay@1",
     "expiresAt": "2026-10-02T12:00:00Z"
@@ -374,41 +602,34 @@
       "code": "insufficient_funds",
       "message": "Not enough USDC",
       "txHash": "0xa",
-      "at": "2026-10-01T12:00:00+02:00"
-    }
+      "at": "2026-10-01T12:00:00Z"
+    },
+    "expiresAt": "2026-10-02T12:00:00Z"
   },
   "Subscription": {
     "uuid": "sub@1",
-    "reference": "r",
+    "reference": "customer-7731",
     "createdAt": "2026-09-01T12:00:00Z",
     "updatedAt": "2026-10-01T12:00:00Z",
     "from": "0xf",
     "to": "0xt",
     "productUuid": "p-1",
     "subscriptionHash": "0x2",
-    "currencyId": 8,
     "currency": {
       "id": 8,
-      "name": "USD Coin",
+      "code": "BASE:USDC",
       "symbol": "USDC",
+      "name": "USD Coin",
+      "chain": "BASE",
       "decimals": 6,
-      "address": "0x8335",
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       "mainCurrencyId": 3,
-      "mainCurrency": {
-        "id": 3,
-        "name": "Base",
-        "symbol": "BASE",
-        "decimals": 18,
-        "address": "",
-        "test": false
-      },
       "test": false
     },
     "frequency": {
       "value": 1,
       "unit": "months"
     },
-    "allowance": "110000000",
     "status": "stopped",
     "actionRequired": "raiseMaximum",
     "currentPeriodEnd": "2026-10-31T12:00:00Z",
@@ -418,27 +639,39 @@
         "type": "custom",
         "label": "VAT (20%)",
         "description": "French VAT",
-        "amountUsd": "2.00"
+        "amountUsd": "1.30"
       },
       {
         "type": "processingFee",
         "label": "Processing fee",
-        "amountUsd": "0.13"
+        "amountUsd": "0.20"
       }
     ],
-    "maxAmountPerPeriod": "30000000",
-    "lastBillingDate": "2026-10-01T12:00:00Z",
-    "nextBillingDate": "2026-10-31T12:00:00Z",
+    "allowance": {
+      "amount": "110",
+      "amountMinUnits": "110000000",
+      "amountUsd": "110",
+      "remainingPeriods": 0,
+      "maxPerPeriod": "30",
+      "maxPerPeriodMinUnits": "30000000"
+    },
+    "lastBilledAt": "2026-10-01T12:00:00Z",
+    "nextBillingAt": "2026-10-31T12:00:00Z",
     "cancelledAt": "2026-10-02T12:00:00Z",
     "cancellationReason": "merchant",
-    "minimumCancellationDate": "2026-12-01T12:00:00Z",
+    "cancellableAt": "2026-12-01T12:00:00Z",
+    "metadata": {
+      "plan": "pro",
+      "crm:account": "A-1042"
+    },
+    "managementPageLink": "https://qbitflow.app/user/s/manage?uuid=sub@1",
     "test": false,
     "userUuid": "m-1",
     "customerUuid": "c-1",
     "customerReference": "crm-1",
     "customer": {
       "uuid": "c-1",
-      "name": "Ada",
+      "firstName": "Ada",
       "lastName": "Lovelace",
       "email": "ada@example.com",
       "reference": "crm-1",
@@ -452,20 +685,20 @@
       "awaitingMaximumSince": "2026-10-01T12:00:00Z"
     }
   },
-  "BillingState": {
-    "billUuid": "019c-1",
-    "stage": "done",
+  "TestBill": {
+    "billUuid": "sub-hist@019c-1",
+    "stage": "waiting",
     "outcome": "paid",
-    "attempts": 0,
-    "nextAttempt": "2026-10-02T12:00:00Z",
+    "attempts": 1,
+    "nextAttemptAt": "2026-10-02T12:00:00Z",
     "txHash": "0xh",
-    "failureCode": "x"
+    "failureCode": "insufficient_allowance"
   },
   "Refund": {
     "uuid": "refund@1",
     "txUuid": "pay@1",
     "reason": "r",
-    "status": "pending",
+    "status": "approved",
     "createdAt": "2026-10-01T12:00:00Z",
     "merchantMessage": "m",
     "respondedAt": "2026-10-01T13:00:00Z",
@@ -474,23 +707,43 @@
     "txHash": "0xh",
     "initiatedBy": "customer",
     "held": true,
+    "paid": "10.0042",
     "paidMinUnits": "10004200",
-    "paidUsd": 10.0042,
-    "refundPercent": 100,
-    "amountMinUnits": "10004200",
-    "amountUsd": 10.0042,
-    "currencyId": 8,
-    "metadata": {
-      "networkFees": {
-        "amount": "1",
-        "unitsConsumed": 1
-      },
-      "blockData": {
-        "number": "1",
-        "timestamp": 1
+    "paidUsd": "10.0042",
+    "refundPercent": "50",
+    "amount": "5.0021",
+    "amountMinUnits": "5002100",
+    "amountUsd": "5.0021",
+    "currency": {
+      "id": 8,
+      "code": "BASE:USDC",
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "chain": "BASE",
+      "decimals": 6,
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "mainCurrencyId": 3,
+      "test": false
+    },
+    "settlement": {
+      "transaction": {
+        "blockNumber": "52468103",
+        "blockTime": "2026-10-01T11:59:58Z",
+        "gasUsed": 95000,
+        "fee": {
+          "amount": "0.00000114",
+          "amountMinUnits": "1140000000000",
+          "amountUsd": "0.005144"
+        },
+        "l1Fee": {
+          "amount": "0.0000001",
+          "amountMinUnits": "100000000000",
+          "amountUsd": "0.00045"
+        },
+        "nativePriceUsd": "4512.37"
       }
     },
-    "chain": "ETH",
+    "chain": "BASE",
     "explorerUrl": "https://e",
     "approval": {
       "status": "waitingConfirmation",
@@ -500,13 +753,14 @@
         "code": "insufficient_funds",
         "message": "Not enough USDC",
         "txHash": "0xa",
-        "at": "2026-10-01T12:00:00+02:00"
+        "at": "2026-10-01T12:00:00Z"
       }
     },
+    "customerUuid": "c-1",
     "productName": "Pro",
     "customer": {
       "uuid": "c-1",
-      "name": "Ada",
+      "firstName": "Ada",
       "lastName": "Lovelace",
       "email": "ada@example.com",
       "reference": "crm-1",
@@ -515,13 +769,16 @@
   },
   "Customer": {
     "uuid": "c-1",
-    "name": "Ada",
+    "firstName": "Ada",
     "lastName": "Lovelace",
     "email": "ada@example.com",
     "verified": true,
     "phoneNumber": "+33 6 12 34 56 78",
     "address": "1 rue X",
     "reference": "crm-1",
+    "metadata": {
+      "crm": "42"
+    },
     "createdAt": "2026-10-01T12:00:00Z",
     "test": true,
     "userUuid": "m-1"
@@ -530,10 +787,13 @@
     "uuid": "p-1",
     "name": "Pro",
     "description": "d",
-    "price": 9.99,
+    "priceUsd": "9.99",
     "createdAt": "2026-10-01T12:00:00Z",
     "isActive": true,
     "reference": "pro",
+    "metadata": {
+      "sku": "PRO-1"
+    },
     "subscription": {
       "frequency": {
         "value": 1,
@@ -551,93 +811,263 @@
   },
   "Member": {
     "userUuid": "m-1",
-    "name": "Ada",
+    "firstName": "Ada",
     "lastName": "L",
     "email": "a@b.co",
     "test": false,
-    "organizationFeePercent": 0,
+    "organizationFeePercent": "7.5",
+    "trustedAt": "2026-10-03T12:00:00Z",
     "joinedAt": "2026-10-01T12:00:00Z",
-    "acceptedCurrencyIds": [
-      2,
-      5,
-      8
+    "acceptedCurrencies": [
+      {
+        "id": 8,
+        "code": "BASE:USDC",
+        "symbol": "USDC",
+        "name": "USD Coin",
+        "chain": "BASE",
+        "decimals": 6,
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "mainCurrencyId": 3,
+        "test": false
+      }
     ],
     "spaceUuid": "s-1"
   },
+  "MemberJoined": {
+    "userUuid": "m-1",
+    "firstName": "Ada",
+    "email": "a@b.co",
+    "test": false,
+    "organizationFeePercent": "0",
+    "joinedAt": "2026-10-01T12:00:00Z",
+    "acceptedCurrencies": [],
+    "spaceUuid": "s-1",
+    "invitationUuid": "i-1"
+  },
   "HeldFunds": {
     "ledgers": [
+      {
+        "txUuid": "pay@1",
+        "type": "payment",
+        "description": "Payment pay@1",
+        "amountUsd": "10",
+        "settlement": {
+          "feePercent": "0.99",
+          "organizationFee": {
+            "address": "0xorg",
+            "feePercent": "10"
+          },
+          "referralFee": {
+            "address": "0xref",
+            "feePercent": "20",
+            "deadline": "2027-01-01T00:00:00Z"
+          },
+          "split": {
+            "platform": {
+              "amount": "0.0792",
+              "amountMinUnits": "79200",
+              "amountUsd": "0.0792"
+            },
+            "organization": {
+              "amount": "0.9901",
+              "amountMinUnits": "990100",
+              "amountUsd": "0.9901"
+            },
+            "referral": {
+              "amount": "0.0198",
+              "amountMinUnits": "19800",
+              "amountUsd": "0.0198"
+            },
+            "merchant": {
+              "amount": "8.9109",
+              "amountMinUnits": "8910900",
+              "amountUsd": "8.9109"
+            },
+            "networkFee": {
+              "amount": "0.0042",
+              "amountMinUnits": "4200",
+              "amountUsd": "0.0042"
+            }
+          },
+          "transaction": {
+            "blockNumber": "52468103",
+            "blockTime": "2026-10-01T11:59:58Z",
+            "gasUsed": 95000,
+            "fee": {
+              "amount": "0.00000114",
+              "amountMinUnits": "1140000000000",
+              "amountUsd": "0.005144"
+            },
+            "l1Fee": {
+              "amount": "0.0000001",
+              "amountMinUnits": "100000000000",
+              "amountUsd": "0.00045"
+            },
+            "nativePriceUsd": "4512.37"
+          }
+        },
+        "currency": {
+          "id": 8,
+          "code": "BASE:USDC",
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "chain": "BASE",
+          "decimals": 6,
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "mainCurrencyId": 3,
+          "test": false
+        },
+        "owed": "8.9109",
+        "owedMinUnits": "8910900",
+        "owedUsd": "8.9109",
+        "createdAt": "2026-10-01T12:00:00Z"
+      },
       {
         "txUuid": "refund@1",
         "type": "refund",
         "description": "Refund of payment pay@1",
         "refundedTxUuid": "pay@1",
-        "amount": 10,
-        "currencyId": 8,
+        "amountUsd": "10.0042",
+        "currency": {
+          "id": 8,
+          "code": "BASE:USDC",
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "chain": "BASE",
+          "decimals": 6,
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "mainCurrencyId": 3,
+          "test": false
+        },
+        "owed": "-10.0042",
         "owedMinUnits": "-10004200",
-        "owedUsd": -10.0042,
-        "createdAt": "2026-10-01T12:00:00Z"
+        "owedUsd": "-10.0042",
+        "createdAt": "2026-10-02T12:00:00Z"
       }
     ],
-    "totalAmount": -10.0042
+    "totalUsd": "-1.0933"
   },
-  "MemberHeldFundsSummary": {
+  "MemberHeldFunds": {
     "userUuid": "m-1",
-    "totalAmount": 98.5,
+    "totalUsd": "98.5",
     "count": 2,
     "oldestAt": "2026-09-28T12:00:00Z"
+  },
+  "HeldFundsReleased": {
+    "uuid": "transfer@1",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "from": "0xfrom",
+    "to": "0xto",
+    "amount": "10",
+    "amountMinUnits": "10000000",
+    "amountUsd": "10",
+    "currency": {
+      "id": 8,
+      "code": "BASE:USDC",
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "chain": "BASE",
+      "decimals": 6,
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "mainCurrencyId": 3,
+      "test": false
+    },
+    "txHash": "0xhash",
+    "chain": "BASE",
+    "explorerUrl": "https://basescan.org/tx/0xhash",
+    "test": false,
+    "userUuid": "m-1",
+    "received": true,
+    "type": "heldFundsRelease",
+    "settlement": {
+      "transaction": {
+        "blockNumber": "52468103",
+        "blockTime": "2026-10-01T11:59:58Z",
+        "gasUsed": 95000,
+        "fee": {
+          "amount": "0.00000114",
+          "amountMinUnits": "1140000000000",
+          "amountUsd": "0.005144"
+        },
+        "l1Fee": {
+          "amount": "0.0000001",
+          "amountMinUnits": "100000000000",
+          "amountUsd": "0.00045"
+        },
+        "nativePriceUsd": "4512.37"
+      }
+    },
+    "ledgers": [
+      {
+        "txUuid": "sub-hist@1",
+        "type": "bill",
+        "description": "Subscription bill sub-hist@1",
+        "amountUsd": "10",
+        "currency": {
+          "id": 8,
+          "code": "BASE:USDC",
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "chain": "BASE",
+          "decimals": 6,
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "mainCurrencyId": 3,
+          "test": false
+        },
+        "owed": "9.901",
+        "owedMinUnits": "9901000",
+        "owedUsd": "9.901",
+        "createdAt": "2026-10-01T12:00:00Z"
+      }
+    ]
   },
   "Wallet": {
     "uuid": "w-1",
     "createdAt": "2026-10-01T12:00:00Z",
-    "publicKey": "0xpk",
+    "address": "0xpk",
     "test": false,
     "userUuid": "m-1",
     "tokenWallets": [
       {
         "uuid": "tw-1",
         "createdAt": "2026-10-01T12:00:00Z",
-        "tokenId": 8,
-        "token": {
+        "currency": {
           "id": 8,
-          "name": "USD Coin",
+          "code": "BASE:USDC",
           "symbol": "USDC",
+          "name": "USD Coin",
+          "chain": "BASE",
           "decimals": 6,
-          "address": "0x8335",
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
           "mainCurrencyId": 3,
-          "mainCurrency": {
-            "id": 3,
-            "name": "Base",
-            "symbol": "BASE",
-            "decimals": 18,
-            "address": "",
-            "test": false
-          },
           "test": false
         },
         "walletUuid": "w-1",
         "balance": {
-          "currency": "BASE:USDC",
-          "balance": "1000000",
-          "balanceUsd": 1
+          "currency": {
+            "id": 8,
+            "code": "BASE:USDC",
+            "symbol": "USDC",
+            "name": "USD Coin",
+            "chain": "BASE",
+            "decimals": 6,
+            "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            "mainCurrencyId": 3,
+            "test": false
+          },
+          "amount": "12.5",
+          "amountMinUnits": "12500000",
+          "amountUsd": "12.5"
         }
       }
     ],
-    "currencyId": 3,
     "currency": {
-      "id": 8,
-      "name": "USD Coin",
-      "symbol": "USDC",
-      "decimals": 6,
-      "address": "0x8335",
-      "mainCurrencyId": 3,
-      "mainCurrency": {
-        "id": 3,
-        "name": "Base",
-        "symbol": "BASE",
-        "decimals": 18,
-        "address": "",
-        "test": false
-      },
+      "id": 1,
+      "code": "ETH",
+      "symbol": "ETH",
+      "name": "Ethereum",
+      "chain": "ETH",
+      "decimals": 18,
       "test": false
     }
   },
@@ -646,61 +1076,68 @@
     "test": false,
     "email": "a@b.co",
     "role": "user",
-    "trustLayer": true,
-    "organizationFeePercent": 2.5,
+    "holdFunds": true,
+    "organizationFeePercent": "2.5",
     "redirectUrl": "https://x.io/welcome",
     "expiresAt": "2026-10-08T12:00:00Z",
     "acceptedByUserUuid": "m-1",
     "acceptedAt": "2026-10-02T12:00:00Z",
+    "revokedAt": "2026-10-03T12:00:00Z",
     "createdAt": "2026-10-01T12:00:00Z",
     "status": "accepted"
   },
-  "InvitationCreated": {
-    "invitation": {
-      "uuid": "i-1",
-      "test": null,
-      "email": "a@b.co",
-      "role": "admin",
-      "trustLayer": null,
-      "organizationFeePercent": 0,
-      "expiresAt": "2026-10-08T12:00:00Z",
-      "acceptedAt": null,
-      "revokedAt": null,
-      "createdAt": "2026-10-01T12:00:00Z",
-      "status": "pending"
-    },
+  "CreatedInvitation": {
+    "uuid": "i-1",
+    "test": true,
+    "email": "a@b.co",
+    "role": "user",
+    "holdFunds": false,
+    "organizationFeePercent": "0",
+    "redirectUrl": "https://x.io/welcome",
+    "expiresAt": "2026-10-08T12:00:00Z",
+    "acceptedByUserUuid": "m-1",
+    "acceptedAt": "2026-10-02T12:00:00Z",
+    "revokedAt": "2026-10-03T12:00:00Z",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "status": "pending",
     "link": "https://qbitflow.app/invite?token=x"
   },
   "AccountingEvent": {
-    "txTimeUtc": "2026-09-13T19:23:26.620071Z",
+    "txTimeUtc": "2026-09-13T19:23:26.62Z",
     "type": "refund",
-    "paymentReference": "r",
-    "relatedPaymentReference": "r0",
+    "reference": "r",
+    "relatedReference": "r0",
     "productName": "Pro",
     "customerReference": "crm-1",
-    "grossAmountUsd": -10.0042,
-    "platformFeeUsd": 0,
-    "referralFeeUsd": 0,
-    "organizationFeeUsd": 0,
-    "netAmountUsd": -10.0042,
+    "grossAmountUsd": "-10.0042",
+    "platformFeeUsd": "0.099",
+    "referralFeeUsd": "0.0198",
+    "organizationFeeUsd": "0.9901",
+    "netAmountUsd": "-10.0042",
     "chain": "BASE",
     "currency": "USDC",
     "currencyDecimals": 6,
-    "currencyPriceUsd": 1,
+    "currencyPriceUsd": "1.00002",
     "grossAmount": "-10.0042",
-    "platformFee": "0",
-    "referralFee": "0",
-    "organizationFee": "0",
+    "grossAmountMinUnits": "-10004200",
+    "platformFee": "0.099",
+    "platformFeeMinUnits": "99000",
+    "referralFee": "0.0198",
+    "referralFeeMinUnits": "19800",
+    "organizationFee": "0.9901",
+    "organizationFeeMinUnits": "990100",
     "netAmount": "-10.0042",
+    "netAmountMinUnits": "-10004200",
     "networkFeesPaidBy": "merchant",
     "networkFees": "0.0000012",
+    "networkFeesMinUnits": "1200000000000",
     "networkFeesCurrency": "ETH",
     "networkFeesCurrencyDecimals": 18,
-    "networkFeesCurrencyPriceUsd": 4512.37,
-    "networkFeesUsd": 0.00541,
-    "platformFeePercent": 0.99,
-    "referralFeePercent": 20,
-    "organizationFeePercent": 0,
+    "networkFeesCurrencyPriceUsd": "4512.37",
+    "networkFeesUsd": "0.00541",
+    "platformFeePercent": "0.99",
+    "referralFeePercent": "20",
+    "organizationFeePercent": "10",
     "fromAddress": "0xf",
     "toAddress": "0xt",
     "txHash": "0xh",
@@ -708,8 +1145,8 @@
     "tokenContractOrMint": "0x8335",
     "explorerUrl": "https://e",
     "receiptUrl": "https://r",
-    "paymentUuid": "refund@1",
-    "relatedPaymentUuid": "pay@0",
+    "txUuid": "refund@1",
+    "relatedTxUuid": "pay@0",
     "productUuid": "p-1",
     "productReference": "pro",
     "productDescription": "d",
@@ -734,37 +1171,75 @@
     "lastDeliveredAt": "2026-09-28T12:00:00Z",
     "secret": "whsec_x"
   },
+  "EventDetail": {
+    "id": "evt_1",
+    "type": "payment.completed",
+    "version": "v2",
+    "createdAt": "2026-10-01T12:00:00.123Z",
+    "test": false,
+    "userUuid": "m-1",
+    "data": {
+      "uuid": "pay@1"
+    },
+    "deliveries": [
+      {
+        "endpointUuid": "e-1",
+        "url": "https://x.io/hook",
+        "delivered": true,
+        "attempts": [
+          {
+            "uuid": "a-1",
+            "eventId": "evt_1",
+            "eventType": "payment.completed",
+            "endpointUuid": "e-1",
+            "attempt": 2,
+            "delivered": false,
+            "skipped": true,
+            "statusCode": 500,
+            "error": "500 Internal Server Error",
+            "durationMs": 120,
+            "attemptedAt": "2026-10-01T12:00:01Z"
+          }
+        ]
+      }
+    ]
+  },
   "Me": {
     "credential": "apiKey",
     "apiKeyUuid": "k-1",
     "userUuid": "u-1",
-    "role": "admin",
-    "onBehalfOf": "m-1",
+    "role": "user",
+    "onBehalfOfUserUuid": "m-1",
     "space": {
       "uuid": "s-1",
       "organizationUuid": "o-1",
       "organizationName": "Shop",
       "userUuid": "m-1",
+      "test": true,
+      "role": "admin",
       "member": {
         "userUuid": "m-1",
-        "name": "Ada",
+        "firstName": "Ada",
         "lastName": "L",
         "email": "a@b.co"
       },
-      "test": true
+      "organizationFeePercent": "7.5",
+      "trustedAt": "2026-10-01T12:00:00Z",
+      "createdAt": "2026-09-01T12:00:00Z"
     }
   },
   "Page": {
     "items": [
       {
         "uuid": "c-1",
-        "name": "Ada",
+        "firstName": "Ada",
         "lastName": "Lovelace",
         "email": "ada@example.com",
         "reference": "crm-1",
         "deleted": true
       }
     ],
-    "nextCursor": "c-1"
+    "hasMore": true,
+    "nextCursor": "djF8MDE5Y2FkZmQ"
   }
 }

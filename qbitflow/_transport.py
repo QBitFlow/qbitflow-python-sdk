@@ -33,7 +33,6 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    get_origin,
 )
 from urllib.parse import quote, quote_plus
 
@@ -133,9 +132,10 @@ class Response:
 @dataclass
 class Query:
     """A query string under construction: unset values are omitted; booleans are
-    ``true``/``false``; times are RFC 3339; keys are sorted when encoded."""
+    ``true``/``false``; times are RFC 3339; keys are sorted when encoded; a list value is a
+    repeated key (``status=a&status=b``)."""
 
-    items: Dict[str, str] = field(default_factory=dict)
+    items: Dict[str, Union[str, List[str]]] = field(default_factory=dict)
 
     def string(self, key: str, value: Optional[str]) -> "Query":
         """Set ``key`` when ``value`` is a non-empty string."""
@@ -167,16 +167,23 @@ class Query:
             self.items[key] = format_time(value)
         return self
 
+    def many(self, key: str, values: Optional[List[str]]) -> "Query":
+        """Repeat ``key`` once per value (in order) when ``values`` is not empty."""
+        if values:
+            self.items[key] = [str(v) for v in values]
+        return self
+
     def page(self, limit: Optional[int], cursor: Optional[str]) -> "Query":
         """A cursor page's limit and cursor."""
         return self.integer("limit", limit).string("cursor", cursor)
 
     def encode(self) -> str:
         """``key=value&…``, keys sorted, values percent-encoded (``+`` as ``%2B``)."""
-        return "&".join(
-            f"{quote_plus(k, safe='')}={quote_plus(v, safe='')}"
-            for k, v in sorted(self.items.items())
-        )
+        pairs = []
+        for key, value in sorted(self.items.items()):
+            for item in value if isinstance(value, list) else [value]:
+                pairs.append(f"{quote_plus(key, safe='')}={quote_plus(item, safe='')}")
+        return "&".join(pairs)
 
 
 def format_time(value: datetime) -> str:
@@ -194,10 +201,10 @@ def format_time(value: datetime) -> str:
 
 
 def pathf(template: str, *segments: Union[str, int]) -> str:
-    """Format an API path, escaping every segment: a ``/`` inside a reference is sent as ``%2F``,
-    never as a path separator; ``.`` and ``..`` segments are escaped too.
+    """Format an API path, escaping every segment: a ``/`` inside an id is sent as ``%2F``, never
+    as a path separator; ``.`` and ``..`` segments are escaped too.
 
-    ``pathf("/product/reference/{}", "a/b c")`` → ``/product/reference/a%2Fb%20c``.
+    ``pathf("/webhooks/events/{}", "a/b c")`` → ``/webhooks/events/a%2Fb%20c``.
     """
     escaped = []
     for segment in segments:
@@ -445,8 +452,9 @@ def decode(tp: Type[T], resp: Response) -> T:
         data = json.loads(resp.body)
     except (ValueError, UnicodeDecodeError) as exc:
         raise _server_error("unexpected response body", resp) from exc
-    if data is None and get_origin(tp) is list:
-        return []  # type: ignore[return-value]
+    if data is None:
+        # Every answer is a JSON object (lists are pages): null is no answer at all.
+        raise _server_error("null response body where a JSON object was expected", resp)
     try:
         return adapter(tp).validate_python(data)  # type: ignore[no-any-return]
     except pydantic.ValidationError as exc:

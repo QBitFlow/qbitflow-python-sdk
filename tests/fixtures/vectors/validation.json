@@ -4,7 +4,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -14,7 +14,7 @@
     {
       "args": {
         "params": {
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -29,7 +29,7 @@
       "args": {
         "params": {
           "name": "",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -44,7 +44,7 @@
       "args": {
         "params": {
           "name": "   ",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -59,7 +59,7 @@
       "args": {
         "params": {
           "name": "   ",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -74,7 +74,7 @@
       "args": {
         "params": {
           "name": "A",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -89,7 +89,7 @@
       "args": {
         "params": {
           "name": "AB",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -100,7 +100,7 @@
       "args": {
         "params": {
           "name": "😀",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -115,7 +115,7 @@
       "args": {
         "params": {
           "name": "😀😀",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -126,7 +126,7 @@
       "args": {
         "params": {
           "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -137,7 +137,7 @@
       "args": {
         "params": {
           "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -152,7 +152,7 @@
       "args": {
         "params": {
           "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -163,7 +163,7 @@
       "args": {
         "params": {
           "name": "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -178,7 +178,7 @@
       "args": {
         "params": {
           "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa😀",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -189,7 +189,7 @@
       "args": {
         "params": {
           "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -200,7 +200,7 @@
       "args": {
         "params": {
           "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -215,7 +215,7 @@
       "args": {
         "params": {
           "name": "éééééééééééééééééééééééééééééééééééééééééééééééééé",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -226,7 +226,7 @@
       "args": {
         "params": {
           "name": "ééééééééééééééééééééééééééééééééééééééééééééééééééé",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -241,7 +241,7 @@
       "args": {
         "params": {
           "name": "Pro < plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -256,7 +256,7 @@
       "args": {
         "params": {
           "name": "Pro > plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -271,7 +271,7 @@
       "args": {
         "params": {
           "name": "Pro { plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -286,7 +286,7 @@
       "args": {
         "params": {
           "name": "Pro } plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -301,7 +301,7 @@
       "args": {
         "params": {
           "name": "Pro [ plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -316,7 +316,7 @@
       "args": {
         "params": {
           "name": "Pro ] plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -331,7 +331,7 @@
       "args": {
         "params": {
           "name": "Pro ` plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -346,7 +346,7 @@
       "args": {
         "params": {
           "name": "Pro \\ plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -361,7 +361,7 @@
       "args": {
         "params": {
           "name": "Pro | plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -376,7 +376,7 @@
       "args": {
         "params": {
           "name": "Pro ; plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -391,7 +391,7 @@
       "args": {
         "params": {
           "name": "Pro \" plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -406,7 +406,7 @@
       "args": {
         "params": {
           "name": "Pro ~ plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -421,7 +421,7 @@
       "args": {
         "params": {
           "name": "Pro ^ plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -436,7 +436,7 @@
       "args": {
         "params": {
           "name": "Pro\tplan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -451,7 +451,7 @@
       "args": {
         "params": {
           "name": "Pro\nplan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -466,7 +466,7 @@
       "args": {
         "params": {
           "name": "Pro\rplan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -481,7 +481,7 @@
       "args": {
         "params": {
           "name": "Pro\u0000plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -496,7 +496,7 @@
       "args": {
         "params": {
           "name": "Proplan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -511,7 +511,7 @@
       "args": {
         "params": {
           "name": "Proplan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -526,7 +526,7 @@
       "args": {
         "params": {
           "name": "Pro‪plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -541,7 +541,7 @@
       "args": {
         "params": {
           "name": "Pro‮plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -556,7 +556,7 @@
       "args": {
         "params": {
           "name": "Pro⁦plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -571,7 +571,7 @@
       "args": {
         "params": {
           "name": "Pro⁩plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -586,7 +586,7 @@
       "args": {
         "params": {
           "name": "Pro‎plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -597,7 +597,7 @@
       "args": {
         "params": {
           "name": "Pro​plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -608,7 +608,7 @@
       "args": {
         "params": {
           "name": "  Pro plan  ",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -619,7 +619,7 @@
       "args": {
         "params": {
           "name": " A",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -630,7 +630,7 @@
       "args": {
         "params": {
           "name": "Pro plan (v2) - 50% off! #1, 'best' & more: ok? @home / é ü ß 日本",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -642,7 +642,7 @@
         "params": {
           "description": "x",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -658,7 +658,7 @@
         "params": {
           "description": "xy",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -670,7 +670,7 @@
         "params": {
           "description": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -682,7 +682,7 @@
         "params": {
           "description": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -698,7 +698,7 @@
         "params": {
           "description": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -710,7 +710,7 @@
         "params": {
           "description": "   ",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -726,7 +726,7 @@
         "params": {
           "description": "Line 1\r\nLine 2\n\tindented",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -738,7 +738,7 @@
         "params": {
           "description": "Line\u0000one",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -754,7 +754,7 @@
         "params": {
           "description": "Line\u000bone",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -770,7 +770,7 @@
         "params": {
           "description": "a <b> tag",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -786,7 +786,7 @@
         "params": {
           "description": "abc‮def",
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -796,130 +796,399 @@
     {
       "args": {
         "params": {
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: priceUsd 10"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "0.01"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: priceUsd 0.01"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "12.50"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: priceUsd 12.50 (trailing zero)"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "19.9"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: priceUsd 19.9"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "007"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: priceUsd 007 (leading zeros)"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1000000"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: priceUsd 1000000"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1000000.00"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: priceUsd 1000000.00"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "0"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd 0"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "0.00"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd 0.00"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "0.000001"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd 0.000001"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1.999"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd 1.999"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1000000.01"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd 1000000.01"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1000001"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd 1000001"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1000000000"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd 1000000000"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "-1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd -1"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "+1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd +1"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1e2"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd 1e2"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "abc"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd abc"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": ".5"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd .5"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1."
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd 1."
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": " 1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd leading space"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1 "
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd trailing space"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1,5"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd comma decimal"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "1,000"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd thousands separator"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "NaN"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd NaN"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "Infinity"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: priceUsd Infinity"
+    },
+    {
+      "args": {
+        "params": {
           "name": "Pro plan"
         }
       },
       "expect": {
         "fields": [
-          "price"
+          "priceUsd"
         ]
       },
       "method": "products.create",
-      "name": "products.create: price absent"
+      "name": "products.create: priceUsd absent"
     },
     {
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 0
+          "priceUsd": ""
         }
       },
       "expect": {
         "fields": [
-          "price"
+          "priceUsd"
         ]
       },
       "method": "products.create",
-      "name": "products.create: price 0"
+      "name": "products.create: priceUsd empty"
     },
     {
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": -1
-        }
-      },
-      "expect": {
-        "fields": [
-          "price"
-        ]
-      },
-      "method": "products.create",
-      "name": "products.create: price negative"
-    },
-    {
-      "args": {
-        "params": {
-          "name": "Pro plan",
-          "price": "NaN"
-        }
-      },
-      "expect": {
-        "fields": [
-          "price"
-        ]
-      },
-      "method": "products.create",
-      "name": "products.create: price NaN"
-    },
-    {
-      "args": {
-        "params": {
-          "name": "Pro plan",
-          "price": "Infinity"
-        }
-      },
-      "expect": {
-        "fields": [
-          "price"
-        ]
-      },
-      "method": "products.create",
-      "name": "products.create: price Infinity"
-    },
-    {
-      "args": {
-        "params": {
-          "name": "Pro plan",
-          "price": "-Infinity"
-        }
-      },
-      "expect": {
-        "fields": [
-          "price"
-        ]
-      },
-      "method": "products.create",
-      "name": "products.create: price -Infinity"
-    },
-    {
-      "args": {
-        "params": {
-          "name": "Pro plan",
-          "price": 0.01
-        }
-      },
-      "expect": "ok",
-      "method": "products.create",
-      "name": "products.create: price 0.01"
-    },
-    {
-      "args": {
-        "params": {
-          "name": "Pro plan",
-          "price": 0.000001
-        }
-      },
-      "expect": "ok",
-      "method": "products.create",
-      "name": "products.create: price 0.000001"
-    },
-    {
-      "args": {
-        "params": {
-          "name": "Pro plan",
-          "price": 1000000000
-        }
-      },
-      "expect": "ok",
-      "method": "products.create",
-      "name": "products.create: price large"
-    },
-    {
-      "args": {
-        "params": {
-          "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "reference": "Ref.A_z:0@9-x"
         }
       },
@@ -931,7 +1200,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "reference": "order 1043"
         }
       },
@@ -947,7 +1216,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "reference": "order/1043"
         }
       },
@@ -963,7 +1232,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "reference": "commandé"
         }
       },
@@ -979,7 +1248,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "reference": "order#1"
         }
       },
@@ -995,7 +1264,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "reference": "a+b"
         }
       },
@@ -1011,7 +1280,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "reference": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
         }
       },
@@ -1023,7 +1292,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "reference": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
         }
       },
@@ -1039,7 +1308,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "reference": "r"
         }
       },
@@ -1051,7 +1320,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1068,7 +1337,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "minPeriods": 3
           }
@@ -1086,7 +1355,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "days",
@@ -1107,7 +1376,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "value": 1
@@ -1127,7 +1396,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "fortnights",
@@ -1148,7 +1417,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "value": 0
@@ -1168,7 +1437,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "seconds",
@@ -1185,7 +1454,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "seconds",
@@ -1206,7 +1475,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "minutes",
@@ -1223,7 +1492,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "minutes",
@@ -1244,7 +1513,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "hours",
@@ -1261,7 +1530,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "hours",
@@ -1282,7 +1551,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "days",
@@ -1299,7 +1568,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "days",
@@ -1320,7 +1589,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "weeks",
@@ -1337,7 +1606,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "weeks",
@@ -1358,7 +1627,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1375,7 +1644,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1396,7 +1665,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "years",
@@ -1413,7 +1682,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "years",
@@ -1434,7 +1703,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "seconds",
@@ -1455,7 +1724,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "years",
@@ -1476,7 +1745,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1496,7 +1765,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1517,7 +1786,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1541,7 +1810,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1562,7 +1831,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1587,7 +1856,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1608,7 +1877,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1626,7 +1895,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1644,7 +1913,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "months",
@@ -1666,7 +1935,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10,
+          "priceUsd": "10",
           "subscription": {
             "frequency": {
               "unit": "years",
@@ -1694,7 +1963,7 @@
         "params": {
           "description": "x",
           "name": "",
-          "price": 0,
+          "priceUsd": "0",
           "reference": "a b"
         }
       },
@@ -1702,12 +1971,865 @@
         "fields": [
           "description",
           "name",
-          "price",
+          "priceUsd",
           "reference"
         ]
       },
       "method": "products.create",
       "name": "products.create: several errors at once"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "orderId": "order-1043"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: metadata one key"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {},
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: metadata empty object"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "Az09_-.:x": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: metadata key charset A-Z a-z 0-9 _ - . :"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k00": "v",
+            "k01": "v",
+            "k02": "v",
+            "k03": "v",
+            "k04": "v",
+            "k05": "v",
+            "k06": "v",
+            "k07": "v",
+            "k08": "v",
+            "k09": "v",
+            "k10": "v",
+            "k11": "v",
+            "k12": "v",
+            "k13": "v",
+            "k14": "v",
+            "k15": "v",
+            "k16": "v",
+            "k17": "v",
+            "k18": "v",
+            "k19": "v",
+            "k20": "v",
+            "k21": "v",
+            "k22": "v",
+            "k23": "v",
+            "k24": "v",
+            "k25": "v",
+            "k26": "v",
+            "k27": "v",
+            "k28": "v",
+            "k29": "v",
+            "k30": "v",
+            "k31": "v",
+            "k32": "v",
+            "k33": "v",
+            "k34": "v",
+            "k35": "v",
+            "k36": "v",
+            "k37": "v",
+            "k38": "v",
+            "k39": "v",
+            "k40": "v",
+            "k41": "v",
+            "k42": "v",
+            "k43": "v",
+            "k44": "v",
+            "k45": "v",
+            "k46": "v",
+            "k47": "v",
+            "k48": "v",
+            "k49": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: metadata 50 keys"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k00": "v",
+            "k01": "v",
+            "k02": "v",
+            "k03": "v",
+            "k04": "v",
+            "k05": "v",
+            "k06": "v",
+            "k07": "v",
+            "k08": "v",
+            "k09": "v",
+            "k10": "v",
+            "k11": "v",
+            "k12": "v",
+            "k13": "v",
+            "k14": "v",
+            "k15": "v",
+            "k16": "v",
+            "k17": "v",
+            "k18": "v",
+            "k19": "v",
+            "k20": "v",
+            "k21": "v",
+            "k22": "v",
+            "k23": "v",
+            "k24": "v",
+            "k25": "v",
+            "k26": "v",
+            "k27": "v",
+            "k28": "v",
+            "k29": "v",
+            "k30": "v",
+            "k31": "v",
+            "k32": "v",
+            "k33": "v",
+            "k34": "v",
+            "k35": "v",
+            "k36": "v",
+            "k37": "v",
+            "k38": "v",
+            "k39": "v",
+            "k40": "v",
+            "k41": "v",
+            "k42": "v",
+            "k43": "v",
+            "k44": "v",
+            "k45": "v",
+            "k46": "v",
+            "k47": "v",
+            "k48": "v",
+            "k49": "v",
+            "k50": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata 51 keys",
+      "note": "the count fails on metadata"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: metadata key 40"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata key 41",
+      "note": "a bad key fails on metadata (the key is not echoed)"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata key empty"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "order id": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata key with a space"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "a/b": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata key with /"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "a@b": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata key with @"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "clé": "v"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata key non-ASCII"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": ""
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: metadata value empty",
+      "note": "an empty value is sent (dropped by the API on a create)"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: metadata value 500"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata.k"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata value 501",
+      "note": "a bad value fails on metadata.<key>"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: metadata value 500 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata.k"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata value 501 emoji"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "a\tb"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata.k"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata value with a tab",
+      "note": "control characters, the tab included, are refused"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "a\nb"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata.k"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata value with a newline"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "a\u0000b"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata.k"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata value with NUL"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "a‮b"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata.k"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata value with bidi U+202E"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "<>{}[]`\\|;\"~^"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: metadata value with the 13 text characters",
+      "note": "metadata values are not the text rule: only control and bidi characters are refused"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "bad key": "v",
+            "good": "a\u0000b"
+          },
+          "name": "Pro plan",
+          "priceUsd": "10"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata",
+          "metadata.good"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: metadata bad key and bad value"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "firstName": "Alice",
+          "metadata": {
+            "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk": "v"
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: metadata 41-char key"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "tier": ""
+          }
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": "ok",
+      "method": "customers.update",
+      "name": "customers.update: metadata empty value (deletes the key)"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "tier": "a\u0000"
+          }
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": {
+        "fields": [
+          "metadata.tier"
+        ]
+      },
+      "method": "customers.update",
+      "name": "customers.update: metadata value with NUL"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "legacy": ""
+          }
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.update",
+      "name": "products.update: metadata empty value (deletes the key)"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k00": "v",
+            "k01": "v",
+            "k02": "v",
+            "k03": "v",
+            "k04": "v",
+            "k05": "v",
+            "k06": "v",
+            "k07": "v",
+            "k08": "v",
+            "k09": "v",
+            "k10": "v",
+            "k11": "v",
+            "k12": "v",
+            "k13": "v",
+            "k14": "v",
+            "k15": "v",
+            "k16": "v",
+            "k17": "v",
+            "k18": "v",
+            "k19": "v",
+            "k20": "v",
+            "k21": "v",
+            "k22": "v",
+            "k23": "v",
+            "k24": "v",
+            "k25": "v",
+            "k26": "v",
+            "k27": "v",
+            "k28": "v",
+            "k29": "v",
+            "k30": "v",
+            "k31": "v",
+            "k32": "v",
+            "k33": "v",
+            "k34": "v",
+            "k35": "v",
+            "k36": "v",
+            "k37": "v",
+            "k38": "v",
+            "k39": "v",
+            "k40": "v",
+            "k41": "v",
+            "k42": "v",
+            "k43": "v",
+            "k44": "v",
+            "k45": "v",
+            "k46": "v",
+            "k47": "v",
+            "k48": "v",
+            "k49": "v",
+            "k50": "v"
+          }
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: metadata 51 keys"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "order id": "1"
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: metadata bad key"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "metadata.k"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: metadata value 501"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "coupon": "",
+            "plan": "pro"
+          }
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "expect": "ok",
+      "method": "subscriptions.update",
+      "name": "subscriptions.update: metadata set and delete"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "expect": "ok",
+      "method": "subscriptions.update",
+      "name": "subscriptions.update: no metadata"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k00": "v",
+            "k01": "v",
+            "k02": "v",
+            "k03": "v",
+            "k04": "v",
+            "k05": "v",
+            "k06": "v",
+            "k07": "v",
+            "k08": "v",
+            "k09": "v",
+            "k10": "v",
+            "k11": "v",
+            "k12": "v",
+            "k13": "v",
+            "k14": "v",
+            "k15": "v",
+            "k16": "v",
+            "k17": "v",
+            "k18": "v",
+            "k19": "v",
+            "k20": "v",
+            "k21": "v",
+            "k22": "v",
+            "k23": "v",
+            "k24": "v",
+            "k25": "v",
+            "k26": "v",
+            "k27": "v",
+            "k28": "v",
+            "k29": "v",
+            "k30": "v",
+            "k31": "v",
+            "k32": "v",
+            "k33": "v",
+            "k34": "v",
+            "k35": "v",
+            "k36": "v",
+            "k37": "v",
+            "k38": "v",
+            "k39": "v",
+            "k40": "v",
+            "k41": "v",
+            "k42": "v",
+            "k43": "v",
+            "k44": "v",
+            "k45": "v",
+            "k46": "v",
+            "k47": "v",
+            "k48": "v",
+            "k49": "v"
+          }
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "expect": "ok",
+      "method": "subscriptions.update",
+      "name": "subscriptions.update: metadata 50 keys (the merged cap is the API's)"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k00": "v",
+            "k01": "v",
+            "k02": "v",
+            "k03": "v",
+            "k04": "v",
+            "k05": "v",
+            "k06": "v",
+            "k07": "v",
+            "k08": "v",
+            "k09": "v",
+            "k10": "v",
+            "k11": "v",
+            "k12": "v",
+            "k13": "v",
+            "k14": "v",
+            "k15": "v",
+            "k16": "v",
+            "k17": "v",
+            "k18": "v",
+            "k19": "v",
+            "k20": "v",
+            "k21": "v",
+            "k22": "v",
+            "k23": "v",
+            "k24": "v",
+            "k25": "v",
+            "k26": "v",
+            "k27": "v",
+            "k28": "v",
+            "k29": "v",
+            "k30": "v",
+            "k31": "v",
+            "k32": "v",
+            "k33": "v",
+            "k34": "v",
+            "k35": "v",
+            "k36": "v",
+            "k37": "v",
+            "k38": "v",
+            "k39": "v",
+            "k40": "v",
+            "k41": "v",
+            "k42": "v",
+            "k43": "v",
+            "k44": "v",
+            "k45": "v",
+            "k46": "v",
+            "k47": "v",
+            "k48": "v",
+            "k49": "v",
+            "k50": "v"
+          }
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "subscriptions.update",
+      "name": "subscriptions.update: metadata 51 keys"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "a/b": "v"
+          }
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "expect": {
+        "fields": [
+          "metadata"
+        ]
+      },
+      "method": "subscriptions.update",
+      "name": "subscriptions.update: metadata bad key"
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "k": "⁦x"
+          }
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "expect": {
+        "fields": [
+          "metadata.k"
+        ]
+      },
+      "method": "subscriptions.update",
+      "name": "subscriptions.update: metadata value with bidi"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "subscriptions.update",
+      "name": "subscriptions.update: uuid bare"
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "sub-7731"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "subscriptions.update",
+      "name": "subscriptions.update: uuid invalid"
     },
     {
       "args": {
@@ -1856,32 +2978,69 @@
     {
       "args": {
         "params": {
-          "price": "NaN"
+          "priceUsd": ""
         },
         "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
       },
-      "expect": {
-        "fields": [
-          "price"
-        ]
-      },
+      "expect": "ok",
       "method": "products.update",
-      "name": "products.update: price NaN"
+      "name": "products.update: priceUsd empty means unchanged"
     },
     {
       "args": {
         "params": {
-          "price": 0
+          "priceUsd": "12.50"
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": "ok",
+      "method": "products.update",
+      "name": "products.update: priceUsd 12.50"
+    },
+    {
+      "args": {
+        "params": {
+          "priceUsd": "0"
         },
         "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
       },
       "expect": {
         "fields": [
-          "price"
+          "priceUsd"
         ]
       },
       "method": "products.update",
-      "name": "products.update: price 0"
+      "name": "products.update: priceUsd 0"
+    },
+    {
+      "args": {
+        "params": {
+          "priceUsd": "1.999"
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: priceUsd 1.999"
+    },
+    {
+      "args": {
+        "params": {
+          "priceUsd": "1e2"
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "products.update",
+      "name": "products.update: priceUsd 1e2"
     },
     {
       "args": {
@@ -1975,11 +3134,47 @@
     },
     {
       "args": {
-        "reference": "a/b c@d#é"
+        "reference": "pro-monthly"
       },
       "expect": "ok",
       "method": "products.getByReference",
-      "name": "products.getByReference: any reference (not checked)"
+      "name": "products.getByReference: valid"
+    },
+    {
+      "args": {
+        "reference": "a/b"
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.getByReference",
+      "name": "products.getByReference: with a slash"
+    },
+    {
+      "args": {
+        "reference": "pro monthly"
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.getByReference",
+      "name": "products.getByReference: with a space"
+    },
+    {
+      "args": {
+        "reference": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.getByReference",
+      "name": "products.getByReference: 101 chars"
     },
     {
       "args": {
@@ -2009,43 +3204,77 @@
       "args": {
         "reference": "."
       },
-      "expect": {
-        "fields": [
-          "reference"
-        ]
-      },
+      "expect": "ok",
       "method": "products.getByReference",
-      "name": "products.getByReference: single dot (relative path segment)"
+      "name": "products.getByReference: single dot (a valid reference, sent in the query)"
     },
     {
       "args": {
         "reference": ".."
       },
+      "expect": "ok",
+      "method": "subscriptions.getByReference",
+      "name": "subscriptions.getByReference: two dots (a valid reference, sent in the query)"
+    },
+    {
+      "args": {
+        "reference": "order#1"
+      },
       "expect": {
         "fields": [
           "reference"
         ]
       },
-      "method": "subscriptions.getByReference",
-      "name": "subscriptions.getByReference: two dots (relative path segment)"
+      "method": "payments.getByReference",
+      "name": "payments.getByReference: with #"
     },
     {
       "args": {
-        "email": ".."
+        "reference": "commandé"
       },
       "expect": {
         "fields": [
-          "email"
+          "reference"
         ]
       },
-      "method": "customers.getByEmail",
-      "name": "customers.getByEmail: two dots (relative path segment)"
+      "method": "customers.getByReference",
+      "name": "customers.getByReference: with an accent"
+    },
+    {
+      "args": {
+        "params": {
+          "reference": "pro-monthly"
+        }
+      },
+      "expect": "ok",
+      "method": "products.list",
+      "name": "products.list: reference filter valid"
+    },
+    {
+      "args": {
+        "params": {
+          "reference": "pro monthly"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.list",
+      "name": "products.list: reference filter invalid"
+    },
+    {
+      "args": {},
+      "expect": "ok",
+      "method": "products.list",
+      "name": "products.list: no params"
     },
     {
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": "ok",
@@ -2057,8 +3286,8 @@
         "params": {
           "address": "1 rue de la Paix\nParis",
           "email": "alice@example.com",
+          "firstName": "Alice",
           "lastName": "Martin",
-          "name": "Alice",
           "phoneNumber": "+33 6 12 34 56 78",
           "reference": "crm-5521"
         }
@@ -2075,16 +3304,72 @@
       },
       "expect": {
         "fields": [
-          "name"
+          "firstName"
         ]
       },
       "method": "customers.create",
-      "name": "customers.create: name absent"
+      "name": "customers.create: firstName absent"
     },
     {
       "args": {
         "params": {
-          "name": "Alice"
+          "email": "alice@example.com",
+          "firstName": "A"
+        }
+      },
+      "expect": {
+        "fields": [
+          "firstName"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: firstName 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "firstName": "Al"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.create",
+      "name": "customers.create: firstName 2 chars"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "firstName": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      },
+      "expect": {
+        "fields": [
+          "firstName"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: firstName 101"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "firstName": "Al;ice"
+        }
+      },
+      "expect": {
+        "fields": [
+          "firstName"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: firstName with ;"
+    },
+    {
+      "args": {
+        "params": {
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2099,7 +3384,7 @@
       "args": {
         "params": {
           "email": "alice.example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2114,7 +3399,7 @@
       "args": {
         "params": {
           "email": "alice@example",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2129,7 +3414,7 @@
       "args": {
         "params": {
           "email": "alice@.example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2144,7 +3429,7 @@
       "args": {
         "params": {
           "email": "alice@example.com.",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2159,7 +3444,7 @@
       "args": {
         "params": {
           "email": "a@b@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2174,7 +3459,7 @@
       "args": {
         "params": {
           "email": "al ice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2189,7 +3474,7 @@
       "args": {
         "params": {
           "email": "@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2204,7 +3489,7 @@
       "args": {
         "params": {
           "email": "Alice@Example.COM",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": "ok",
@@ -2215,7 +3500,7 @@
       "args": {
         "params": {
           "email": "élodie@exämple.fr",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": "ok",
@@ -2226,7 +3511,7 @@
       "args": {
         "params": {
           "email": "alice+vip@mail.example.co.uk",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": "ok",
@@ -2237,7 +3522,7 @@
       "args": {
         "params": {
           "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": "ok",
@@ -2248,7 +3533,7 @@
       "args": {
         "params": {
           "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2263,8 +3548,8 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "lastName": "M",
-          "name": "Alice"
+          "firstName": "Alice",
+          "lastName": "M"
         }
       },
       "expect": "ok",
@@ -2275,8 +3560,8 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "lastName": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
-          "name": "Alice"
+          "firstName": "Alice",
+          "lastName": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
         }
       },
       "expect": "ok",
@@ -2287,8 +3572,8 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "lastName": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
-          "name": "Alice"
+          "firstName": "Alice",
+          "lastName": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
         }
       },
       "expect": {
@@ -2303,8 +3588,8 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "lastName": "Mar;tin",
-          "name": "Alice"
+          "firstName": "Alice",
+          "lastName": "Mar;tin"
         }
       },
       "expect": {
@@ -2319,8 +3604,8 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "lastName": " ",
-          "name": "Alice"
+          "firstName": "Alice",
+          "lastName": " "
         }
       },
       "expect": {
@@ -2335,7 +3620,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "+33 6 12 34 56 78"
         }
       },
@@ -2347,7 +3632,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "0612345678"
         }
       },
@@ -2359,7 +3644,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "1 (555) 123-45.67"
         }
       },
@@ -2371,7 +3656,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "(555) 123-4567"
         }
       },
@@ -2387,7 +3672,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "123456"
         }
       },
@@ -2399,7 +3684,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "12345"
         }
       },
@@ -2415,7 +3700,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "0612345678-"
         }
       },
@@ -2431,7 +3716,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "06123456x8"
         }
       },
@@ -2447,7 +3732,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "++33612345678"
         }
       },
@@ -2463,7 +3748,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "+1111111111111111111111111111111"
         }
       },
@@ -2475,7 +3760,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "phoneNumber": "+11111111111111111111111111111111"
         }
       },
@@ -2492,7 +3777,7 @@
         "params": {
           "address": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": "ok",
@@ -2504,7 +3789,7 @@
         "params": {
           "address": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2520,7 +3805,7 @@
         "params": {
           "address": "a",
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": "ok",
@@ -2532,7 +3817,7 @@
         "params": {
           "address": "1 rue de la Paix\r\n75002 Paris\tFrance",
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": "ok",
@@ -2544,7 +3829,7 @@
         "params": {
           "address": "1 rue {Paix}",
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2560,7 +3845,7 @@
         "params": {
           "address": "\n\t ",
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -2575,7 +3860,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice",
+          "firstName": "Alice",
           "reference": "crm 5521"
         }
       },
@@ -2621,6 +3906,58 @@
     {
       "args": {
         "params": {
+          "lastName": ""
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": "ok",
+      "method": "customers.update",
+      "name": "customers.update: lastName empty clears"
+    },
+    {
+      "args": {
+        "params": {
+          "lastName": "M"
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": "ok",
+      "method": "customers.update",
+      "name": "customers.update: lastName 1 char"
+    },
+    {
+      "args": {
+        "params": {
+          "lastName": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": {
+        "fields": [
+          "lastName"
+        ]
+      },
+      "method": "customers.update",
+      "name": "customers.update: lastName 101"
+    },
+    {
+      "args": {
+        "params": {
+          "lastName": " "
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": {
+        "fields": [
+          "lastName"
+        ]
+      },
+      "method": "customers.update",
+      "name": "customers.update: lastName blank"
+    },
+    {
+      "args": {
+        "params": {
           "phoneNumber": "abc"
         },
         "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
@@ -2662,22 +3999,33 @@
     {
       "args": {
         "params": {
-          "name": "A"
+          "firstName": ""
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "expect": "ok",
+      "method": "customers.update",
+      "name": "customers.update: firstName empty means unchanged"
+    },
+    {
+      "args": {
+        "params": {
+          "firstName": "A"
         },
         "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
       },
       "expect": {
         "fields": [
-          "name"
+          "firstName"
         ]
       },
       "method": "customers.update",
-      "name": "customers.update: name 1 char"
+      "name": "customers.update: firstName 1 char"
     },
     {
       "args": {
         "params": {
-          "name": "Alice"
+          "firstName": "Alice"
         },
         "uuid": "bad"
       },
@@ -2722,7 +4070,35 @@
     {
       "args": {
         "params": {
-          "cursor": "01a05cd7-2a00-7d00-8000-0000000000d1",
+          "email": "not-an-email"
+        }
+      },
+      "expect": {
+        "fields": [
+          "email"
+        ]
+      },
+      "method": "customers.list",
+      "name": "customers.list: email filter not an email"
+    },
+    {
+      "args": {
+        "params": {
+          "reference": "crm 5521"
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "customers.list",
+      "name": "customers.list: reference filter invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "limit": 10,
           "verified": false
         }
@@ -2730,6 +4106,40 @@
       "expect": "ok",
       "method": "customers.list",
       "name": "customers.list: verified false, limit and cursor"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.list",
+      "name": "customers.list: cursor 200"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "fields": [
+          "cursor"
+        ]
+      },
+      "method": "customers.list",
+      "name": "customers.list: cursor 201"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        }
+      },
+      "expect": "ok",
+      "method": "customers.list",
+      "name": "customers.list: cursor 200 emoji"
     },
     {
       "args": {
@@ -2742,26 +4152,6 @@
       },
       "method": "customers.get",
       "name": "customers.get: uuid invalid"
-    },
-    {
-      "args": {
-        "email": ""
-      },
-      "expect": {
-        "fields": [
-          "email"
-        ]
-      },
-      "method": "customers.getByEmail",
-      "name": "customers.getByEmail: empty"
-    },
-    {
-      "args": {
-        "email": "not-an-email"
-      },
-      "expect": "ok",
-      "method": "customers.getByEmail",
-      "name": "customers.getByEmail: not an email (not checked)"
     },
     {
       "args": {
@@ -2806,7 +4196,7 @@
     {
       "args": {
         "params": {
-          "price": 10,
+          "priceUsd": "10",
           "productName": "Pro"
         }
       },
@@ -2818,7 +4208,7 @@
       "args": {
         "params": {
           "description": "Lifetime access",
-          "price": 10,
+          "priceUsd": "10",
           "productName": "Pro"
         }
       },
@@ -2871,7 +4261,7 @@
     {
       "args": {
         "params": {
-          "price": 10,
+          "priceUsd": "10",
           "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
         }
       },
@@ -2881,7 +4271,7 @@
         ]
       },
       "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: productUuid and price"
+      "name": "checkoutSessions.createPayment: productUuid and priceUsd"
     },
     {
       "args": {
@@ -2901,7 +4291,7 @@
     {
       "args": {
         "params": {
-          "price": 10,
+          "priceUsd": "10",
           "productReference": "pro-plan"
         }
       },
@@ -2911,12 +4301,12 @@
         ]
       },
       "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: productReference and price"
+      "name": "checkoutSessions.createPayment: productReference and priceUsd"
     },
     {
       "args": {
         "params": {
-          "price": 10,
+          "priceUsd": "10",
           "productName": "Pro",
           "productReference": "pro-plan",
           "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
@@ -2938,16 +4328,16 @@
       },
       "expect": {
         "fields": [
-          "price"
+          "priceUsd"
         ]
       },
       "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: inline without price"
+      "name": "checkoutSessions.createPayment: inline without priceUsd"
     },
     {
       "args": {
         "params": {
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -2966,7 +4356,7 @@
       },
       "expect": {
         "fields": [
-          "price",
+          "priceUsd",
           "productName"
         ]
       },
@@ -2976,37 +4366,67 @@
     {
       "args": {
         "params": {
-          "price": -1,
+          "priceUsd": "-1",
           "productName": "Pro"
         }
       },
       "expect": {
         "fields": [
-          "price"
+          "priceUsd"
         ]
       },
       "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: inline price negative"
+      "name": "checkoutSessions.createPayment: inline priceUsd negative"
     },
     {
       "args": {
         "params": {
-          "price": "NaN",
+          "priceUsd": "1.999",
           "productName": "Pro"
         }
       },
       "expect": {
         "fields": [
-          "price"
+          "priceUsd"
         ]
       },
       "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: inline price NaN"
+      "name": "checkoutSessions.createPayment: inline priceUsd 1.999"
     },
     {
       "args": {
         "params": {
-          "price": 10,
+          "priceUsd": "1000000.01",
+          "productName": "Pro"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline priceUsd 1000000.01"
+    },
+    {
+      "args": {
+        "params": {
+          "priceUsd": "0",
+          "productName": "Pro"
+        }
+      },
+      "expect": {
+        "fields": [
+          "priceUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: inline priceUsd 0"
+    },
+    {
+      "args": {
+        "params": {
+          "priceUsd": "10",
           "productName": "P"
         }
       },
@@ -3021,7 +4441,7 @@
     {
       "args": {
         "params": {
-          "price": 10,
+          "priceUsd": "10",
           "productName": "Pro|Max"
         }
       },
@@ -3037,7 +4457,7 @@
       "args": {
         "params": {
           "description": "x",
-          "price": 10,
+          "priceUsd": "10",
           "productName": "Pro"
         }
       },
@@ -3387,7 +4807,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -3407,52 +4827,52 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -3471,57 +4891,57 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -3545,57 +4965,57 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "a|b"
               }
@@ -3620,12 +5040,12 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": ""
               },
               {
-                "amountUsd": 0,
+                "amountUsd": "0",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -3649,7 +5069,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days"
               }
             ]
@@ -3671,7 +5091,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": ""
               }
@@ -3694,7 +5114,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "   "
               }
@@ -3717,7 +5137,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "S"
               }
@@ -3736,7 +5156,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "llllllllllllllllllllllllllllllllllllllll"
               }
@@ -3755,7 +5175,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "lllllllllllllllllllllllllllllllllllllllll"
               }
@@ -3778,7 +5198,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
               }
@@ -3797,7 +5217,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
               }
@@ -3820,7 +5240,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "VAT (20%)"
               }
@@ -3839,7 +5259,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Ship\nping"
               }
@@ -3862,7 +5282,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Ship\tping"
               }
@@ -3885,7 +5305,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Ship|ping"
               }
@@ -3908,7 +5328,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "<b>Shipping"
               }
@@ -3931,7 +5351,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Ship‮ping"
               }
@@ -3954,7 +5374,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "label": "Shipping"
               }
             ]
@@ -3972,7 +5392,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "",
                 "label": "Shipping"
               }
@@ -3992,7 +5412,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "x",
                 "label": "Shipping"
               }
@@ -4011,7 +5431,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
                 "label": "Shipping"
               }
@@ -4030,7 +5450,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
                 "label": "Shipping"
               }
@@ -4053,7 +5473,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
                 "label": "Shipping"
               }
@@ -4072,7 +5492,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "   ",
                 "label": "Shipping"
               }
@@ -4095,7 +5515,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard,\n\t3 to 5 days",
                 "label": "Shipping"
               }
@@ -4114,7 +5534,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard\u0000",
                 "label": "Shipping"
               }
@@ -4137,7 +5557,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard; 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4182,7 +5602,30 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 0,
+                "amountUsd": "",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd empty"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "0",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4205,7 +5648,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": -1,
+                "amountUsd": "-1",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4228,7 +5671,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": -0.01,
+                "amountUsd": "-0.01",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4251,7 +5694,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 0.01,
+                "amountUsd": "0.01",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4270,7 +5713,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 0.001,
+                "amountUsd": "0.001",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4293,7 +5736,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 19.9,
+                "amountUsd": "19.9",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4312,7 +5755,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 20,
+                "amountUsd": "19.90",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4323,7 +5766,7 @@
       },
       "expect": "ok",
       "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: fees amountUsd 20 (integer)"
+      "name": "checkoutSessions.createPayment: fees amountUsd 19.90"
     },
     {
       "args": {
@@ -4331,7 +5774,26 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 1.999,
+                "amountUsd": "20",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 20"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "1.999",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4354,7 +5816,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 1000000,
+                "amountUsd": "1000000",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4373,7 +5835,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 1000000.01,
+                "amountUsd": "1000000.01",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4396,7 +5858,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 1000001,
+                "amountUsd": "1000001",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4419,7 +5881,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 0.30000000000000004,
+                "amountUsd": "0.30000000000000004",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4434,7 +5896,145 @@
         ]
       },
       "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: fees amountUsd 0.1 + 0.2 (0.30000000000000004)"
+      "name": "checkoutSessions.createPayment: fees amountUsd 0.30000000000000004"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "1e2",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 1e2"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "+1",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd +1"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "abc",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd abc"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": ".5",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd .5"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "1.",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd 1."
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": " 1",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: fees amountUsd  1"
     },
     {
       "args": {
@@ -4457,8 +6057,7 @@
         ]
       },
       "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: fees amountUsd NaN",
-      "note": "the IEEE value (README: non-finite numbers); an SDK taking strings too refuses the string as well"
+      "name": "checkoutSessions.createPayment: fees amountUsd NaN"
     },
     {
       "args": {
@@ -4466,62 +6065,14 @@
           "fees": {
             "items": [
               {
-                "amountUsd": "Infinity",
-                "description": "Standard, 3 to 5 days",
-                "label": "Shipping"
-              }
-            ]
-          },
-          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
-        }
-      },
-      "expect": {
-        "fields": [
-          "fees.items[0].amountUsd"
-        ]
-      },
-      "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: fees amountUsd Infinity",
-      "note": "the IEEE value (README: non-finite numbers); an SDK taking strings too refuses the string as well"
-    },
-    {
-      "args": {
-        "params": {
-          "fees": {
-            "items": [
-              {
-                "amountUsd": "-Infinity",
-                "description": "Standard, 3 to 5 days",
-                "label": "Shipping"
-              }
-            ]
-          },
-          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
-        }
-      },
-      "expect": {
-        "fields": [
-          "fees.items[0].amountUsd"
-        ]
-      },
-      "method": "checkoutSessions.createPayment",
-      "name": "checkoutSessions.createPayment: fees amountUsd -Infinity",
-      "note": "the IEEE value (README: non-finite numbers); an SDK taking strings too refuses the string as well"
-    },
-    {
-      "args": {
-        "params": {
-          "fees": {
-            "items": [
-              {
-                "amountUsd": 2,
+                "amountUsd": "2",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
             ],
             "processingFee": true
           },
-          "price": 3.99,
+          "priceUsd": "3.99",
           "productName": "T-shirt"
         }
       },
@@ -4549,7 +6100,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4569,52 +6120,52 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4633,57 +6184,57 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4707,7 +6258,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 0.001,
+                "amountUsd": "0.001",
                 "description": "   ",
                 "label": "a|b"
               }
@@ -4732,7 +6283,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 1000000.01,
+                "amountUsd": "1000000.01",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4755,7 +6306,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": "NaN",
+                "amountUsd": "1e2",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4770,7 +6321,7 @@
         ]
       },
       "method": "checkoutSessions.createSubscription",
-      "name": "checkoutSessions.createSubscription: fees amountUsd NaN"
+      "name": "checkoutSessions.createSubscription: fees amountUsd 1e2"
     },
     {
       "args": {
@@ -4778,7 +6329,7 @@
           "fees": {
             "items": [
               {
-                "amountUsd": -1,
+                "amountUsd": "-1",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -4806,57 +6357,57 @@
           "fees": {
             "items": [
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               },
               {
-                "amountUsd": 4.99,
+                "amountUsd": "4.99",
                 "description": "Standard, 3 to 5 days",
                 "label": "Shipping"
               }
@@ -5010,7 +6561,7 @@
             "unit": "months",
             "value": 1
           },
-          "price": 9.99,
+          "priceUsd": "9.99",
           "productName": "Pro monthly",
           "trialPeriod": {
             "unit": "days",
@@ -5059,64 +6610,72 @@
         "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
       },
       "expect": "ok",
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id pay@"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id pay@"
     },
     {
       "args": {
         "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
       },
       "expect": "ok",
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id sub@"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id sub@"
     },
     {
       "args": {
         "uuid": "payg@01a0f22f-9600-7000-8000-000000000008"
       },
       "expect": "ok",
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id payg@"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id payg@"
     },
     {
       "args": {
         "uuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
       },
       "expect": "ok",
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id sub-hist@"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id sub-hist@"
     },
     {
       "args": {
         "uuid": "refund@01a0f22f-9600-7000-8000-000000000008"
       },
       "expect": "ok",
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id refund@"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id refund@"
     },
     {
       "args": {
         "uuid": "transfer@01a0f22f-9600-7000-8000-000000000008"
       },
       "expect": "ok",
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id transfer@"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id transfer@"
+    },
+    {
+      "args": {
+        "uuid": "release@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id release@"
     },
     {
       "args": {
         "uuid": "01a0f22f-9600-7000-8000-000000000008"
       },
       "expect": "ok",
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id bare UUID"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id bare UUID"
     },
     {
       "args": {
         "uuid": "pay@01A0F22F-9600-7000-8000-000000000008"
       },
       "expect": "ok",
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id uppercase UUID after pay@"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id uppercase UUID after pay@"
     },
     {
       "args": {
@@ -5127,8 +6686,8 @@
           "uuid"
         ]
       },
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id unknown prefix"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id unknown prefix"
     },
     {
       "args": {
@@ -5139,8 +6698,8 @@
           "uuid"
         ]
       },
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id uppercase prefix"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id uppercase prefix"
     },
     {
       "args": {
@@ -5151,8 +6710,8 @@
           "uuid"
         ]
       },
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id prefix without id"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id prefix without id"
     },
     {
       "args": {
@@ -5163,8 +6722,8 @@
           "uuid"
         ]
       },
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id prefix with a bad id"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id prefix with a bad id"
     },
     {
       "args": {
@@ -5175,8 +6734,8 @@
           "uuid"
         ]
       },
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id two @"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id two @"
     },
     {
       "args": {
@@ -5187,8 +6746,8 @@
           "uuid"
         ]
       },
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id empty"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id empty"
     },
     {
       "args": {
@@ -5199,8 +6758,8 @@
           "uuid"
         ]
       },
-      "method": "checkoutSessions.getStatus",
-      "name": "checkoutSessions.getStatus: tx id @ only"
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get: tx id @ only"
     },
     {
       "args": {
@@ -5331,36 +6890,88 @@
     {
       "args": {
         "params": {
-          "source": "payment"
+          "reference": "order-1043"
         }
       },
       "expect": "ok",
-      "method": "payments.listCombined",
-      "name": "payments.listCombined: source payment"
+      "method": "payments.list",
+      "name": "payments.list: reference filter valid"
     },
     {
       "args": {
         "params": {
-          "source": "subscriptionHistory"
-        }
-      },
-      "expect": "ok",
-      "method": "payments.listCombined",
-      "name": "payments.listCombined: source subscriptionHistory"
-    },
-    {
-      "args": {
-        "params": {
-          "source": "refund"
+          "reference": "order 1043"
         }
       },
       "expect": {
         "fields": [
-          "source"
+          "reference"
         ]
       },
-      "method": "payments.listCombined",
-      "name": "payments.listCombined: source unknown"
+      "method": "payments.list",
+      "name": "payments.list: reference filter invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "fields": [
+          "cursor"
+        ]
+      },
+      "method": "payments.list",
+      "name": "payments.list: cursor 201"
+    },
+    {
+      "args": {
+        "params": {
+          "type": "payment"
+        }
+      },
+      "expect": "ok",
+      "method": "transactions.list",
+      "name": "transactions.list: type payment"
+    },
+    {
+      "args": {
+        "params": {
+          "type": "bill"
+        }
+      },
+      "expect": "ok",
+      "method": "transactions.list",
+      "name": "transactions.list: type bill"
+    },
+    {
+      "args": {
+        "params": {
+          "type": "refund"
+        }
+      },
+      "expect": {
+        "fields": [
+          "type"
+        ]
+      },
+      "method": "transactions.list",
+      "name": "transactions.list: type unknown"
+    },
+    {
+      "args": {
+        "params": {
+          "type": "subscriptionHistory"
+        }
+      },
+      "expect": {
+        "fields": [
+          "type"
+        ]
+      },
+      "method": "transactions.list",
+      "name": "transactions.list: type subscriptionHistory (retired)"
     },
     {
       "args": {
@@ -5369,8 +6980,8 @@
         }
       },
       "expect": "ok",
-      "method": "payments.listCombined",
-      "name": "payments.listCombined: subscriptionUuid sub@"
+      "method": "transactions.list",
+      "name": "transactions.list: subscriptionUuid sub@"
     },
     {
       "args": {
@@ -5383,8 +6994,8 @@
           "subscriptionUuid"
         ]
       },
-      "method": "payments.listCombined",
-      "name": "payments.listCombined: subscriptionUuid invalid"
+      "method": "transactions.list",
+      "name": "transactions.list: subscriptionUuid invalid"
     },
     {
       "args": {
@@ -5398,8 +7009,8 @@
           "userUuid"
         ]
       },
-      "method": "payments.listCombined",
-      "name": "payments.listCombined: includeMembers and userUuid"
+      "method": "transactions.list",
+      "name": "transactions.list: includeMembers and userUuid"
     },
     {
       "args": {
@@ -5529,13 +7140,9 @@
           "status": "frozen"
         }
       },
-      "expect": {
-        "fields": [
-          "status"
-        ]
-      },
+      "expect": "ok",
       "method": "subscriptions.list",
-      "name": "subscriptions.list: status unknown"
+      "name": "subscriptions.list: status unknown (not checked: new values may appear)"
     },
     {
       "args": {
@@ -5634,15 +7241,18 @@
     },
     {
       "args": {
-        "subscriptionUuid": "x"
+        "params": {
+          "cursor": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
       },
       "expect": {
         "fields": [
-          "subscriptionUuid"
+          "cursor"
         ]
       },
-      "method": "subscriptions.getPublicHistory",
-      "name": "subscriptions.getPublicHistory: id invalid"
+      "method": "subscriptions.listBills",
+      "name": "subscriptions.listBills: cursor 201"
     },
     {
       "args": {
@@ -5668,8 +7278,16 @@
           "uuid"
         ]
       },
-      "method": "subscriptions.executeTestBilling",
-      "name": "subscriptions.executeTestBilling: id empty"
+      "method": "subscriptions.testBill",
+      "name": "subscriptions.testBill: id empty"
+    },
+    {
+      "args": {
+        "uuid": "01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "subscriptions.testBill",
+      "name": "subscriptions.testBill: bare uuid"
     },
     {
       "args": {
@@ -5678,8 +7296,8 @@
         }
       },
       "expect": "ok",
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: valid minimal"
+      "method": "refunds.create",
+      "name": "refunds.create: valid minimal"
     },
     {
       "args": {
@@ -5690,8 +7308,8 @@
           "txUuid"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: txUuid absent"
+      "method": "refunds.create",
+      "name": "refunds.create: txUuid absent"
     },
     {
       "args": {
@@ -5704,8 +7322,8 @@
           "txUuid"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: txUuid invalid"
+      "method": "refunds.create",
+      "name": "refunds.create: txUuid invalid"
     },
     {
       "args": {
@@ -5714,13 +7332,23 @@
         }
       },
       "expect": "ok",
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: txUuid sub-hist@"
+      "method": "refunds.create",
+      "name": "refunds.create: txUuid sub-hist@"
     },
     {
       "args": {
         "params": {
-          "refundPercent": 0,
+          "txUuid": "01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.create",
+      "name": "refunds.create: txUuid bare"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "0",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
@@ -5729,46 +7357,94 @@
           "refundPercent"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent 0"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 0"
     },
     {
       "args": {
         "params": {
-          "refundPercent": 0.01,
+          "refundPercent": "0.00",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 0.00"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "0.01",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
       "expect": "ok",
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent 0.01"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 0.01"
     },
     {
       "args": {
         "params": {
-          "refundPercent": 50.5,
+          "refundPercent": "50",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
       "expect": "ok",
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent 50.5"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 50"
     },
     {
       "args": {
         "params": {
-          "refundPercent": 100,
+          "refundPercent": "50.5",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
       "expect": "ok",
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent 100"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 50.5"
     },
     {
       "args": {
         "params": {
-          "refundPercent": 100.01,
+          "refundPercent": "50.50",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 50.50"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "100",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 100"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "100.00",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 100.00"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "100.01",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
@@ -5777,13 +7453,13 @@
           "refundPercent"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent 100.01"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 100.01"
     },
     {
       "args": {
         "params": {
-          "refundPercent": 33.333,
+          "refundPercent": "101",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
@@ -5792,13 +7468,13 @@
           "refundPercent"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent 33.333"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 101"
     },
     {
       "args": {
         "params": {
-          "refundPercent": 0.001,
+          "refundPercent": "33.333",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
@@ -5807,13 +7483,13 @@
           "refundPercent"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent 0.001"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 33.333"
     },
     {
       "args": {
         "params": {
-          "refundPercent": -5,
+          "refundPercent": "0.001",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
@@ -5822,8 +7498,113 @@
           "refundPercent"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent negative"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 0.001"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "-5",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent -5"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "1e1",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 1e1"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": ".5",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent .5"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "5.",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 5."
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": " 50",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent  50"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "+50",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent +50"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "abc",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": {
+        "fields": [
+          "refundPercent"
+        ]
+      },
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent abc"
     },
     {
       "args": {
@@ -5837,13 +7618,24 @@
           "refundPercent"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent NaN"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent NaN"
     },
     {
       "args": {
         "params": {
-          "refundPercent": "Infinity",
+          "refundPercent": "00000000000050.5",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 00000000000050.5"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "000000000000050.5",
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
@@ -5852,8 +7644,19 @@
           "refundPercent"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: refundPercent Infinity"
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent 000000000000050.5"
+    },
+    {
+      "args": {
+        "params": {
+          "refundPercent": "",
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.create",
+      "name": "refunds.create: refundPercent empty means 100 (not sent)"
     },
     {
       "args": {
@@ -5863,8 +7666,8 @@
         }
       },
       "expect": "ok",
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: reason 500"
+      "method": "refunds.create",
+      "name": "refunds.create: reason 500"
     },
     {
       "args": {
@@ -5878,8 +7681,8 @@
           "reason"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: reason 501"
+      "method": "refunds.create",
+      "name": "refunds.create: reason 501"
     },
     {
       "args": {
@@ -5889,8 +7692,8 @@
         }
       },
       "expect": "ok",
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: reason 1 char"
+      "method": "refunds.create",
+      "name": "refunds.create: reason 1 char"
     },
     {
       "args": {
@@ -5900,8 +7703,8 @@
         }
       },
       "expect": "ok",
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: reason multiline"
+      "method": "refunds.create",
+      "name": "refunds.create: reason multiline"
     },
     {
       "args": {
@@ -5915,8 +7718,8 @@
           "reason"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: reason blank"
+      "method": "refunds.create",
+      "name": "refunds.create: reason blank"
     },
     {
       "args": {
@@ -5930,8 +7733,8 @@
           "merchantMessage"
         ]
       },
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: merchantMessage with <"
+      "method": "refunds.create",
+      "name": "refunds.create: merchantMessage with <"
     },
     {
       "args": {
@@ -5941,8 +7744,16 @@
         }
       },
       "expect": "ok",
-      "method": "refunds.initiate",
-      "name": "refunds.initiate: merchantMessage 500 emoji"
+      "method": "refunds.create",
+      "name": "refunds.create: merchantMessage 500 emoji"
+    },
+    {
+      "args": {
+        "params": {}
+      },
+      "expect": "ok",
+      "method": "refunds.list",
+      "name": "refunds.list: no filters"
     },
     {
       "args": {
@@ -5987,23 +7798,194 @@
     {
       "args": {
         "params": {
-          "includeMembers": true,
-          "limit": 5,
-          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+          "status": [
+            "pending"
+          ]
         }
       },
-      "expect": {
-        "fields": [
-          "userUuid"
-        ]
-      },
-      "method": "refunds.listInactive",
-      "name": "refunds.listInactive: includeMembers and userUuid"
+      "expect": "ok",
+      "method": "refunds.list",
+      "name": "refunds.list: status pending"
     },
     {
       "args": {
         "params": {
-          "organizationFeePercent": 0
+          "status": [
+            "pending",
+            "approved",
+            "rejected",
+            "cancelled",
+            "failed"
+          ]
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.list",
+      "name": "refunds.list: status every known value"
+    },
+    {
+      "args": {
+        "params": {
+          "status": [
+            "pending",
+            "approved",
+            "rejected",
+            "cancelled",
+            "failed",
+            "pending"
+          ]
+        }
+      },
+      "expect": {
+        "fields": [
+          "status"
+        ]
+      },
+      "method": "refunds.list",
+      "name": "refunds.list: status 6 entries"
+    },
+    {
+      "args": {
+        "params": {
+          "status": [
+            "approved",
+            "denied"
+          ]
+        }
+      },
+      "expect": {
+        "fields": [
+          "status[1]"
+        ]
+      },
+      "method": "refunds.list",
+      "name": "refunds.list: status unknown"
+    },
+    {
+      "args": {
+        "params": {
+          "status": [
+            "completed"
+          ]
+        }
+      },
+      "expect": {
+        "fields": [
+          "status[0]"
+        ]
+      },
+      "method": "refunds.list",
+      "name": "refunds.list: status completed (retired name)"
+    },
+    {
+      "args": {
+        "params": {
+          "status": [
+            ""
+          ]
+        }
+      },
+      "expect": {
+        "fields": [
+          "status[0]"
+        ]
+      },
+      "method": "refunds.list",
+      "name": "refunds.list: status empty entry"
+    },
+    {
+      "args": {
+        "params": {
+          "status": []
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.list",
+      "name": "refunds.list: status empty list"
+    },
+    {
+      "args": {
+        "params": {
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.list",
+      "name": "refunds.list: txUuid pay@"
+    },
+    {
+      "args": {
+        "params": {
+          "txUuid": "order-1043"
+        }
+      },
+      "expect": {
+        "fields": [
+          "txUuid"
+        ]
+      },
+      "method": "refunds.list",
+      "name": "refunds.list: txUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "limit": 5
+        }
+      },
+      "expect": {
+        "fields": [
+          "cursor"
+        ]
+      },
+      "method": "refunds.list",
+      "name": "refunds.list: cursor 201"
+    },
+    {
+      "args": {
+        "uuid": "refund@01a0f755-f200-7000-8000-000000000007"
+      },
+      "expect": "ok",
+      "method": "refunds.get",
+      "name": "refunds.get: refund@"
+    },
+    {
+      "args": {
+        "uuid": "01a0f22f-9600-7000-8000-000000000008"
+      },
+      "expect": "ok",
+      "method": "refunds.get",
+      "name": "refunds.get: bare uuid"
+    },
+    {
+      "args": {
+        "uuid": "refund-1"
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "refunds.get",
+      "name": "refunds.get: id invalid"
+    },
+    {
+      "args": {
+        "uuid": ""
+      },
+      "expect": {
+        "fields": [
+          "uuid"
+        ]
+      },
+      "method": "refunds.get",
+      "name": "refunds.get: empty"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "0"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
       },
@@ -6014,7 +7996,7 @@
     {
       "args": {
         "params": {
-          "organizationFeePercent": 0.01
+          "organizationFeePercent": "0.01"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
       },
@@ -6025,7 +8007,7 @@
     {
       "args": {
         "params": {
-          "organizationFeePercent": 12.5
+          "organizationFeePercent": "12.5"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
       },
@@ -6036,7 +8018,18 @@
     {
       "args": {
         "params": {
-          "organizationFeePercent": 12.345
+          "organizationFeePercent": "12.50"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": "ok",
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 12.50"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "12.345"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
       },
@@ -6051,7 +8044,7 @@
     {
       "args": {
         "params": {
-          "organizationFeePercent": 50
+          "organizationFeePercent": "50"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
       },
@@ -6062,7 +8055,18 @@
     {
       "args": {
         "params": {
-          "organizationFeePercent": 50.01
+          "organizationFeePercent": "50.00"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": "ok",
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 50.00"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "50.01"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
       },
@@ -6077,7 +8081,22 @@
     {
       "args": {
         "params": {
-          "organizationFeePercent": -1
+          "organizationFeePercent": "51"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 51"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "-1"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
       },
@@ -6088,6 +8107,51 @@
       },
       "method": "members.update",
       "name": "members.update: organizationFeePercent -1"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "1e1"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 1e1"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": ".5"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent .5"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "abc"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent abc"
     },
     {
       "args": {
@@ -6107,7 +8171,35 @@
     {
       "args": {
         "params": {
-          "organizationFeePercent": 5
+          "organizationFeePercent": ""
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent empty (required)"
+    },
+    {
+      "args": {
+        "params": {},
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent absent (required)"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "5"
         },
         "userUuid": "alice"
       },
@@ -6118,6 +8210,20 @@
       },
       "method": "members.update",
       "name": "members.update: userUuid invalid"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "fields": [
+          "cursor"
+        ]
+      },
+      "method": "members.list",
+      "name": "members.list: cursor 201"
     },
     {
       "args": {
@@ -6167,7 +8273,7 @@
       "args": {
         "params": {
           "email": "bob@example.com",
-          "trustLayer": true
+          "holdFunds": true
         }
       },
       "expect": "ok",
@@ -6177,7 +8283,7 @@
     {
       "args": {
         "params": {
-          "trustLayer": true
+          "holdFunds": true
         }
       },
       "expect": {
@@ -6192,7 +8298,7 @@
       "args": {
         "params": {
           "email": "bob@example",
-          "trustLayer": true
+          "holdFunds": true
         }
       },
       "expect": {
@@ -6207,8 +8313,19 @@
       "args": {
         "params": {
           "email": "bob@example.com",
-          "organizationFeePercent": 0,
-          "trustLayer": true
+          "holdFunds": false
+        }
+      },
+      "expect": "ok",
+      "method": "invitations.create",
+      "name": "invitations.create: holdFunds false"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "organizationFeePercent": "0"
         }
       },
       "expect": "ok",
@@ -6219,8 +8336,20 @@
       "args": {
         "params": {
           "email": "bob@example.com",
-          "organizationFeePercent": 50.5,
-          "trustLayer": true
+          "holdFunds": true,
+          "organizationFeePercent": "50"
+        }
+      },
+      "expect": "ok",
+      "method": "invitations.create",
+      "name": "invitations.create: organizationFeePercent 50"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "organizationFeePercent": "50.5"
         }
       },
       "expect": {
@@ -6235,8 +8364,8 @@
       "args": {
         "params": {
           "email": "bob@example.com",
-          "organizationFeePercent": 2.555,
-          "trustLayer": true
+          "holdFunds": true,
+          "organizationFeePercent": "2.555"
         }
       },
       "expect": {
@@ -6251,8 +8380,64 @@
       "args": {
         "params": {
           "email": "bob@example.com",
-          "redirectUrl": "https://app.example.com/welcome",
-          "trustLayer": true
+          "holdFunds": true,
+          "organizationFeePercent": "7.50"
+        }
+      },
+      "expect": "ok",
+      "method": "invitations.create",
+      "name": "invitations.create: organizationFeePercent 7.50"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "organizationFeePercent": "-1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "invitations.create",
+      "name": "invitations.create: organizationFeePercent -1"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "organizationFeePercent": "00000000000007.50"
+        }
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "invitations.create",
+      "name": "invitations.create: organizationFeePercent 17 characters"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "organizationFeePercent": ""
+        }
+      },
+      "expect": "ok",
+      "method": "invitations.create",
+      "name": "invitations.create: organizationFeePercent empty (default 0, not sent)"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "redirectUrl": "https://app.example.com/welcome"
         }
       },
       "expect": "ok",
@@ -6263,8 +8448,8 @@
       "args": {
         "params": {
           "email": "bob@example.com",
-          "redirectUrl": "app.example.com/welcome",
-          "trustLayer": true
+          "holdFunds": true,
+          "redirectUrl": "app.example.com/welcome"
         }
       },
       "expect": {
@@ -6301,6 +8486,20 @@
     },
     {
       "args": {
+        "params": {
+          "cursor": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "fields": [
+          "cursor"
+        ]
+      },
+      "method": "invitations.list",
+      "name": "invitations.list: cursor 201"
+    },
+    {
+      "args": {
         "uuid": "inv-1"
       },
       "expect": {
@@ -6310,6 +8509,14 @@
       },
       "method": "invitations.revoke",
       "name": "invitations.revoke: uuid invalid"
+    },
+    {
+      "args": {
+        "uuid": "01a0f755-f200-7000-8000-00000000000a"
+      },
+      "expect": "ok",
+      "method": "invitations.revoke",
+      "name": "invitations.revoke: valid"
     },
     {
       "args": {
@@ -6334,8 +8541,8 @@
           "userUuid"
         ]
       },
-      "method": "wallets.listSupportedCurrencies",
-      "name": "wallets.listSupportedCurrencies: userUuid invalid"
+      "method": "wallets.listAcceptedCurrencies",
+      "name": "wallets.listAcceptedCurrencies: userUuid invalid"
     },
     {
       "args": {
@@ -6344,8 +8551,14 @@
         }
       },
       "expect": "ok",
-      "method": "wallets.listSupportedCurrencies",
-      "name": "wallets.listSupportedCurrencies: userUuid valid"
+      "method": "wallets.listAcceptedCurrencies",
+      "name": "wallets.listAcceptedCurrencies: userUuid valid"
+    },
+    {
+      "args": {},
+      "expect": "ok",
+      "method": "wallets.listAcceptedCurrencies",
+      "name": "wallets.listAcceptedCurrencies: no params"
     },
     {
       "args": {
@@ -6494,12 +8707,30 @@
     },
     {
       "args": {
+        "from": "2026-01-01",
+        "to": "2026-04-02"
+      },
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: window of 92 days, both included"
+    },
+    {
+      "args": {
+        "from": "2026-01-01",
+        "to": "2026-04-03"
+      },
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson: window of 93 days (server-checked)"
+    },
+    {
+      "args": {
         "from": "2025-01-01",
         "to": "2026-12-31"
       },
       "expect": "ok",
       "method": "accounting.exportJson",
-      "name": "accounting.exportJson: window over 95 days (server-checked)"
+      "name": "accounting.exportJson: window over 92 days (server-checked)"
     },
     {
       "args": {
@@ -6533,6 +8764,17 @@
       "expect": "ok",
       "method": "currencies.get",
       "name": "currencies.get: id 8"
+    },
+    {
+      "args": {
+        "params": {
+          "main": true,
+          "test": true
+        }
+      },
+      "expect": "ok",
+      "method": "currencies.list",
+      "name": "currencies.list: test and main"
     },
     {
       "args": {
@@ -6811,7 +9053,7 @@
         ]
       },
       "method": "webhooks.endpoints.update",
-      "name": "webhooks.endpoints.update: payloadVersion v1"
+      "name": "webhooks.endpoints.update: payloadVersion v1 (retired)"
     },
     {
       "args": {
@@ -6906,6 +9148,37 @@
       "name": "webhooks.endpoints.get: uuid invalid"
     },
     {
+      "args": {},
+      "expect": "ok",
+      "method": "webhooks.endpoints.list",
+      "name": "webhooks.endpoints.list: no params"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "limit": 5
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.endpoints.list",
+      "name": "webhooks.endpoints.list: limit and cursor"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "fields": [
+          "cursor"
+        ]
+      },
+      "method": "webhooks.endpoints.list",
+      "name": "webhooks.endpoints.list: cursor 201"
+    },
+    {
       "args": {
         "uuid": ""
       },
@@ -6943,13 +9216,43 @@
           "type": "invoice.created"
         }
       },
+      "expect": "ok",
+      "method": "webhooks.events.list",
+      "name": "webhooks.events.list: type unknown (not checked: new types appear)"
+    },
+    {
+      "args": {
+        "params": {
+          "type": "refund.completed"
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.events.list",
+      "name": "webhooks.events.list: type refund.completed (retired; the API's 400)"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": "ok",
+      "method": "webhooks.events.list",
+      "name": "webhooks.events.list: cursor 200"
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
       "expect": {
         "fields": [
-          "type"
+          "cursor"
         ]
       },
       "method": "webhooks.events.list",
-      "name": "webhooks.events.list: type unknown"
+      "name": "webhooks.events.list: cursor 201"
     },
     {
       "args": {
@@ -6970,6 +9273,30 @@
       "expect": "ok",
       "method": "webhooks.events.get",
       "name": "webhooks.events.get: any id (not checked)"
+    },
+    {
+      "args": {
+        "id": "."
+      },
+      "expect": {
+        "fields": [
+          "id"
+        ]
+      },
+      "method": "webhooks.events.get",
+      "name": "webhooks.events.get: single dot (relative path segment)"
+    },
+    {
+      "args": {
+        "id": ".."
+      },
+      "expect": {
+        "fields": [
+          "id"
+        ]
+      },
+      "method": "webhooks.events.get",
+      "name": "webhooks.events.get: two dots (relative path segment)"
     },
     {
       "args": {
@@ -7129,7 +9456,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -7143,7 +9470,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -7157,7 +9484,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -7175,7 +9502,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -7193,7 +9520,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": {
@@ -7211,7 +9538,7 @@
       "args": {
         "params": {
           "email": "alice@example.com",
-          "name": "Alice"
+          "firstName": "Alice"
         }
       },
       "expect": {
@@ -7229,7 +9556,7 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 10
+          "priceUsd": "10"
         }
       },
       "expect": "ok",
@@ -7329,6 +9656,68 @@
       "args": {
         "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
       },
+      "expect": {
+        "fields": [
+          "onBehalfOf"
+        ]
+      },
+      "method": "products.get",
+      "name": "options: onBehalfOf a space",
+      "note": "whitespace-only is not the organization level: a ValidationError (never sent blank)",
+      "options": {
+        "onBehalfOf": " "
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "onBehalfOf"
+        ]
+      },
+      "method": "products.get",
+      "name": "options: onBehalfOf a tab",
+      "options": {
+        "onBehalfOf": "\t"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "expect": {
+        "fields": [
+          "onBehalfOf"
+        ]
+      },
+      "method": "products.get",
+      "name": "options: onBehalfOf padded UUID",
+      "note": "not trimmed: a ValidationError",
+      "options": {
+        "onBehalfOf": " 019eca82-5680-7b00-8000-0000000000b1 "
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "client": {
+        "onBehalfOf": "  "
+      },
+      "expect": {
+        "fields": [
+          "onBehalfOf"
+        ]
+      },
+      "method": "products.get",
+      "name": "client: onBehalfOf whitespace-only"
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
       "client": {
         "onBehalfOf": "alice"
       },
@@ -7385,17 +9774,17 @@
       "args": {
         "params": {
           "name": "Pro plan",
-          "price": 0
+          "priceUsd": "0"
         }
       },
       "expect": {
         "fields": [
-          "price"
+          "priceUsd"
         ]
       },
       "method": "products.create",
       "name": "options: params checked before options",
-      "note": "Go validates the params before the request options: only price is reported",
+      "note": "Go validates the params before the request options: only priceUsd is reported",
       "options": {
         "requestId": "bad id"
       }

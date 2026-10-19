@@ -1,17 +1,40 @@
 {
   "createdAt": "2026-10-01T12:00:00Z",
   "data": {
-    "availableCurrencyIds": [
-      2,
-      5,
-      8
+    "amountUsd": "10",
+    "availableCurrencies": [
+      {
+        "chain": "BASE",
+        "code": "BASE",
+        "decimals": 18,
+        "id": 3,
+        "name": "Base",
+        "symbol": "BASE",
+        "test": false
+      },
+      {
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chain": "BASE",
+        "code": "BASE:USDC",
+        "decimals": 6,
+        "id": 8,
+        "mainCurrencyId": 3,
+        "name": "USD Coin",
+        "symbol": "USDC",
+        "test": false
+      }
     ],
     "cancelUrl": "https://shop.example.com/cart",
     "createdAt": "2026-09-30T12:00:00Z",
     "description": "Lifetime access to the Pro plan",
     "expiresAt": "2026-10-01T12:00:00Z",
+    "fees": [],
+    "metadata": {
+      "crm:customer": "C-5521",
+      "orderId": "order-1043"
+    },
     "organizationName": "Example Shop",
-    "price": 10,
+    "priceUsd": "10",
     "productName": "Pro plan (lifetime)",
     "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
     "reference": "order-1043",

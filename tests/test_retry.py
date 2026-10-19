@@ -37,7 +37,7 @@ E503 = (503, '{"error":"no network","code":"network_unavailable"}')
 E504 = (504, '{"error":"too slow","code":"timeout"}')
 IN_USE = (409, '{"error":"in use","code":"idempotency_key_in_use"}')
 
-CREATE = Endpoint("POST", "/product", body={"name": "Pro"}, idempotent=True)
+CREATE = Endpoint("POST", "/products", body={"name": "Pro"}, idempotent=True)
 
 
 def get(path: str = "/x") -> Endpoint:
@@ -70,7 +70,7 @@ CASES: List[
     (
         "GET 400 not retried",
         get(),
-        [(400, '{"error":"bad","code":"bad_request"}')],
+        [(400, '{"error":"bad","code":"test_mode_only"}')],
         1,
         [],
         BadRequestError,
@@ -107,15 +107,15 @@ CASES: List[
     ("POST action 500 not retried", Endpoint("POST", "/expire"), [E500], 1, [], ServerError, None),
     ("POST action 503 not retried", Endpoint("POST", "/cancel"), [E503], 1, [], ServerError, None),
     (
-        "PUT 500 not retried",
-        Endpoint("PUT", "/product/x", body={}),
+        "PATCH 500 not retried",
+        Endpoint("PATCH", "/products/x", body={}),
         [E500],
         1,
         [],
         ServerError,
         None,
     ),
-    ("DELETE 503 not retried", Endpoint("DELETE", "/product/x"), [E503], 1, [], ServerError, None),
+    ("DELETE 503 not retried", Endpoint("DELETE", "/products/x"), [E503], 1, [], ServerError, None),
     (
         "POST action 429 not retried",
         Endpoint("POST", "/trust"),
@@ -184,6 +184,74 @@ def test_retry_matrix(
             client._send(endpoint, None)
     assert len(server.requests) == attempts
     assert slept == sleeps
+
+
+SUB = "sub@01a05cd7-2a00-7000-8000-000000000003"
+PAY = "pay@01a0f22f-9600-7000-8000-000000000008"
+MEMBER = "019eca82-5680-7b00-8000-0000000000b1"
+
+#: The 7 idempotent creates, through their services (behaviour §3).
+CREATES: List[Tuple[str, Any]] = [
+    (
+        "POST /checkout-sessions/payment",
+        lambda c: c.checkout_sessions.create_payment(product_name="T-shirt", price_usd="4.99"),
+    ),
+    (
+        "POST /checkout-sessions/subscription",
+        lambda c: c.checkout_sessions.create_subscription(product_reference="pro-monthly"),
+    ),
+    ("POST /products", lambda c: c.products.create(name="T-shirt", price_usd="4.99")),
+    ("POST /customers", lambda c: c.customers.create(first_name="Ada", email="ada@example.com")),
+    (
+        "POST /webhooks/endpoints",
+        lambda c: c.webhooks.endpoints.create(url="https://shop.example.com/hooks"),
+    ),
+    (
+        "POST /invitations",
+        lambda c: c.invitations.create(email="seller@example.com", hold_funds=True),
+    ),
+    ("POST /refunds", lambda c: c.refunds.create(tx_uuid=PAY, refund_percent="50")),
+]
+
+
+@pytest.mark.parametrize("route, call", CREATES, ids=[r for r, _ in CREATES])
+def test_idempotent_creates_are_retried_with_one_key(route: str, call: Any) -> None:
+    client, server, slept = make_client(sequence(E503, IN_USE, (201, "{}")))
+    call(client)
+    assert len(server.requests) == 3 and slept == [1, 2]
+    assert {f"{r.method} {r.path}" for r in server.requests} == {route}
+    keys = {r.headers["Idempotency-Key"] for r in server.requests}
+    assert len(keys) == 1 and UUID_V4.fullmatch(keys.pop())
+
+
+#: Writes that are never retried, through their services (behaviour §3), a 429 included.
+WRITES: List[Tuple[str, Any]] = [
+    ("PATCH /subscriptions/" + SUB, lambda c: c.subscriptions.update(SUB, metadata={"a": "b"})),
+    ("POST /subscriptions/" + SUB + "/cancel", lambda c: c.subscriptions.cancel(SUB)),
+    ("POST /subscriptions/" + SUB + "/test-bill", lambda c: c.subscriptions.test_bill(SUB)),
+    ("POST /checkout-sessions/" + PAY + "/expire", lambda c: c.checkout_sessions.expire(PAY)),
+    ("POST /members/" + MEMBER + "/trust", lambda c: c.members.trust(MEMBER)),
+    ("DELETE /members/" + MEMBER, lambda c: c.members.remove(MEMBER)),
+    ("PATCH /members/" + MEMBER, lambda c: c.members.update(MEMBER, organization_fee_percent="5")),
+    ("DELETE /invitations/" + MEMBER, lambda c: c.invitations.revoke(MEMBER)),
+    ("PATCH /products/" + MEMBER, lambda c: c.products.update(MEMBER, name="Pro")),
+]
+
+
+@pytest.mark.parametrize(
+    "status, body, error",
+    [E503 + (ServerError,), (429, '{"error":"slow","code":"rate_limit_exceeded"}', RateLimitError)],
+    ids=["503", "429"],
+)
+@pytest.mark.parametrize("route, call", WRITES, ids=[r for r, _ in WRITES])
+def test_other_writes_are_not_retried(
+    route: str, call: Any, status: int, body: str, error: Type[Exception]
+) -> None:
+    client, server, slept = make_client(sequence((status, body), OK))
+    with pytest.raises(error):
+        call(client)
+    assert [f"{r.method} {r.path}" for r in server.requests] == [route] and slept == []
+    assert "Idempotency-Key" not in server.requests[0].headers
 
 
 UUID_V4 = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")

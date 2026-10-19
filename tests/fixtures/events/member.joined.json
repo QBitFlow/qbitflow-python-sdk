@@ -1,18 +1,27 @@
 {
   "createdAt": "2026-10-01T12:00:00Z",
   "data": {
-    "acceptedCurrencyIds": [
-      8
+    "acceptedCurrencies": [
+      {
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chain": "BASE",
+        "code": "BASE:USDC",
+        "decimals": 6,
+        "id": 8,
+        "mainCurrencyId": 3,
+        "name": "USD Coin",
+        "symbol": "USDC",
+        "test": false
+      }
     ],
     "email": "alice@example.com",
+    "firstName": "Alice",
     "invitationUuid": "01a0f755-f200-7000-8000-00000000000a",
     "joinedAt": "2026-10-01T12:00:00Z",
     "lastName": "Martin",
-    "name": "Alice",
-    "organizationFeePercent": 5,
+    "organizationFeePercent": "5",
     "spaceUuid": "019eca82-5680-7b00-8000-0000000000b2",
     "test": false,
-    "trustedAt": null,
     "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
   },
   "id": "evt_634bf7f1-010f-5f60-8232-06c30f013f28",

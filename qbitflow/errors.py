@@ -40,6 +40,7 @@ __all__ = [
 
 # Error codes the SDK branches on (the API's stable ``code`` values).
 CODE_VALIDATION_FAILED = "validation_failed"
+CODE_NOT_FOUND = "not_found"
 CODE_IDEMPOTENCY_KEY_IN_USE = "idempotency_key_in_use"
 CODE_IDEMPOTENCY_KEY_REUSED = "idempotency_key_reused"
 CODE_INVALID_SIGNATURE = "invalid_signature"
@@ -129,7 +130,8 @@ class ValidationError(ApiError):
 
 
 class BadRequestError(ApiError):
-    """Any other 400 (``bad_request``, ``foreign_key_violation``, …)."""
+    """Any other 400 (``foreign_key_violation``, ``test_mode_only``, ``sender_is_receiver``, …;
+    the API has no ``bad_request`` code)."""
 
 
 class AuthenticationError(ApiError):
@@ -141,7 +143,9 @@ class PermissionDeniedError(ApiError):
 
 
 class NotFoundError(ApiError):
-    """A 404: the resource does not exist, or is outside the request's space."""
+    """A 404: the resource does not exist, or is outside the request's space. Also raised by the
+    ``get_by_reference`` helpers when no resource has the reference (status 404, code
+    ``not_found``, the list answer's request id), exactly like a 404."""
 
 
 class ConflictError(ApiError):

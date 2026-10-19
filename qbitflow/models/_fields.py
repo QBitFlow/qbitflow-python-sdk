@@ -14,7 +14,6 @@ from .enums import (
     CancellationReason,
     Chain,
     CheckoutSessionStatusValue,
-    CombinedPaymentSource,
     Credential,
     DurationUnit,
     EndpointDisabledReason,
@@ -30,6 +29,7 @@ from .enums import (
     RefundStatus,
     Role,
     SubscriptionStatus,
+    TransactionKind,
     TransactionType,
     TransferType,
     WebhookPayloadVersion,
@@ -45,9 +45,6 @@ CancellationReasonT = Annotated[Union[CancellationReason, str], open_enum(Cancel
 ChainT = Annotated[Union[Chain, str], open_enum(Chain)]
 CheckoutSessionStatusValueT = Annotated[
     Union[CheckoutSessionStatusValue, str], open_enum(CheckoutSessionStatusValue)
-]
-CombinedPaymentSourceT = Annotated[
-    Union[CombinedPaymentSource, str], open_enum(CombinedPaymentSource)
 ]
 CredentialT = Annotated[Union[Credential, str], open_enum(Credential)]
 DurationUnitT = Annotated[Union[DurationUnit, str], open_enum(DurationUnit)]
@@ -66,6 +63,7 @@ RefundInitiatorT = Annotated[Union[RefundInitiator, str], open_enum(RefundInitia
 RefundStatusT = Annotated[Union[RefundStatus, str], open_enum(RefundStatus)]
 RoleT = Annotated[Union[Role, str], open_enum(Role)]
 SubscriptionStatusT = Annotated[Union[SubscriptionStatus, str], open_enum(SubscriptionStatus)]
+TransactionKindT = Annotated[Union[TransactionKind, str], open_enum(TransactionKind)]
 TransactionTypeT = Annotated[Union[TransactionType, str], open_enum(TransactionType)]
 TransferTypeT = Annotated[Union[TransferType, str], open_enum(TransferType)]
 WebhookPayloadVersionT = Annotated[

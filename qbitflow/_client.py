@@ -22,6 +22,7 @@ from ._services.transactions import (
     PaymentsService,
     RefundsService,
     SubscriptionsService,
+    TransactionsService,
 )
 from ._services.webhooks import WebhooksService
 from ._transport import (
@@ -57,9 +58,11 @@ class QBitFlow:
         with QBitFlow(os.environ["QBITFLOW_API_KEY"]) as client:
             me = client.me()  # the recommended start-up check
             session = client.checkout_sessions.create_payment(
-                product_name="Premium access", price=4.99, reference="order-1042"
+                product_name="Premium access",
+                price_usd="4.99",  # money is a decimal string, never a float
+                reference="order-1042",
             )
-            print(session.link)
+            print(session.link)  # send the customer there; fulfil on payment.completed
 
     Args:
         api_key: Your API key (sent as ``X-API-Key``): non-blank, starting with ``sk_``.
@@ -70,7 +73,8 @@ class QBitFlow:
         max_retries: How many times a retryable call (a read, or one of the 7 idempotent
             creates) is re-sent after a transient failure (default 3; 0 disables retries).
         on_behalf_of: Act in this member's space on every request (a member's ``userUuid``;
-            organization key only).
+            organization key only). ``None`` or ``""``: the organization level (the header is
+            then omitted, never sent blank).
         http_client: An ``httpx.Client`` to send the requests with (proxies, transports,
             instrumentation). The SDK never follows redirects and sets its own timeout per
             attempt. It is not closed by :meth:`close`.
@@ -154,38 +158,43 @@ class QBitFlow:
     def _init(self, transport: Transport, on_behalf_of: str) -> None:
         self._transport = transport
         self._on_behalf_of = on_behalf_of
-        #: Products (``/product…``).
+        #: Products (``/products…``).
         self.products = ProductsService(self)
-        #: Customers (``/customer…``).
+        #: Customers (``/customers…``).
         self.customers = CustomersService(self)
-        #: Checkout sessions: create, read the status, expire.
+        #: Checkout sessions: create, read, expire (``/checkout-sessions…``).
         self.checkout_sessions = CheckoutSessionsService(self)
-        #: One-time payments and the combined feed.
+        #: One-time payments (``/payments…``).
         self.payments = PaymentsService(self)
-        #: The failed payment attempts.
+        #: The feed of payments and bills together (``/transactions``).
+        self.transactions = TransactionsService(self)
+        #: The failed payment attempts (``/payment-failures``).
         self.failures = FailuresService(self)
-        #: Subscriptions and their bills.
+        #: Subscriptions and their bills: read, update, cancel, test-bill (``/subscriptions…``,
+        #: ``/bills…``).
         self.subscriptions = SubscriptionsService(self)
-        #: Refunds.
+        #: Refunds: list, read, create (``/refunds…``).
         self.refunds = RefundsService(self)
         #: The organization's members and their held funds (organization key).
         self.members = MembersService(self)
         #: Invitations to join as a member (organization key).
         self.invitations = InvitationsService(self)
-        #: Wallets and the currencies a space accepts.
+        #: Wallets and the currencies a space accepts (``/wallets…``).
         self.wallets = WalletsService(self)
-        #: The accounting export.
+        #: The accounting export (``/accounting/export``).
         self.accounting = AccountingService(self)
         #: Webhook verification, endpoints (``.endpoints``) and the event log (``.events``).
         self.webhooks = WebhooksService(self)
-        #: The currency catalog.
+        #: The currency catalog (``/currencies…``, public).
         self.currencies = CurrenciesService(self)
 
     def on_behalf_of(self, user_uuid: Optional[str]) -> "QBitFlow":
         """A client acting in a member's space: every request sends
         ``On-Behalf-Of: <user_uuid>`` (a member's ``userUuid``; organization key only). It shares
         this client's connections and configuration; ``""`` (or ``None``) returns one at the
-        organization level.
+        organization level (the header is then omitted: it is never sent blank). Acting for a
+        member, the role is ``user``: the admin methods (``members``, ``invitations``,
+        ``wallets.list_for_member``) answer 403.
 
         Raises:
             ValidationError: ``user_uuid`` is not a UUID, or is the nil UUID.

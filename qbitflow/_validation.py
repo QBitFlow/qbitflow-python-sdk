@@ -4,18 +4,22 @@ The SDK's one set of client-side checks (the API's binding rules, docs ``validat
 They run before any request, so a bad input fails without a round trip, with a
 :class:`~qbitflow.ValidationError` naming each failing input by its wire name. Lengths count
 Unicode code points. Rules that depend on the key's mode or on server state (the test-mode price
-cap, https-only URLs in live mode, the frequency minimum, the 95-day export window, uniqueness)
-are left to the API.
+cap, https-only URLs in live mode, the live subscription price minimum, the frequency minimum, the
+92-day export window, the merged metadata key count, uniqueness, refund rounding) are left to the
+API.
+
+Money inputs (USD amounts and percentages) are **decimal strings** (``"12.50"``); a
+``decimal.Decimal`` is accepted too and sent as ``str(value)``. A ``float`` or an ``int`` is
+refused: a float cannot carry ``0.1`` exactly, and the API answers 400 to a JSON number.
 """
 
 from __future__ import annotations
 
-import math
 import re
 import unicodedata
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Union
 from urllib.parse import urlsplit
 
 from .errors import FieldError, ValidationError, field_error, validation_error
@@ -35,10 +39,26 @@ _PHONE = re.compile(r"\+?[0-9][0-9 ().-]{4,}[0-9]")
 _UUID = re.compile(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
 _DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 _REQUEST_ID = re.compile(r"[A-Za-z0-9\-_.:]{1,128}")
-#: An amount in USD written as a string: digits, then at most 2 decimals (no sign, no exponent).
-_USD = re.compile(r"[0-9]+(?:\.[0-9]{1,2})?")
+#: The grammar of the usd and percent inputs: digits and an optional fraction of 1 or 2 digits
+#: (no sign, exponent, leading "." or grouping; trailing zeros are fine).
+_DECIMAL = re.compile(r"[0-9]+(?:\.[0-9]{1,2})?")
+_METADATA_KEY = re.compile(r"[A-Za-z0-9_.:-]+")
 _NIL_UUID = "00000000-0000-0000-0000-000000000000"
-_TX_PREFIXES = ("pay", "sub", "payg", "sub-hist", "refund", "transfer")
+_TX_PREFIXES = ("pay", "sub", "payg", "sub-hist", "refund", "transfer", "release")
+
+#: The largest USD amount an input takes (prices and fee lines).
+MAX_USD = 1_000_000
+#: The longest percentage string an input takes.
+MAX_PERCENT_LEN = 16
+#: Metadata limits: keys per map, a key's length, a value's length (code points).
+MAX_METADATA_KEYS = 50
+MAX_METADATA_KEY_LEN = 40
+MAX_METADATA_VALUE_LEN = 500
+#: The longest cursor a paginated list takes.
+MAX_CURSOR_LEN = 200
+
+#: A money input: a decimal string, or a ``decimal.Decimal`` (sent as ``str(value)``).
+Money = Union[str, Decimal]
 
 #: Each DurationUnit's length in seconds (months = 30 days, years = 365 days).
 _UNIT_SECONDS: Dict[str, int] = {
@@ -64,8 +84,8 @@ def is_uuid(value: Any) -> bool:
 
 
 def is_tx_id(value: Any) -> bool:
-    """Whether ``value`` is a transaction id: ``<pay|sub|payg|sub-hist|refund|transfer>@<uuid>``,
-    or a bare UUID."""
+    """Whether ``value`` is a transaction id:
+    ``<pay|sub|payg|sub-hist|refund|transfer|release>@<uuid>``, or a bare UUID."""
     if not isinstance(value, str):
         return False
     prefix, sep, rest = value.partition("@")
@@ -87,11 +107,16 @@ def is_text(value: str, multiline: bool) -> bool:
     return True
 
 
+def _is_bidi_control(char: str) -> bool:
+    """U+202A–U+202E and U+2066–U+2069: they reorder the text around them."""
+    return 0x202A <= ord(char) <= 0x202E or 0x2066 <= ord(char) <= 0x2069
+
+
 def is_name(value: str) -> bool:
     """The API's name rule: the text rule on one line, without bidirectional controls."""
     if not is_text(value, False):
         return False
-    return not any(0x202A <= ord(c) <= 0x202E or 0x2066 <= ord(c) <= 0x2069 for c in value)
+    return not any(_is_bidi_control(c) for c in value)
 
 
 def is_email(value: str) -> bool:
@@ -127,15 +152,23 @@ def is_request_id(value: Any) -> bool:
     return isinstance(value, str) and _REQUEST_ID.fullmatch(value) is not None
 
 
-def _is_number(value: Any) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+def money_text(value: Any) -> Optional[str]:
+    """A money input's wire form: a ``str`` as given, a ``Decimal`` as ``str(value)``; ``None``
+    for any other type (a float or an int is never accepted)."""
+    if isinstance(value, Decimal):
+        return str(value)
+    if isinstance(value, str):
+        return value
+    return None
 
 
-def has_at_most_two_decimals(value: float) -> bool:
-    """Whether the shortest decimal form of ``value`` has at most 2 decimals."""
-    text = format(Decimal(repr(float(value))), "f")
-    _, _, fraction = text.partition(".")
-    return len(fraction.rstrip("0")) <= 2 if fraction else True
+def _decimal_within(text: str, low_exclusive: bool, max_value: int) -> bool:
+    """Whether ``text`` (matching the decimal grammar) is in ``[0, max_value]`` (``(0, …]`` when
+    ``low_exclusive``), compared exactly (the grammar makes the ``Decimal`` exact)."""
+    number = Decimal(text)
+    if low_exclusive and number == 0:
+        return False
+    return number <= max_value
 
 
 class Validator:
@@ -261,50 +294,95 @@ class Validator:
         if not is_http_url(value):
             self.add(field, "must be an absolute http or https URL")
 
-    def price(self, field: str, value: Any) -> None:
-        """A price in USD: a finite number above 0."""
-        if not _is_number(value) or not math.isfinite(value) or value <= 0:
-            self.add(field, "must be a number above 0")
-
-    def usd(self, field: str, value: Any, max_usd: int) -> None:
-        """An amount in USD (the ``usd`` validator): a finite number, or a string of digits with
-        at most 2 decimals (no sign, no exponent; a ``Decimal`` is checked as its string), above 0
-        and at most ``max_usd``, with at most 2 decimals (a number's shortest decimal form)."""
-        if value is None:
+    def money_required(self, field: str, value: Any) -> bool:
+        """A required money input is given: ``None`` or a blank string fails with "is
+        required". Reports whether it is set (its type is checked by :meth:`usd` /
+        :meth:`percent`)."""
+        if value is None or (isinstance(value, str) and trim_space(value) == ""):
             self.add(field, "is required")
-            return
-        if isinstance(value, Decimal):
-            value = str(value)
-        if isinstance(value, str):
-            ok = _USD.fullmatch(value) is not None and 0 < Decimal(value) <= max_usd
-        elif _is_number(value):
-            ok = (
-                math.isfinite(value)
-                and 0 < value <= max_usd
-                and _USD.fullmatch(format(Decimal(repr(value)), "f")) is not None
+            return False
+        return True
+
+    def _money(self, field: str, value: Any) -> Optional[str]:
+        """A money input's text, or ``None`` (recorded) for a value of another type."""
+        text = money_text(value)
+        if text is None:
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                got = "a number (money is never a float or an int: a float cannot carry 0.1)"
+            else:
+                got = f"a {type(value).__name__}"
+            self.add(
+                field, f'must be a decimal string (e.g. "12.50") or a decimal.Decimal, not {got}'
             )
-        else:
-            ok = False
-        if not ok:
+        return text
+
+    def usd(self, field: str, value: Any, max_value: int = MAX_USD) -> None:
+        """An amount in USD (the ``usd`` rule): a decimal string (or a ``Decimal``, checked as
+        ``str(value)``) of digits with at most 2 decimals (no sign, exponent or leading ``.``),
+        above 0 and at most ``max_value``, compared exactly."""
+        text = self._money(field, value)
+        if text is None:
+            return
+        if _DECIMAL.fullmatch(text) is None or not _decimal_within(text, True, max_value):
             self.add(
                 field,
-                f"must be an amount in USD above 0 and at most {max_usd}, with at most 2 decimals",
+                'must be an amount in USD as a decimal string (e.g. "12.50"): above 0, at most '
+                f"{max_value}, with at most 2 decimals",
             )
 
-    def percent(self, field: str, value: Any, max_percent: float, positive: bool) -> None:
-        """A rate in percent: finite, from 0 (above 0 when ``positive``) to ``max_percent``, with
-        at most 2 decimals."""
-        low = "above 0" if positive else "0"
+    def percent(self, field: str, value: Any, max_value: int, positive: bool) -> None:
+        """A rate in percent (the ``percent`` rule): a decimal string (or a ``Decimal``) of digits
+        with at most 2 decimals, at most 16 characters, from 0 (above 0 when ``positive``) to
+        ``max_value``, compared exactly."""
+        text = self._money(field, value)
+        if text is None:
+            return
         if (
-            not _is_number(value)
-            or not math.isfinite(value)
-            or value < 0
-            or (positive and value == 0)
-            or value > max_percent
-            or not has_at_most_two_decimals(value)
+            len(text) > MAX_PERCENT_LEN
+            or _DECIMAL.fullmatch(text) is None
+            or not _decimal_within(text, positive, max_value)
         ):
-            high = format(Decimal(repr(float(max_percent))).normalize(), "f")
-            self.add(field, f"must be a percentage from {low} to {high}, with at most 2 decimals")
+            low = "above 0" if positive else "0"
+            self.add(
+                field,
+                f'must be a percentage as a decimal string (e.g. "7.5"): from {low} to '
+                f"{max_value}, with at most 2 decimals",
+            )
+
+    def metadata(self, field: str, value: Any) -> None:
+        """Merchant metadata when set: at most 50 keys (error on ``field``); each key 1 to 40 of
+        ``A-Z a-z 0-9 _ - . :`` (error on ``field``, the key not echoed); each value a string of at
+        most 500 code points, without control (a tab included) or bidirectional characters
+        (error on ``field.<key>``). On an update only the map sent is checked: the 50-key cap on
+        the merged result is the API's."""
+        if value is None:
+            return
+        if not isinstance(value, Mapping):
+            self.add(field, "must be a mapping of string keys to string values")
+            return
+        if len(value) > MAX_METADATA_KEYS:
+            self.add(field, f"must have at most {MAX_METADATA_KEYS} keys")
+        bad_key = False
+        for key in sorted(value, key=lambda k: (not isinstance(k, str), str(k))):
+            if (
+                not isinstance(key, str)
+                or not 1 <= len(key) <= MAX_METADATA_KEY_LEN
+                or _METADATA_KEY.fullmatch(key) is None
+            ):
+                bad_key = True
+                continue
+            item = value[key]
+            if not isinstance(item, str):
+                self.add(f"{field}.{key}", "must be a string")
+            elif len(item) > MAX_METADATA_VALUE_LEN:
+                self.add(f"{field}.{key}", f"must be at most {MAX_METADATA_VALUE_LEN} characters")
+            elif any(unicodedata.category(c) == "Cc" or _is_bidi_control(c) for c in item):
+                self.add(f"{field}.{key}", "must not contain control or bidirectional characters")
+        if bad_key:
+            self.add(
+                field,
+                f"keys must be 1 to {MAX_METADATA_KEY_LEN} characters among A-Z a-z 0-9 _ - . :",
+            )
 
     def duration(self, field: str, value: Any, frequency: bool) -> None:
         """A Duration: a unit (one of the 7) is required when value > 0, and a unit given with 0
@@ -346,8 +424,8 @@ class Validator:
             self.add(field, "must be a UUID")
 
     def tx_id(self, field: str, value: Any) -> None:
-        """A transaction id (``pay@…``, ``sub@…``, ``sub-hist@…``, ``refund@…``, or a UUID) when
-        set."""
+        """A transaction id (``pay@…``, ``sub@…``, ``sub-hist@…``, ``refund@…``, …, or a bare
+        UUID) when set."""
         if self.string(field, value) and not is_tx_id(value):
             self.add(field, "must be a transaction id (pay@…, sub@…, sub-hist@… or a UUID)")
 
@@ -368,7 +446,7 @@ class Validator:
 
     def date_range(self, from_field: str, from_value: Any, to_field: str, to_value: Any) -> None:
         """An export window: two ``YYYY-MM-DD`` dates, from <= to (the API enforces the
-        window's maximum)."""
+        window's maximum: 92 days, both included)."""
         start = self.date(from_field, from_value)
         end = self.date(to_field, to_value)
         if start is not None and end is not None and start > end:
@@ -422,16 +500,19 @@ class Validator:
         self.exclusive("includeMembers", include_members is True, "userUuid", bool(user_uuid))
 
     def page(self, limit: Any, cursor: Any) -> None:
-        """A page's size and cursor."""
+        """A page's size (an integer, sent as given: the API clamps it) and its cursor (at most
+        200 characters; otherwise opaque: pass back a page's ``next_cursor`` verbatim)."""
         self.integer("limit", limit)
-        self.string("cursor", cursor)
+        if self.string("cursor", cursor):
+            self.length("cursor", cursor, 0, MAX_CURSOR_LEN)
 
 
 # ── Path parameters and headers ──────────────────────────────────────────────
 
 
 def check_path_uuid(field: str, value: Any) -> None:
-    """A UUID path parameter: an empty one would address another route."""
+    """A UUID path parameter (members, invitations, endpoints, customers, products): an empty
+    one would address another route. The nil UUID passes (the API answers 404)."""
     if value is None or value == "":
         raise field_error(field, "is required")
     if not is_uuid(value):
@@ -439,7 +520,7 @@ def check_path_uuid(field: str, value: Any) -> None:
 
 
 def check_path_tx_id(field: str, value: Any) -> None:
-    """A transaction id path parameter (payments, subscriptions, bills, sessions)."""
+    """A transaction id path parameter (payments, subscriptions, bills, sessions, refunds)."""
     if value is None or value == "":
         raise field_error(field, "is required")
     if not is_tx_id(value):
@@ -447,7 +528,7 @@ def check_path_tx_id(field: str, value: Any) -> None:
 
 
 def check_path_required(field: str, value: Any) -> None:
-    """A free-form path parameter (a reference, an email, an event id): only its presence."""
+    """A free-form path parameter (an event id): only its presence, the API judges the rest."""
     if not isinstance(value, str) or trim_space(value) == "":
         raise field_error(field, "is required")
     # "." and ".." would be resolved as relative path segments (by URL parsers and by the

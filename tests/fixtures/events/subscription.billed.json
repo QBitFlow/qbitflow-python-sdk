@@ -1,76 +1,120 @@
 {
   "createdAt": "2026-10-01T12:00:00Z",
   "data": {
-    "amount": 10,
-    "amountMinUnits": "10000000",
-    "chain": "BASE",
-    "confirmedAt": "2026-10-01T11:59:58Z",
-    "createdAt": "2026-10-01T12:00:00Z",
-    "currency": {
-      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-      "decimals": 6,
-      "id": 8,
-      "mainCurrency": {
-        "address": "",
-        "decimals": 18,
-        "id": 3,
-        "mainCurrency": null,
-        "name": "Base",
-        "symbol": "BASE",
+    "bill": {
+      "amount": "10",
+      "amountMinUnits": "10000000",
+      "amountUsd": "10",
+      "chain": "BASE",
+      "confirmedAt": "2026-10-01T11:59:58Z",
+      "createdAt": "2026-10-01T12:00:00Z",
+      "currency": {
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chain": "BASE",
+        "code": "BASE:USDC",
+        "decimals": 6,
+        "id": 8,
+        "mainCurrencyId": 3,
+        "name": "USD Coin",
+        "symbol": "USDC",
         "test": false
       },
-      "mainCurrencyId": 3,
-      "name": "USD Coin",
-      "symbol": "USDC",
-      "test": false
-    },
-    "currencyId": 8,
-    "customerReference": "crm-5521",
-    "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
-    "description": "Monthly access to the Pro plan",
-    "explorerUrl": "https://basescan.org/tx/0x3333333333333333333333333333333333333333333333333333333333333333",
-    "from": "0xabcdef1234567890abcdef1234567890abcdef12",
-    "metadata": {
-      "feePercent": 0.99,
-      "txAmounts": {
-        "minUnits": {
-          "merchant": "9901000",
-          "networkFee": "4200",
-          "organization": "0",
-          "platform": "99000",
-          "referral": "0"
+      "customerReference": "crm-5521",
+      "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
+      "explorerUrl": "https://basescan.org/tx/0x3333333333333333333333333333333333333333333333333333333333333333",
+      "from": "0xabcdef1234567890abcdef1234567890abcdef12",
+      "paid": "10.0042",
+      "paidMinUnits": "10004200",
+      "paidUsd": "10.0042",
+      "periodEnd": "2026-10-31T12:00:00Z",
+      "periodStart": "2026-10-01T12:00:00Z",
+      "productDescription": "Monthly access to the Pro plan",
+      "productName": "Pro plan",
+      "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+      "settlement": {
+        "feePercent": "0.99",
+        "split": {
+          "merchant": {
+            "amount": "9.901",
+            "amountMinUnits": "9901000",
+            "amountUsd": "9.901"
+          },
+          "networkFee": {
+            "amount": "0.0042",
+            "amountMinUnits": "4200",
+            "amountUsd": "0.0042"
+          },
+          "platform": {
+            "amount": "0.099",
+            "amountMinUnits": "99000",
+            "amountUsd": "0.099"
+          }
         },
-        "usd": {
-          "merchant": 9.901,
-          "networkFee": 0.0042,
-          "platform": 0.099
+        "transaction": {
+          "blockNumber": "52468103",
+          "blockTime": "2026-10-01T11:59:58Z",
+          "fee": {
+            "amount": "0.00000114",
+            "amountMinUnits": "1140000000000",
+            "amountUsd": "0.005144"
+          },
+          "gasUsed": 95000,
+          "nativePriceUsd": "4512.37"
         }
       },
-      "txMetadata": {
-        "blockData": {
-          "number": "52468103",
-          "timestamp": 1790855998
-        },
-        "mainCurrencyPriceUsd": 4512.37,
-        "networkFees": {
-          "amount": "1140000000000",
-          "unitsConsumed": 95000
-        }
-      }
+      "subscriptionUuid": "sub@01a0f755-c320-7000-8000-000000000002",
+      "test": false,
+      "to": "0x1234567890abcdef1234567890abcdef12345678",
+      "txHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+      "uuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
     },
-    "name": "Pro plan",
-    "paidMinUnits": "10004200",
-    "paidUsd": 10.0042,
-    "periodEnd": "2026-10-31T12:00:00Z",
-    "periodStart": "2026-10-01T12:00:00Z",
-    "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
-    "subscriptionReference": "customer-7731",
-    "subscriptionStatus": "active",
-    "subscriptionUuid": "sub@01a0f755-c320-7000-8000-000000000002",
-    "test": false,
-    "to": "0x1234567890abcdef1234567890abcdef12345678",
-    "txHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
-    "uuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+    "subscription": {
+      "allowance": {
+        "amount": "110",
+        "amountMinUnits": "110000000",
+        "amountUsd": "110",
+        "maxPerPeriod": "30",
+        "maxPerPeriodMinUnits": "30000000",
+        "remainingPeriods": 11
+      },
+      "createdAt": "2026-10-01T12:00:00Z",
+      "currency": {
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "chain": "BASE",
+        "code": "BASE:USDC",
+        "decimals": 6,
+        "id": 8,
+        "mainCurrencyId": 3,
+        "name": "USD Coin",
+        "symbol": "USDC",
+        "test": false
+      },
+      "currentPeriodEnd": "2026-10-31T12:00:00Z",
+      "customerReference": "crm-5521",
+      "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
+      "fees": [],
+      "frequency": {
+        "unit": "months",
+        "value": 1
+      },
+      "from": "0xabcdef1234567890abcdef1234567890abcdef12",
+      "lastBilledAt": "2026-10-01T12:00:00Z",
+      "managementPageLink": "https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=sub@01a0f755-c320-7000-8000-000000000002",
+      "metadata": {
+        "crm:account": "A-1042",
+        "plan": "pro"
+      },
+      "nextBillingAt": "2026-10-31T12:00:00Z",
+      "priceUsd": "10",
+      "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+      "reference": "customer-7731",
+      "status": "active",
+      "subscriptionHash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+      "test": false,
+      "to": "0x1234567890abcdef1234567890abcdef12345678",
+      "updatedAt": "2026-10-01T12:00:00Z",
+      "uuid": "sub@01a0f755-c320-7000-8000-000000000002"
+    }
   },
   "id": "evt_bca1239f-e7d7-517c-b004-08aaeee1e76f",
   "test": false,

@@ -21,6 +21,8 @@ from qbitflow import (
     Event,
     MemberJoined,
     PaymentCompleted,
+    Refund,
+    SubscriptionBilled,
     SubscriptionStatusChanged,
     UnknownEvent,
     WebhookSignatureError,
@@ -56,15 +58,56 @@ router = webhooks.WebhookRouter(SECRET or "unset", on_error=log_error)
 @router.on("payment.completed")
 def fulfil(data: PaymentCompleted, event: Event) -> None:
     if first_time(event):
-        amount = data.currency.format_amount(data.amount_min_units) if data.currency else "?"
-        symbol = data.currency.symbol if data.currency else ""
-        log.info("fulfil order %r (%s): %s %s", data.reference, data.uuid, amount, symbol)
+        # Amounts are decimal strings: the token's (amount, in data.currency) and USD.
+        log.info(
+            "fulfil order %r (%s): %s %s (%s USD), metadata %s",
+            data.reference,
+            data.uuid,
+            data.amount,
+            data.currency.symbol,
+            data.amount_usd,
+            data.metadata,
+        )
 
 
 @router.on("checkout.expired")
 def release(data: CheckoutExpired, event: Event) -> None:
     if first_time(event):
         log.info("release order %r", data.reference)
+
+
+@router.on("subscription.billed")
+def billed(data: SubscriptionBilled, event: Event) -> None:
+    # {bill, subscription}: the bill paid, and the subscription as the bill leaves it.
+    if first_time(event):
+        log.info(
+            "subscription %s (%s) billed: %s USD (bill %s), paid until %s",
+            data.subscription.uuid,
+            data.subscription.status,
+            data.bill.amount_usd,
+            data.bill.uuid,
+            data.bill.period_end,
+        )
+
+
+@router.on("refund.approved")
+def refund_approved(data: Refund, event: Event) -> None:
+    # The refund transfer is confirmed: reverse the order, in full or in part.
+    if first_time(event):
+        log.info(
+            "refund %s of %s sent: %s%% (%s %s)",
+            data.uuid,
+            data.tx_uuid,
+            data.refund_percent,
+            data.amount,
+            data.currency.symbol,
+        )
+
+
+@router.on("refund.rejected")
+def refund_rejected(data: Refund, event: Event) -> None:
+    if first_time(event):
+        log.info("refund %s of %s rejected: %s", data.uuid, data.tx_uuid, data.merchant_message)
 
 
 @router.on("subscription.statusChanged")

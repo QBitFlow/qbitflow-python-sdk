@@ -9,7 +9,7 @@ checkouts, one-time payments, subscriptions, refunds, marketplaces with commissi
 funds, accounting exports and signed webhooks. Customers pay from their own wallets, on Ethereum,
 Base and Solana, straight to yours.
 
-- **API v2**, every integrator route: 13 services, 60 routes, one `QBitFlow` client.
+- **API v2**, every integrator route: 14 services, 54 routes, one `QBitFlow` client.
 - **Typed**: pydantic v2 models with snake_case attributes, enums, `py.typed`; keyword-only
   arguments checked before anything is sent.
 - **Typed errors**, one class per condition, each carrying the API's code, request id and field
@@ -34,7 +34,7 @@ Base and Solana, straight to yours.
 - [Authentication and acting for a member](#authentication-and-acting-for-a-member)
 - [Checkout sessions](#checkout-sessions)
 - [Products and customers](#products-and-customers)
-- [Payments and failures](#payments-and-failures)
+- [Payments, transactions and failures](#payments-transactions-and-failures)
 - [Subscriptions](#subscriptions)
 - [Refunds](#refunds)
 - [Marketplaces](#marketplaces)
@@ -83,7 +83,7 @@ opened. A hosted checkout for a one-time payment of 4.99 USD:
 session = client.checkout_sessions.create_payment(
     product_name="T-shirt",
     description="Blue, size M",
-    price=4.99,  # USD
+    price_usd="4.99",  # USD, a decimal string: never a float
     reference="order-1042",  # your order id: unique per space
     # QBitFlow replaces the placeholder with the session's id when it redirects the customer.
     success_url=f"https://shop.example.com/orders/success?uuid={qbitflow.PLACEHOLDER_UUID}",
@@ -108,14 +108,27 @@ Then fulfil the order when the [`payment.completed` webhook](#webhooks) arrives 
   verbatim. Only currencies keep numeric ids (`int`).
 - **Models** are pydantic v2 models with snake_case attributes; `model.to_dict()` gives the wire
   form (camelCase). A field the API always sends is never `None`: an absent value decodes to its
-  zero value (`""`, `0`, `False`, `[]`, `ZERO_TIME`). Optional fields are `Optional[...]`, `None`
-  when absent. The wire's `from` is `from_`.
-- **Amounts:** USD amounts are `float` (`amount`, `amount_usd`); exact amounts in a token's
-  smallest unit, and a few USD prices, are decimal strings (`amount_min_units`, `price_usd`,
-  `allowance`), never rounded. Fee rates are percents: `fee_percent == 1.5` is 1.5 %.
+  zero value (`""`, `0`, `False`, `[]`, `{}`, `ZERO_TIME`). Optional fields are `Optional[...]`,
+  `None` when absent (the API never sends `null`: an optional field without a value is absent).
+  The wire's `from` is `from_`.
+- **Money is a decimal string, never a float**, in requests and responses alike: USD amounts
+  (`price_usd="4.99"`, `amount_usd`, `total_usd`), token amounts (`amount == "10"` in the token's
+  units, next to `amount_min_units == "10000000"` on-chain and the `currency` object) and fee rates
+  in percent (`fee_percent == "0.99"` is 0.99 %, `refund_percent="50"`). Inputs take a `str` or a
+  `decimal.Decimal` (sent as `str(value)`); a `float` or an `int` is a `ValidationError`, because
+  a float cannot carry `0.1` exactly and the API refuses a JSON number. Inputs are checked before
+  sending: at most 2 decimals, no sign or exponent (`"12.50"` is fine). Compute with `Decimal`, or
+  `format_amount` / `parse_amount`.
+- **Metadata:** products, customers, checkouts and subscriptions carry `metadata`, your own
+  `dict[str, str]` (an order id, a CRM key): at most 50 keys of 1 to 40 characters among
+  `A-Z a-z 0-9 _ - . :`, values of at most 500 characters without control or bidirectional
+  characters. A checkout's is copied onto its payment or subscription and into their webhooks. On
+  an update it is **merged**: a key set to a value sets it, a key set to `""` deletes it, keys not
+  named are kept. Never put secrets or personal data in it.
 - **Enums** are `StrEnum`s (`SubscriptionStatus.ACTIVE`). A value this SDK does not know yet is
   kept as the raw `str`: compare with `==`, and give every `match` a default case.
-- **Times** are timezone-aware `datetime`s, with the offset the API sent.
+- **Times** are timezone-aware `datetime`s (the API sends RFC 3339 in UTC; any offset is
+  accepted).
 
 ## Integration recipes
 
@@ -150,7 +163,7 @@ app.add_api_route("/webhooks/qbitflow", router.fastapi_endpoint(), methods=["POS
 <!-- /docs:snippet -->
 
 Register more handlers the same way, e.g. `@router.on("subscription.statusChanged")` to update
-access with `data.has_access()`. Starlette takes the same endpoint:
+access with `data.has_access()`, or `@router.on("refund.approved")` to reverse an order. Starlette takes the same endpoint:
 `Route("/webhooks/qbitflow", router.fastapi_endpoint(), methods=["POST"])`.
 
 **Flask:**
@@ -178,12 +191,13 @@ signature_header)` returns a `WebhookResult` whose `status` you answer. The deta
 ### Checkout, success page, and waiting in a script
 
 Create the checkout as in the [quick start](#quick-start). On the success page, show the state
-with [`get_status`](#status), but fulfil on the webhook (anyone can open the URL). In a script, a
+with [`checkout_sessions.get`](#status), but fulfil on the webhook (anyone can open the URL). In a script, a
 test or a back-office job, poll until the checkout is completed or expired:
 
 <!-- docs:snippet wait-for-completion -->
 ```python
-# For scripts and back-office jobs: fulfil orders on the payment.completed webhook.
+# For scripts and back-office jobs: fulfil orders on the payment.completed webhook. It polls
+# checkout_sessions.get; on timeout it returns the last status seen (check .status).
 final = client.checkout_sessions.wait_for_completion(session_uuid, timeout=600, interval=3)
 if final.status == qbitflow.CheckoutSessionStatusValue.COMPLETED:
     print("paid")
@@ -216,17 +230,20 @@ print(shown, min_units)
 ```
 <!-- /docs:snippet -->
 
-`parse_amount` raises a `ValidationError` beyond the given decimal places. A model's currency
-knows its decimals: `payment.currency.format_amount(payment.amount_min_units)`.
+Token amounts come both ways: `amount` in the token's units (`"4.99"`) and `amount_min_units`,
+its on-chain integer (`"4990000"`). `parse_amount` raises a `ValidationError` beyond the given
+decimal places. A model's currency knows its decimals:
+`payment.currency.format_amount(payment.amount_min_units)`.
 
 ### A yearly accounting export
 
 <!-- docs:snippet accounting-export -->
 ```python
-# Any range: the SDK splits it into the API's 95-day windows and joins the parts.
+# The API exports at most 92 days at a time (both included): the *_range methods split any
+# range into windows, request them in order and join the results (the CSV header once).
 events = client.accounting.export_json_range("2026-01-01", "2026-12-31")
 for event in events:
-    print(event.type, event.payment_uuid, event.currency, event.net_amount)
+    print(event.type, event.tx_uuid, event.tx_time_utc.date(), event.gross_amount_usd)
 
 csv_text = client.accounting.export_csv_range("2026-01-01", "2026-12-31")
 with open("qbitflow-2026.csv", "w", encoding="utf-8") as file:
@@ -252,22 +269,25 @@ nothing: call `me()` to check it online ([quick start](#quick-start)). `me.role`
 an organization key, and `me.space.test` tells test mode from live (a job that must only run in
 test mode checks it first).
 
-Keep the key in a secret store or an environment variable, never in code. Keys issued before API v2
-(`sk_<digits>_…`) still work; rotate them in the dashboard to the `sk_<uuid>_…` format.
+Keep the key in a secret store or an environment variable, never in code. The SDK only checks the
+`sk_` prefix; keys issued before API v2 (`sk_<digits>_…`) are refused by the API (`401`): create a
+new one in the dashboard.
 
 ### `On-Behalf-Of`: acting in a member's space
 
 A marketplace's **organization key** can act in any of its members' spaces: create their products
 and checkouts, read their payments. Name the member by their **user UUID** (`Member.user_uuid`,
 also in the `member.joined` webhook). A non-member, an owner or admin of the team, or a member of
-the other mode answers 404.
+the other mode answers 404. Acting for a member, the request's role is `user`: the admin methods
+(`members`, `invitations`, `wallets.list_for_member`, `wallets.list_accepted_currencies` with a
+`user_uuid`) answer 403.
 
 <!-- docs:snippet client-on-behalf-of -->
 ```python
 # Every request of this client sends On-Behalf-Of: it acts in the member's space.
 seller = client.on_behalf_of(member_uuid)  # shares the connections and settings of client
 products = seller.products.list()
-print(len(products), "products in the seller's space")
+print(len(products.items), "products on the first page of the seller's space")
 ```
 <!-- /docs:snippet -->
 
@@ -282,7 +302,9 @@ own = seller.products.list(options=RequestOptions(on_behalf_of=""))
 ```
 
 `QBitFlow(key, on_behalf_of=uuid)` sets it for every request of a client. A value that is not a
-UUID (or the nil UUID) is a `ValidationError`, raised at once, and nothing is sent.
+UUID (or the nil UUID, or blank) is a `ValidationError`, raised at once, and nothing is sent;
+`""` (or `None`) means the organization level and the header is then **omitted** (never sent
+blank: the API answers 403 to a blank one).
 
 ## Checkout sessions
 
@@ -291,7 +313,7 @@ on the webhook. The session's id (`pay@…` or `sub@…`) is also the id of the 
 subscription it creates once the customer's transaction is confirmed.
 
 Name the product with **exactly one** of `product_uuid`, `product_reference`, or an inline
-product (`product_name` + `price`, `description` optional, as in the
+product (`product_name` + `price_usd`, `description` optional, as in the
 [quick start](#quick-start)). A product of your catalog:
 
 <!-- docs:snippet checkout-create-payment-product -->
@@ -306,8 +328,11 @@ print("Send the customer to", session.link)
 ```
 <!-- /docs:snippet -->
 
-`reference` is your order id, unique per space. `customer_reference` is kept on the payment, and
-`expires_in_minutes` (10 to 1440) sets the checkout's lifetime.
+`reference` is your order id, unique per space. `customer_reference` is kept on the payment,
+`expires_in_minutes` (10 to 1440) sets the checkout's lifetime, and `metadata` is copied onto the
+payment or the subscription and into their webhooks (`payment.completed`, `subscription.*`,
+`checkout.expired`). The answer is a `CreatedCheckoutSession`: `link`, `uuid` and `expires_at`,
+always set.
 
 A subscription checkout takes the same arguments plus its terms (`frequency`, `trial_period`,
 and `min_periods`, the periods the customer commits to), each optional over a subscription
@@ -318,7 +343,7 @@ product's:
 session = client.checkout_sessions.create_subscription(
     product_name="T-shirt",
     description="Blue, size M",
-    price=4.99,  # USD per period
+    price_usd="4.99",  # USD per period, a decimal string
     frequency=qbitflow.Duration(value=1, unit=qbitflow.DurationUnit.MONTHS),
     trial_period=qbitflow.Duration(value=7, unit=qbitflow.DurationUnit.DAYS),
     reference="order-1043",
@@ -334,11 +359,13 @@ print("Send the customer to", session.link)  # sub@…: the subscription's id on
   (`qbitflow.PLACEHOLDER_UUID`, `qbitflow.PLACEHOLDER_TRANSACTION_TYPE`; the SDK sends them as
   is, never URL-encoded). In live mode
   both URLs must be `https`. A redirect proves nothing (anyone can open the URL): fulfil on the
-  webhook, or on `get_status`.
+  webhook, or on `checkout_sessions.get`.
 - **Errors to expect:** `409 merchant_not_ready` (`details["reason"]`) when the space's wallets
   accept no currency; `409 unique_violation` when another payment or open session holds the
-  `reference`; `400 validation_failed` above 5 USD in test mode, fees included (`details["max"]`);
-  `404` for an unknown product or customer.
+  `reference`; `400 validation_failed` above `"5"` USD in test mode, fees included
+  (`details["max"]`, a string), and at `"0.25"` or less for a live subscription
+  (`details["min"]`); `404` for an unknown product or customer; `410 merchant_closed` for a removed
+  member's space.
 
 ### Fees
 
@@ -351,7 +378,7 @@ customer sees them line by line and pays them with the price (a subscription: wi
 session = client.checkout_sessions.create_payment(
     product_name="T-shirt",
     description="Blue, size M",
-    price=3.99,  # USD: you keep the price and your lines
+    price_usd="3.99",  # USD: you keep the price and your lines
     reference="order-1044",
     success_url=f"https://shop.example.com/orders/success?uuid={qbitflow.PLACEHOLDER_UUID}",
     cancel_url="https://shop.example.com/orders/cancel",
@@ -359,7 +386,7 @@ session = client.checkout_sessions.create_payment(
         # Your own lines (up to 10), shown to the customer and paid with the price.
         items=[
             qbitflow.FeeItem(
-                label="Shipping", description="Standard, 3 to 5 days", amount_usd=0.75
+                label="Shipping", description="Standard, 3 to 5 days", amount_usd="0.75"
             ),
         ],
         # The customer also pays QBitFlow's processing fee, a last line computed by QBitFlow.
@@ -373,9 +400,9 @@ print("Send the customer to", session.link)
 
 - **Your lines**: `fees=CheckoutFees(items=[...])`, up to 10 `FeeItem`s, shown in that order.
   `label` is one line of 1 to 40 characters, `description` (optional) at most 200, and
-  `amount_usd` is above 0, at most 1,000,000, with at most 2 decimals. A number is sent as a JSON
-  number; a string (`"4.99"`) or a `Decimal` is sent as a string, as written, so no float rounds
-  it. The SDK checks all of this before sending (`fees.items[0].amountUsd`…).
+  `amount_usd` is a decimal string (`"0.75"`) or a `Decimal`: above 0, at most 1,000,000, with at
+  most 2 decimals (a float is refused). The SDK checks all of this before sending
+  (`fees.items[0].amountUsd`…).
 - **The processing fee**: `processing_fee=True` adds a last line, `Processing fee`, computed by
   QBitFlow on the price and your lines at your platform fee. QBitFlow's fee is taken on
   everything charged, this line included, so the line is grossed up (and rounded up to the cent)
@@ -386,17 +413,19 @@ print("Send the customer to", session.link)
   `checkout.customerPaysProcessingFee` setting decides (off by default; set it in the
   dashboard); `False` turns it off for one checkout. A product link's checkout follows the
   setting too.
-- **What the customer pays** is the session's `amount`: the price plus every line. It is what
-  is charged and split (QBitFlow's fee, and an organization's, are taken on it) and recorded as
-  the payment's `amount`, with its `price` and `fees`. The network fee comes on top.
-- **Test mode** caps `amount`, fees included, at 5 USD: `400 validation_failed` on `fees`
+- **What the customer pays** is the price plus every line: the payment's `amount_usd`. It is
+  what is charged and split (QBitFlow's fee, and an organization's, are taken on it) and recorded
+  on the payment with its `price_usd` and `fees` (each a `FeeLine`: `type` `custom` or
+  `processingFee`, `label`, `description`, `amount_usd`). The network fee comes on top, paid by
+  the customer's wallet (`settlement.split.network_fee`).
+- **Test mode** caps the total, fees included, at `"5"` USD: `400 validation_failed` on `fees`
   (`details["max"]`).
 - The lines are fixed when the session is created; `checkout.expired` carries them
-  (`PaymentSessionData.fees`, `amount`).
+  (`PaymentSessionData.price_usd`, `fees`, `amount_usd`).
 - **Subscriptions** take the same `fees` (`create_subscription(..., fees=CheckoutFees(...))`,
   the same rules), locked with the price: every bill, the first one and each next one, charges
   the price plus every line, whatever the product's price or your fee becomes. The `Subscription`
-  keeps them as `fees` next to `price_usd` (which stays the price); a bill's `amount` and
+  keeps them as `fees` next to `price_usd` (which stays the price); a bill's `amount_usd` and
   `subscription.upcomingBill`'s `amount_usd` include them, and the maximum and allowance the
   subscriber signs are sized on that amount. A trial's upgrade keeps the trial's lines.
   `checkout.customerPaysProcessingFee` applies to subscription checkouts too.
@@ -405,7 +434,7 @@ print("Send the customer to", session.link)
 
 <!-- docs:snippet checkout-status -->
 ```python
-status = client.checkout_sessions.get_status(session_uuid)  # pay@… or sub@…
+status = client.checkout_sessions.get(session_uuid)  # pay@… or sub@…
 if status.status == qbitflow.CheckoutSessionStatusValue.COMPLETED:
     print("paid, tx", status.tx_hash)  # the payment (or subscription) has the session's id
 elif status.status == qbitflow.CheckoutSessionStatusValue.EXPIRED:
@@ -422,23 +451,24 @@ else:
 | `created` | Waiting for the customer. With `last_attempt` set, their last attempt failed (`last_attempt.code` says why) | no |
 | `waitingConfirmation` | A transaction was sent; waiting for the network. It may last: the transaction can still land | no |
 | `completed` | Confirmed and recorded: the `Payment` or `Subscription` exists, with the session's id | yes |
-| `expired` | Expired unpaid (`checkout.expired` was sent). Read some days later, an expired session is a 404 | yes |
+| `expired` | Expired unpaid (`checkout.expired` was sent). Once QBitFlow no longer keeps the record, a 404 | yes |
 
 **Never cancel an order on `last_attempt`:** a failed attempt is not final, and the customer can
 pay from the same checkout until it expires. Release what the order holds on `checkout.expired`.
 
-For scripts, tests and back-office jobs, `wait_for_completion` polls `get_status` until the
-session is `completed` or `expired` and returns that status; when `timeout` (seconds, default
-600; 0 or less means the default) elapses first it returns the last status seen, so check
-`.status`. `interval` (default 3)
-is at least 1 second; errors of `get_status` (a 404 included) are raised. Webhooks remain the way
+`expires_at` is set while the session is open. For scripts, tests and back-office jobs,
+`wait_for_completion` polls `checkout_sessions.get` until the session is `completed` or `expired`
+and returns that status; when `timeout` (seconds, default 600; 0 or less means the default)
+elapses first it returns the last status seen, so check `.status`. `interval` (default 3) is at
+least 1 second; the last wait is shortened to the time left, then one last poll is made at the
+deadline. Errors of `get` (a 404 included) are raised. Webhooks remain the way
 to fulfil orders. The code is in the
 [recipes](#checkout-success-page-and-waiting-in-a-script).
 
 ### Expire
 
-End a session early (an order cancelled on your side). It answers its status, and
-`checkout.expired` follows. Once the customer paid or is paying it is a `409 tx_already_sent`.
+End a session early (an order cancelled on your side). It answers its status (`expired`,
+`expires_at` the time you expired it), and `checkout.expired` follows. Once the customer paid or is paying it is a `409 tx_already_sent`.
 
 <!-- docs:snippet checkout-expire -->
 ```python
@@ -458,7 +488,7 @@ with payment links. The `reference` is generated when left out.
 product = client.products.create(
     name="T-shirt",
     description="Blue, size M",
-    price=4.99,  # USD
+    price_usd="4.99",  # USD, a decimal string: never a float
     reference="tshirt-blue-m",  # your own id: unique per space
 )
 print(product.uuid, product.payment_link)
@@ -467,14 +497,17 @@ print(product.uuid, product.payment_link)
 
 <!-- docs:snippet products-list -->
 ```python
-for product in client.products.list():
-    print(product.reference, product.name, product.price)
+# iterate walks every page (list returns one); hidden products only with include_hidden.
+for product in client.products.iterate():
+    print(product.reference, product.name, product.price_usd, "USD")
 ```
 <!-- /docs:snippet -->
 
-A subscription product carries its terms. `update` changes only the arguments given; a new price
-applies to new checkouts and subscribers only, and an inactive product is hidden from `list()`
-unless `include_hidden=True` (`subscription=True` lists the subscription products only). A
+`products.list` returns one page (a `Page`, newest first) and `products.iterate` walks them all.
+A subscription product carries its terms. `update` (`PATCH`) changes only the arguments given; a
+new price or new terms apply to new checkouts and subscribers only, and an inactive product is
+hidden from the list unless `include_hidden=True` (`subscription=True` lists the subscription
+products only). A
 member's key gives a product terms (on `create` or `update`) only while the organization's
 `members.subscriptions` policy allows it (`403 policy_disabled` otherwise); with the policy off,
 the links of the member's subscription products open nothing:
@@ -483,36 +516,57 @@ the links of the member's subscription products open nothing:
 from qbitflow import Duration, DurationUnit, SubscriptionTermsParams
 
 terms = SubscriptionTermsParams(frequency=Duration(value=1, unit=DurationUnit.MONTHS))
-plan = client.products.create(name="Pro plan", price=4.99, subscription=terms)
-plan = client.products.update(plan.uuid, price=5.99, is_active=False)
+plan = client.products.create(name="Pro plan", price_usd="4.99", subscription=terms)
+plan = client.products.update(
+    plan.uuid,
+    price_usd="5.99",
+    is_active=False,  # hidden from products.list
+    description="",  # "" clears it
+    metadata={"sku": "TS-BLUE-M", "legacy": ""},  # merged: "" deletes a key
+)
+print(plan.price_usd, plan.metadata)
 ```
 
-`products.get`, `get_by_reference` and `delete` complete the set. Deleting a product does not stop
-its subscriptions: cancel them with `subscriptions.cancel` if the product is gone for good.
+`products.get` and `delete` (`204`) complete the set. `products.get_by_reference("tshirt-blue-m")`
+runs the list's reference filter (`GET /products?reference=`, hidden products included) and
+returns its one product, or raises `NotFoundError` (status 404, code `not_found`) when there is
+none, exactly like an unknown uuid. Deleting a product does not stop its subscriptions: cancel
+them with `subscriptions.cancel` if the product is gone for good.
 
 ```python
 customer = client.customers.create(
-    name="Ada", last_name="Lovelace", email="ada@example.com", reference="crm-42"
+    first_name="Ada",
+    last_name="Lovelace",
+    email="ada@example.com",
+    reference="crm-42",
+    metadata={"plan": "pro"},
 )
 
-# "" (or None) clears phone_number or address; leaving the argument out keeps it.
+# "" (or None) clears last_name, phone_number or address; leaving the argument out keeps it.
 customer = client.customers.update(customer.uuid, phone_number="")
 
-by_email = client.customers.get_by_email("ada@example.com")
-print(customer.uuid == by_email.uuid)
+# An email is not unique: several customers of a space may share one.
+page = client.customers.list(email="ada@example.com")
+print(len(page.items), "customers with this email")
+
+by_reference = client.customers.get_by_reference("crm-42")  # NotFoundError when none
+print(customer.uuid == by_reference.uuid)
 ```
 
-`customers.get`, `get_by_reference`, `list` / `iterate` (by `email` or `verified`) and `delete`
-complete the set. A checkout given `customer_uuid` or `customer_reference` asks the customer
+`customers.get`, `list` / `iterate` (by `email`, `reference` or `verified`) and `delete` (`204`)
+complete the set. A customer you create is `verified`; one QBitFlow created from the email a payer
+typed at checkout is not, and a checkout never links a typed email to a verified customer. A
+checkout given `customer_uuid` or `customer_reference` asks the customer
 nothing (`customer_reference` is kept on the payment, and links your customer with that reference
 if there is one); without either, the checkout asks what your `checkout.customerDetails` setting
 says (the full details by default).
 
-The clearable update fields (`customers.update`'s `phone_number` and `address`,
+The clearable update fields (`customers.update`'s `last_name`, `phone_number` and `address`,
 `products.update`'s and `webhooks.endpoints.update`'s `description`) default to `NOT_GIVEN`:
-left out, the value is unchanged; `""` or `None` clears it.
+left out, the value is unchanged; `""` or `None` clears it. `metadata` on an update is merged
+(`None`: unchanged).
 
-## Payments and failures
+## Payments, transactions and failures
 
 A `Payment` exists once its transaction is confirmed, with its checkout session's `pay@…` id.
 
@@ -520,50 +574,77 @@ A `Payment` exists once its transaction is confirmed, with its checkout session'
 ```python
 page = client.payments.list(refunded=False, limit=20)  # newest first
 for payment in page.items:
-    print(payment.uuid, payment.reference, f"{payment.amount:.2f} USD")
+    # Amounts are decimal strings: the token's (amount, with currency) and USD (amount_usd).
+    print(
+        payment.uuid,
+        payment.reference,
+        payment.amount,
+        payment.currency.symbol,
+        f"({payment.amount_usd} USD)",
+    )
 if page.has_more:
-    print("next page: cursor =", page.next_cursor)  # pass it back as cursor=
+    print("next page: cursor =", page.next_cursor)  # pass it back, verbatim, as cursor=
 ```
 <!-- /docs:snippet -->
 
 <!-- docs:snippet payments-get -->
 ```python
 payment = client.payments.get(payment_uuid)  # pay@…, the id of its checkout session
-print(payment.reference, f"{payment.amount:.2f} USD", payment.tx_hash)
+print(payment.reference, payment.amount_usd, "USD", payment.tx_hash, payment.metadata)
 
+# Runs GET /payments?reference= and returns its one payment (NotFoundError when none).
 by_reference = client.payments.get_by_reference("order-1042")  # your order id
 print(by_reference.uuid)
 ```
 <!-- /docs:snippet -->
 
-A payment also carries its `explorer_url`, whether it is `refundable`, and its split:
-`metadata.tx_amounts.usd.merchant` is what the merchant received.
+A payment carries its transaction (`tx_hash`, `explorer_url`, `confirmed_at`), your `metadata`
+(copied from its checkout, read-only), how it settled (`settlement`), and whether it can be
+refunded (`refundable`, `refund`).
 
-**The amounts.** `amount` is what the customer paid in USD (`amount_min_units` the same in the
-token's smallest unit): the product's `price` at the checkout plus the checkout's
-[`fees`](#fees), each a `FeeLine` (`type`: `FeeLineType.CUSTOM` for your lines,
-`FeeLineType.PROCESSING_FEE` for QBitFlow's; `label`; `description`; `amount_usd`, a decimal
-string). `amount` is what the contracts split; the network fee the customer paid on top is not in
-it (`paid_usd` includes it). On payments recorded before fees existed, `price` equals `amount`
-and `fees` is empty.
+- **The amounts:** `amount` is what the customer paid **in the token's units** (`"10"` for 10
+  USDC, with `amount_min_units` and the `currency` object), `amount_usd` the same in USD:
+  `price_usd` (the product's price at the checkout) plus every line of `fees` (the
+  [checkout's fees](#fees)). It is what the contracts split; the network fee the customer paid on
+  top is not in it (`paid`, `paid_min_units` and `paid_usd` include it: a refund's base).
+- **The settlement** (`settlement`): QBitFlow's `fee_percent`, the `organization_fee` and
+  `referral_fee` when they apply, the `split` (`platform`, `organization`, `referral`,
+  `merchant`, `network_fee`, each a `TokenAmount`: `amount`, `amount_min_units`, `amount_usd`) and
+  the `transaction` that paid it (`block_number`, `block_time`, `gas_used`, its `fee` in the
+  native coin).
 
 ```python
-print(f"price {payment.price:.2f} USD")
+print("price", payment.price_usd, "USD")
 for line in payment.fees:  # a tax, shipping, the processing fee
     print(f"  {line.label}: {line.amount_usd} USD")
-print(f"paid {payment.amount:.2f} USD")
+print("paid", payment.amount_usd, "USD =", payment.amount, payment.currency.symbol)
+if payment.settlement.split is not None:
+    print("you received", payment.settlement.split.merchant.amount, payment.currency.symbol)
 ```
 
 - **Filters**: `customer_uuid`, `product_uuid`, `created_after` / `created_before` (aware
-  `datetime`s, both excluded), `refunded`, and, with an organization key acting for itself,
-  `include_members` (every member's rows, each naming its `user_uuid`) or `user_uuid` (one
-  member's). The last two exclude each other.
+  `datetime`s, both excluded), `reference`, `refunded`, and, with an organization key acting for
+  itself, `include_members` (every member's rows, each naming its `user_uuid`) or `user_uuid`
+  (one member's). The last two exclude each other. `payments.get_by_reference` runs the
+  `reference` filter and raises `NotFoundError` when no payment has it.
 - **Reading a member's row** from the organization's space:
   `client.payments.get(id, include_members=True)`, or `on_behalf_of` the member.
-- **The combined feed** of one-time payments and subscription bills, newest first:
-  `payments.list_combined` / `iterate_combined`, with the same filters plus `source`
-  (`CombinedPaymentSource.PAYMENT`, `CombinedPaymentSource.SUBSCRIPTION_HISTORY`) and
-  `subscription_uuid`.
+- **The transactions feed** of one-time payments and subscription bills, newest first:
+  `transactions.list` / `iterate`, with the same filters (`reference` excepted) plus `type`
+  (`TransactionKind.PAYMENT`, `TransactionKind.BILL`), `subscription_uuid` and `refunded`. Each
+  `Transaction` reads like its resource (a `Payment` or a `Bill`); open it with `payments.get` or
+  `subscriptions.get_bill`.
+
+<!-- docs:snippet transactions-list -->
+```python
+# One feed of one-time payments and subscription bills, newest first; each row reads like
+# its resource. type= filters it to one kind (TransactionKind.PAYMENT or .BILL).
+feed = client.transactions.list(limit=20)
+for tx in feed.items:
+    print(tx.type, tx.uuid, tx.amount_usd, "USD")
+```
+<!-- /docs:snippet -->
+
 - **Failures** are the failed attempts to pay a checkout or a bill. They never moved money and
   are not final: the customer can try again.
 
@@ -571,7 +652,7 @@ print(f"paid {payment.amount:.2f} USD")
 from qbitflow import FailureCategory
 
 for f in client.failures.iterate(category=FailureCategory.INSUFFICIENT_BALANCE):
-    print(f"{f.tx_uuid} attempt {f.attempt}: {f.code} ({f.attempted_usd:.2f} USD)")
+    print(f"{f.tx_uuid} attempt {f.attempt}: {f.code} ({f.attempted_usd} USD)")
 ```
 
 ## Subscriptions
@@ -586,7 +667,7 @@ the free trial. It keeps the checkout's `sub@…` id for life.
 | `active` | Billed on its due dates |
 | `pastDue` | A bill failed; retried for up to 7 days (`dunning` on reads), then cancelled |
 | `paused` | Paused by its customer: not billed until resumed |
-| `stopped` | Cancelled during its period: never billed again, `cancelled` at `next_billing_date` |
+| `stopped` | Cancelled during its period: never billed again, `cancelled` at `next_billing_at` |
 | `cancelled` | Over (`cancellation_reason` says why). Final |
 
 **Access rule: grant access while `now < current_period_end`, whatever the status.** A `stopped`
@@ -603,8 +684,13 @@ print(subscription.status, "paid until", subscription.current_period_end)
 <!-- /docs:snippet -->
 
 `action_required` says what the customer must do (`topUpAllowance`, `raiseMaximum`,
-`confirmTrial`; `None`: nothing): point them to the `management_page_link` the subscription
-webhooks carry.
+`confirmTrial`; `None`: nothing): point them to the subscription's `management_page_link`.
+
+A subscription's price is locked at signup: `price_usd` plus its `fees` lines, every bill. Its
+`allowance` (`None` during a trial) is what the subscriber's wallet still lets QBitFlow bill
+(`amount`, `amount_min_units`, `amount_usd`), how many bills that covers (`remaining_periods`) and
+the most one bill may charge (`max_per_period`). `last_billed_at`, `next_billing_at` and
+`cancellable_at` are `None` when they don't apply.
 
 ```python
 from qbitflow import SubscriptionStatus
@@ -617,16 +703,24 @@ for sub in page.items:
 # Every bill, newest first: the iterator fetches the pages lazily.
 for bill in client.subscriptions.iterate_bills(subscription_uuid):
     if bill.period_end is not None:
-        print(f"{bill.uuid}: {bill.amount:.2f} USD, paid until {bill.period_end.date()}")
+        print(f"{bill.uuid}: {bill.amount_usd} USD, paid until {bill.period_end.date()}")
 ```
 
-- `subscriptions.get_by_reference` reads one by your checkout's `reference`; `get_bill` one bill
-  (`sub-hist@…`).
-- `subscriptions.get_public_history` returns the 10 latest bills as the customer's page shows
-  them. It is a public route: the fields only the merchant sees (`metadata`, `customer_uuid`,
-  `customer_reference`, `user_uuid`, `paid_min_units`, `refund`, …) are empty there. Use
-  `list_bills` for full bills.
+- `subscriptions.get_by_reference` reads one by your checkout's `reference` (the list's
+  `?reference=` filter; `NotFoundError` when none); `get_bill` one bill (`sub-hist@…`). Bills
+  carry no metadata: read the subscription's.
 - Before its checkout completes, `subscriptions.get` is a 404: read the checkout session instead.
+- `subscriptions.update` changes its `metadata` only, merged (a key set to `""` deletes it), and
+  answers the subscription:
+
+<!-- docs:snippet subscriptions-update -->
+```python
+# Metadata is merged into the subscription's: "" deletes a key, keys not named are kept.
+# It is the only thing a merchant edits on a subscription; webhooks carry it.
+updated = client.subscriptions.update(subscription_uuid, metadata={"plan": "pro", "coupon": ""})
+print(updated.metadata.get("plan"))
+```
+<!-- /docs:snippet -->
 
 ### Cancel
 
@@ -647,22 +741,25 @@ else:
 `cancel` answers 200 when done and 202 (`pending`) while confirming on-chain: the status is not
 updated yet, but the cancellation goes on regardless. It is never retried automatically. A
 subscription already stopped is a `ConflictError` (409
-`subscription_already_stopped_or_inactive`); a cancelled one a `NotFoundError`.
+`subscription_already_stopped_or_inactive`); a cancelled one a `NotFoundError`. A trial is
+cancelled immediately only (`immediate=False`: `400`).
 
 ### Test billing
 
-In test mode a subscription is billed only when you ask, with live's statuses and webhooks:
+In test mode a subscription is billed only when you ask, with live's statuses and webhooks.
+`test_bill` answers once the attempt settled: a `TestBill` with the bill's `sub-hist@…` id, its
+`stage` and, once done, its `outcome`:
 
 <!-- docs:snippet subscriptions-test-bill -->
 ```python
-# Test mode only: run the next billing now instead of on its due date.
-state = client.subscriptions.execute_test_billing(subscription_uuid)
-print(state.stage, state.outcome, state.failure_code)
+# Test mode only: run the next bill now instead of on its due date.
+bill = client.subscriptions.test_bill(subscription_uuid)
+print(bill.bill_uuid, bill.stage, bill.outcome, bill.failure_code)  # sub-hist@…
 ```
 <!-- /docs:snippet -->
 
-Before `next_billing_date` it is a `ConflictError` (409 `payment_not_due`); for a live
-subscription a `BadRequestError`.
+Before `next_billing_at` it is a `ConflictError` (409 `payment_not_due`); for a live
+subscription a `BadRequestError` (400 `test_mode_only`).
 
 Walk the timeline once in test mode: a 5-minute frequency, pay from a test wallet, trigger the
 bill, then empty the wallet and trigger it again to see `subscription.billingFailed` and
@@ -670,45 +767,64 @@ bill, then empty the wallet and trigger it again to see `subscription.billingFai
 
 ## Refunds
 
-Refunds waiting for an answer. From the organization's space the members' are included by
-default: `include_members=False` leaves them out.
+`refunds.list` filters by `status` (up to 5 statuses, sent as repeated `?status=`; `None`:
+every status) and `tx_uuid` (the refund of one transaction). From the organization's space the
+members' refunds are included by default: `include_members=False` leaves them out.
 
 <!-- docs:snippet refunds-list -->
 ```python
-for refund in client.refunds.list():  # the active refunds
-    print(refund.uuid, refund.tx_uuid, refund.status, refund.reason)
+# The ones waiting for an answer (status None: every status).
+page = client.refunds.list(status=[qbitflow.RefundStatus.PENDING])
+for refund in page.items:
+    print(refund.uuid, refund.tx_uuid, refund.initiated_by, refund.reason, refund.amount)
 ```
 <!-- /docs:snippet -->
 
-The answered refunds (approved or rejected) come page by page:
+`refunds.iterate` walks every page, e.g. the answered refunds:
 
 ```python
-for r in client.refunds.iterate_inactive():
+from qbitflow import RefundStatus
+
+for r in client.refunds.iterate(status=[RefundStatus.APPROVED, RefundStatus.REJECTED]):
     print(r.uuid, r.status, r.explorer_url)
 ```
 
-`refunds.initiate` starts a refund of a payment (`pay@…`) or a bill (`sub-hist@…`) of the space.
-**It creates a pending refund: no money moves until you sign the transfer in the dashboard**, from
-the wallet that was paid. `refund.completed` tells you when it is sent.
+`refunds.get` reads one refund by its `refund@…` id, cancelled ones included:
 
-<!-- docs:snippet refunds-create -->
+<!-- docs:snippet refunds-get -->
 ```python
-refund = client.refunds.initiate(
-    tx_uuid=payment_uuid,  # pay@… (or a bill's sub-hist@…)
-    refund_percent=50,  # of what the customer paid; None refunds everything
-    reason="Damaged item",
-)
-# A pending refund: no money moves until you sign the transfer in the dashboard.
-print(refund.uuid, refund.status)
+refund = client.refunds.get(refund_uuid)  # refund@…
+# pending, approved, rejected or cancelled (a merchant's draft dropped before it was sent).
+print(refund.uuid, refund.status, f"{refund.refund_percent}%", refund.amount)
 ```
 <!-- /docs:snippet -->
 
-`refund_percent` is a share of everything the customer paid, network fee included;
-`merchant_message` adds a note for the customer. There is one refund per transaction: another is
-a `ConflictError` (409 `refund_already_exists`, the existing one in `details["refundUuid"]`).
+`refunds.create` starts a refund of a payment (`pay@…`) or a bill (`sub-hist@…`) of the space.
+**It creates a pending refund: no money moves until you sign the transfer in the dashboard**, from
+the wallet that was paid. `refund.approved` tells you when it is sent.
 
-A refund is `pending`, `approved` or `rejected`; `initiated_by` is `customer` (a request you
-answer in the dashboard) or `merchant`. A held seller's payment already released to them can no
+<!-- docs:snippet refunds-create -->
+```python
+refund = client.refunds.create(
+    tx_uuid=payment_uuid,  # pay@… (or a bill's sub-hist@…)
+    refund_percent="50",  # a percent string, of what the customer paid; None refunds all
+    reason="Damaged item",
+)
+# Pending: no money moves until you sign the transfer in the dashboard (refund.approved).
+print(refund.uuid, refund.status, refund.amount, refund.currency.symbol)
+```
+<!-- /docs:snippet -->
+
+`refund_percent` is a percent string (`"50"`, or a `Decimal`: above 0, at most `"100"`, the
+default) of everything the customer paid (`paid`, network fee included); `amount` /
+`amount_min_units` / `amount_usd` is what it sends back. `merchant_message` adds a note for the
+customer. There is one refund per transaction: another is a `ConflictError` (409
+`refund_already_exists`, the existing one in `details["refundUuid"]`; only your own unsent draft
+gives way).
+
+A refund is `pending`, `approved`, `rejected` or `cancelled` (your draft dropped before it was
+sent; `failed` is declared but never set); `initiated_by` is `customer` (a request you answer in
+the dashboard) or `merchant`. A held seller's payment already released to them can no
 longer be refunded (`409 held_funds_released`).
 
 ## Marketplaces
@@ -725,17 +841,20 @@ the dashboard.
 ```python
 created = client.invitations.create(
     email="seller@example.com",
-    trust_layer=True,  # hold their funds until you trust them
-    organization_fee_percent=10,  # your commission on their payments
+    hold_funds=True,  # hold their payments until you trust them (always sent)
+    organization_fee_percent="10",  # your commission on their payments: "0" to "50" %
     redirect_url="https://shop.example.com/sellers/welcome",
 )
 # The seller exists once they accept: wait for the member.joined webhook.
-print("invitation", created.invitation.uuid, "link:", created.link)  # also emailed
+# created.uuid is what member.joined's invitation_uuid names; its user_uuid is the seller.
+print("invitation", created.uuid, "link:", created.link)  # also emailed
 ```
 <!-- /docs:snippet -->
 
-The commission is 0 to 50 %, with at most 2 decimals. Inviting a member is a `ConflictError`
-(409 `already_joined`), and more than 50 invitations an hour a `RateLimitError`.
+`hold_funds` is required (always sent); the commission is a percent string from `"0"` to `"50"`
+with at most 2 decimals. The answer is a `CreatedInvitation`: the invitation's fields and its
+`link` (only here). Inviting a member is a `ConflictError` (409 `already_joined`), and more than 50
+invitations an hour a `RateLimitError` (raised at once).
 
 **2. Wait for `member.joined`.** The seller exists once they accepted: store the event's
 `user_uuid` and match `invitation_uuid` to your invitation. Never trust the redirect's
@@ -753,7 +872,7 @@ they can, not needed while you hold their funds). Until then their checkouts ans
 `409 merchant_not_ready`:
 
 ```python
-if not client.wallets.list_supported_currencies(user_uuid=member_uuid):
+if not client.wallets.list_accepted_currencies(user_uuid=member_uuid):
     raise SystemExit("the seller cannot be paid yet")
 ```
 
@@ -765,17 +884,20 @@ do this: a `PermissionDeniedError` (403 `policy_disabled`).
 **4. Hear of every sale.** An organization webhook endpoint receives every seller's events by
 default; the event's `user_uuid` names the seller. Use it as `on_behalf_of` for follow-up reads.
 
-**5. Commission and held funds.** Each payment records your fee in `metadata.organization_fee`
-and `metadata.tx_amounts`. While you hold a seller's funds (`trust_layer` True,
-`Member.trusted_at` None), their payments go to your wallet and the net is owed to them:
+**5. Commission and held funds.** Each payment records your fee in `settlement.organization_fee`
+and `settlement.split.organization`. While you hold a seller's funds (`hold_funds` True,
+`Member.trusted_at` None), their payments go to your wallet and the net is owed to them
+(`HeldFunds.total_usd`, each `LedgerEntry` with what it counts for: `owed`, `owed_min_units`,
+`owed_usd`, negative on a refund line):
 
 <!-- docs:snippet members-held-funds -->
 ```python
-for summary in client.members.list_held_funds():  # every member you hold funds for
-    print(summary.user_uuid, f"{summary.total_amount:.2f} USD over {summary.count} lines")
+# Every member you hold funds for, the longest held first.
+for summary in client.members.list_held_funds():
+    print(summary.user_uuid, f"{summary.total_usd} USD over {summary.count} lines")
 
 held = client.members.get_held_funds(member_uuid)  # one member, line by line
-print(f"owed to the seller: {held.total_amount:.2f} USD over {len(held.ledgers)} lines")
+print(f"owed to the seller: {held.total_usd} USD over {len(held.ledgers)} lines")
 ```
 <!-- /docs:snippet -->
 
@@ -786,7 +908,7 @@ The seller reads their side with their own key, or through a client acting for t
 ```python
 # With a member's key, or a client acting on behalf of the member.
 held = client.members.get_own_held_funds()
-print(f"held for me: {held.total_amount:.2f} USD over {len(held.ledgers)} lines")
+print(f"held for me: {held.total_usd} USD over {len(held.ledgers)} lines")
 ```
 <!-- /docs:snippet -->
 
@@ -805,8 +927,9 @@ Change the commission:
 
 <!-- docs:snippet members-update -->
 ```python
-# The fee on their new payments (a checkout already created keeps its fee).
-member = client.members.update(member_uuid, organization_fee_percent=10)
+# The fee on their new payments, a percent string from "0" to "50" (a checkout already
+# created keeps its fee).
+member = client.members.update(member_uuid, organization_fee_percent="10")
 print(member.organization_fee_percent)
 ```
 <!-- /docs:snippet -->
@@ -824,21 +947,26 @@ for member in page.items:
 <!-- docs:snippet members-get -->
 ```python
 member = client.members.get(member_uuid)  # their user uuid
-print(member.name, member.last_name, "trusted:", member.trusted_at is not None)
+print(member.first_name, member.last_name, "trusted:", member.trusted_at is not None)
+for currency in member.accepted_currencies:  # empty: their checkouts answer 409
+    print("  accepts", currency.code)
 ```
 <!-- /docs:snippet -->
 
-`members.iterate` walks every page. `wallets.list_for_member` reads a member's wallets:
+`members.iterate` walks every page; a `Member` has `first_name`, `last_name`,
+`organization_fee_percent` and the `accepted_currencies` their checkouts take now.
+`wallets.list_for_member` reads a member's wallets:
 
 <!-- docs:snippet members-wallets -->
 ```python
 for wallet in client.wallets.list_for_member(member_uuid):
-    print(wallet.currency.symbol, wallet.public_key)
+    print(wallet.currency.chain, wallet.address)
 ```
 <!-- /docs:snippet -->
 
-`members.remove` ends a seller's membership in the key's mode. It is a `409 held_funds_pending`
-while you hold their live funds: release them first.
+`members.remove` ends a seller's membership in the key's mode (`204`): their keys stop working
+and their checkouts close. It is a `409 held_funds_pending` while you hold their live funds:
+release them first.
 
 <!-- docs:snippet members-remove -->
 ```python
@@ -852,7 +980,9 @@ except qbitflow.ConflictError as exc:
 ```
 <!-- /docs:snippet -->
 
-`invitations.list` / `iterate` (by `status`) and `invitations.revoke` manage the invitations:
+`invitations.list` / `iterate` (by `status`; your team's invitations are listed too, with `role`
+admin and no `test`, `hold_funds` or fee) and `invitations.revoke` (`204`, returns `None`) manage
+the invitations:
 
 <!-- docs:snippet invitations-list -->
 ```python
@@ -864,51 +994,57 @@ for invitation in page.items:
 
 <!-- docs:snippet invitations-revoke -->
 ```python
-invitation = client.invitations.revoke(invitation_uuid)  # a pending one only
-print(invitation.status)  # revoked
+client.invitations.revoke(invitation_uuid)  # 204: its link stops working
+print("revoked", invitation_uuid)
 ```
 <!-- /docs:snippet -->
 
-- `members.list_held_funds` lists every member you owe, longest held first.
+- `members.list_held_funds` lists every member you owe, longest held first (a plain list).
 - Today a seller whose account already belongs to another organization cannot accept (no
   `member.joined` comes), and test-mode sellers are real accounts that accept from a real inbox.
 
 ## Wallets
 
-Wallets are added and removed in the dashboard, by their owner only. The SDK reads them.
+Wallets are added and removed in the dashboard, by their owner only. The SDK reads them; every
+wallet list is short and returned as a plain list.
 
 ```python
 for w in client.wallets.list(with_balances=True):
-    print(w.currency.symbol, w.public_key)
+    print(w.currency.chain, w.address)
     for tw in w.token_wallets:
-        if tw.balance is not None:
-            print(f"  {tw.token.symbol}: {tw.balance.balance} ({tw.balance.balance_usd:.2f} USD)")
+        if tw.balance is not None:  # None when the chain couldn't be read
+            print(f"  {tw.currency.code}: {tw.balance.amount} ({tw.balance.amount_usd} USD)")
 ```
 
 `wallets.list_for_member(user_uuid)` reads a member's wallets (organization key), and
-`wallets.list_supported_currencies` the currencies a space's checkouts accept: none means its
-checkouts answer `409 merchant_not_ready`.
+`wallets.list_accepted_currencies` the currencies a space's checkouts accept now (`user_uuid=`: a
+member's, organization key): none means its checkouts answer `409 merchant_not_ready`.
 
 ## Accounting export
 
 Every payment, bill, refund and fee between two dates (`YYYY-MM-DD` strings or `datetime.date`s,
-both included), as models (`export_json`) or as CSV text (`export_csv`); the
-[recipe](#a-yearly-accounting-export) exports a year with their `_range` twins. Each row has its
-`type`, `payment_uuid`, `tx_time_utc`, `currency`, `gross_amount`, `net_amount` and more.
+both included), as models (`export_json`, a `list[AccountingEvent]`) or as CSV text
+(`export_csv`); the [recipe](#a-yearly-accounting-export) exports a year with their `_range`
+twins. Each row has its `type`, `tx_uuid`, `tx_time_utc`, `currency`, `gross_amount`,
+`net_amount` and more.
 
-The SDK checks the dates and `from <= to` before sending. **The API allows at most 95 days per
-export** and answers 400 beyond. `export_json_range` and `export_csv_range` take any range: they
-request consecutive windows of at most 95 days (`[from, from + 95 days]`, the next starting the
-day after), in order, and join them (one list; one CSV with the header line once). A range of
-95 days or less is one request. Rows are typed `payment`,
-`subscriptionHistory`, `refund`, `organizationFee` or `referralFee`, and the empty fields of a row
-are `None`.
+The SDK checks the dates and `from <= to` before sending. **The API allows at most 92 days per
+export, both days included** (`400 validation_failed` on `to` beyond, `details["max"]` 92).
+`export_json_range` and `export_csv_range` take any range: they split it into consecutive windows
+of at most 92 days (`[from, from + 91 days]`, the next one starting the day after, on calendar
+dates in UTC), request them in order and join them (one list; one CSV with the first window's
+header line once, then every window's rows). A range of 92 days or less is one request;
+`2026-01-01` to `2026-12-31` is four: `[01-01, 04-02]`, `[04-03, 07-03]`, `[07-04, 10-03]`,
+`[10-04, 12-31]`. Rows are typed `payment`, `bill`, `refund`, `organizationFee` or
+`referralFee`; a value a row doesn't have (a fee that doesn't apply) is `None`, never `"0"`.
 
 - **Dates** are the transactions' (the day their block was mined, in UTC: `tx_time_utc`), so
   consecutive exports never miss nor repeat an event. Rows are ordered by `tx_time_utc`, `type`,
-  then `payment_uuid`.
+  then `tx_uuid`; a refund names what it refunds in `related_tx_uuid` and `related_reference`.
 - **Amounts** are in the currency's units (`"7.5"` USDC, not `7500000`), as decimal strings, next
-  to `currency_decimals`. `currency` names what was paid as markets do (`USDC`, or the chain's
+  to `currency_decimals`, each with its on-chain twin (`gross_amount_min_units`, …). USD amounts
+  (`gross_amount_usd`, …) and rates (`platform_fee_percent`, …) are decimal strings too.
+  `currency` names what was paid as markets do (`USDC`, or the chain's
   native currency: `ETH`, `SOL`), and `currency_price_usd` is the USD price the amounts were
   converted at. `gross_amount = platform_fee + organization_fee + net_amount` exactly; a refund's
   net is the refunded amount, negative.
@@ -917,9 +1053,12 @@ are `None`.
   `merchant` (a refund your space sent) or `organization` (a refund of a payment the organization
   held for its member). Book `network_fees` (in `network_fees_currency`, the chain's native
   currency on a refund) apart for `merchant` and `organization`.
-- **CSV columns** follow `AccountingEvent`'s field order (what happened, the USD amounts, the
-  same amounts in the currency, the network fees, the rates, the on-chain proof, the ids): read
-  them by header name, not position.
+- **CSV columns** are `AccountingEvent`'s wire keys in its field order (what happened, the USD
+  amounts, the same amounts in the currency, the network fees, the rates, the on-chain proof, the
+  ids): read them by header name, not position. Amounts are plain numbers there, an absent value
+  an empty cell, and a cell starting with `=`, `+`, `-`, `@`, a tab or a CR gets a leading `'`.
+- A `referralFee` row only has what the referrer earned (its type, time, chain, block, currency
+  and the referral fee): every other field is `None`.
 
 ## Webhooks
 
@@ -947,9 +1086,11 @@ print(created.uuid, created.secret)
 
 Up to 10 endpoints per space and mode; live endpoints need `https` and a public host. An
 organization endpoint also receives its members' events unless created with
-`include_members=False`. `endpoints.list`, `get`, `update` (`enabled=False` pauses it, `True`
-enables it again) and `delete` manage them. An endpoint's secret is shown and rotated in the
-dashboard only.
+`include_members=False`. `endpoints.list` / `iterate` (paginated), `get`, `update` (`PATCH`:
+`enabled=False` pauses it, `True` enables it again, `description=""` clears it, `events=[]`
+receives every type) and `delete` (`204`) manage them. An endpoint's secret is shown and rotated
+in the dashboard only. A replay of the create's `Idempotency-Key` within 24 hours returns the same
+endpoint and secret.
 
 ### 2. Handle the deliveries with a router
 
@@ -964,6 +1105,8 @@ from qbitflow import (
     Event,
     EventType,
     PaymentCompleted,
+    Refund,
+    SubscriptionBilled,
     SubscriptionStatusChanged,
     UnknownEvent,
     webhooks,
@@ -974,12 +1117,22 @@ router = webhooks.WebhookRouter(os.environ["QBITFLOW_WEBHOOK_SECRET"])  # tolera
 
 @router.on("payment.completed")  # the handler gets the typed data, then the event
 def fulfil(data: PaymentCompleted, event: Event) -> None:
-    print(f"fulfil order {data.reference!r} ({data.uuid}): {data.amount:.2f} USD")
+    print(f"fulfil order {data.reference!r} ({data.uuid}): {data.amount_usd} USD", data.metadata)
 
 
 @router.on(EventType.CHECKOUT_EXPIRED)  # an EventType works too
 def release(data: CheckoutExpired, event: Event) -> None:
     print("release order", data.reference)
+
+
+@router.on("subscription.billed")  # {bill, subscription}
+def billed(data: SubscriptionBilled, event: Event) -> None:
+    print(f"{data.subscription.uuid} paid until {data.bill.period_end} ({data.bill.amount_usd} USD)")
+
+
+@router.on("refund.approved")  # was refund.completed
+def refunded(data: Refund, event: Event) -> None:
+    print(f"refund {data.uuid} of {data.tx_uuid}: {data.refund_percent}% sent back")
 
 
 @router.on("subscription.statusChanged")
@@ -1036,9 +1189,10 @@ for every 400 and 500 (`event` is `None` when the body could not be parsed), to 
 - **Members' events** carry the member in `event.user_uuid`: read their resources with
   `client.on_behalf_of(event.user_uuid)`.
 - **No fixed source IPs**: verify the signature, never allow-list addresses.
-- **v2 only.** An endpoint migrated from API v1 receives v1 bodies, which the router answers 400
-  (a `ValidationError` on `version`): move it to v2 in the dashboard, or with
-  `client.webhooks.endpoints.update(uuid, payload_version=WebhookPayloadVersion.V2)`.
+- **v2 only.** Every endpoint receives the v2 envelope (`QBitFlow-Webhook-Version: v2`); a body
+  of another version is refused (a `ValidationError` on `version`, a 400 from the router).
+- **Headers:** `QBitFlow-Signature`, `QBitFlow-Event-Id` and `QBitFlow-Event-Type`
+  (`webhooks.SIGNATURE_HEADER`, `EVENT_ID_HEADER`, `EVENT_TYPE_HEADER`).
 
 ### Testing your endpoint
 
@@ -1068,8 +1222,8 @@ assert result.status == 200
 `webhooks.verify(raw_body, header, secret)` checks a signature (raising `WebhookSignatureError`
 with a `reason`: `missingHeader`, `malformedHeader`, `timestampOutsideTolerance`,
 `noMatchingSignature`), `webhooks.construct_event` verifies then parses, and
-`webhooks.parse_event` only parses (a `ValidationError` for a body that is not a v2 event, such
-as an endpoint still on v1). In a handler that returns the HTTP status to answer:
+`webhooks.parse_event` only parses (a `ValidationError` for a body that is not a v2 event, or
+whose data does not fit its type). In a handler that returns the HTTP status to answer:
 
 <!-- docs:snippet webhook-verify -->
 ```python
@@ -1100,34 +1254,41 @@ then `client.webhooks.parse_event(raw_body)` parses the body. `client.webhooks.v
 | `event.type` | Event class | `event.data` |
 |---|---|---|
 | `payment.completed` | `PaymentCompletedEvent` | `PaymentCompleted`: the `Payment` + `management_page_link` |
-| `subscription.created` | `SubscriptionCreatedEvent` | `SubscriptionCreated`: the `Subscription` (`active` or `trial`) + `management_page_link` |
-| `subscription.billed` | `SubscriptionBilledEvent` | `SubscriptionBilled`: the `Bill` (paid until `period_end`) + `subscription_reference`, `subscription_status` |
+| `subscription.created` | `SubscriptionCreatedEvent` | the `Subscription` (`active` or `trial`, its `management_page_link` included) |
+| `subscription.billed` | `SubscriptionBilledEvent` | `SubscriptionBilled`: `bill`, the `Bill` paid (until `bill.period_end`), and `subscription`, the `Subscription` as it leaves it (`.status`, `.reference`, `.metadata`) |
 | `subscription.statusChanged` | `SubscriptionStatusChangedEvent` | `SubscriptionStatusChanged`: the `Subscription` + `previous_status` |
 | `subscription.actionRequiredChanged` | `SubscriptionActionRequiredChangedEvent` | the `Subscription` + `previous_action_required` |
-| `subscription.billingFailed` | `SubscriptionBillingFailedEvent` | the `Subscription` + `reason`, `bill_uuid`, `amount_usd` (a **string**), `attempt`, `remaining_attempts`, `next_attempt_at` |
-| `subscription.upcomingBill` | `SubscriptionUpcomingBillEvent` | the `Subscription` + `billing_date`, `amount_usd` (a **float**), `trial_ending`, `balance_sufficient`, `allowance_sufficient` |
-| `refund.requested` / `.completed` / `.denied` | `RefundRequestedEvent` / `RefundCompletedEvent` / `RefundDeniedEvent` | the `Refund` |
+| `subscription.billingFailed` | `SubscriptionBillingFailedEvent` | the `Subscription` + `reason`, `bill_uuid`, `amount_usd` (a string), `failure_code`, `attempt`, `remaining_attempts`, `next_attempt_at` |
+| `subscription.upcomingBill` | `SubscriptionUpcomingBillEvent` | the `Subscription` + `billing_at`, `amount_usd` (a string), `trial_ending`, `balance_sufficient`, `allowance_sufficient` |
+| `refund.requested` / `.approved` / `.rejected` | `RefundRequestedEvent` / `RefundApprovedEvent` / `RefundRejectedEvent` | the `Refund` (`refund.approved` and `refund.rejected` were `refund.completed` and `refund.denied`) |
 | `member.joined` | `MemberJoinedEvent` | `MemberJoined`: the `Member` + `invitation_uuid` |
 | `member.removed` | `MemberRemovedEvent` | the `Member` |
-| `heldFunds.released` | `HeldFundsReleasedEvent` | `HeldFundsReleased`: the transfer paid to the member + the `ledgers` it settled |
+| `heldFunds.released` | `HeldFundsReleasedEvent` | `HeldFundsReleased`: the transfer paid to the member (`amount`, `amount_usd`, `settlement.transaction`) + the `ledgers` it settled |
 | `checkout.expired` | `CheckoutExpiredEvent` | `PaymentSessionData`, or `SubscriptionSessionData` when `tx_type` is `createSubscription` |
 | `webhook.test` | `WebhookTestEvent` | `WebhookTest`: `endpoint_uuid`, `message` (the dashboard's test) |
 | any other | `UnknownEvent` | the raw JSON value |
 
 `qbitflow.Event` is the union of these classes (a pydantic discriminated union on `type`); every
-one derives from `BaseEvent` (`id`, `type`, `version`, `created_at`, `test`, `user_uuid`). Webhook
-data never carries what only API reads return (`customer`, `refund`/`refundable`, `dunning`,
-`approval`, `product_name`): those fields are `None` on events.
+one derives from `BaseEvent` (`id`, `type`, `version`, `created_at`, `test`, `user_uuid`).
+`router.on` refuses a type it does not know (a `ValidationError`: a typo never goes unnoticed).
+Webhook data never carries what only API reads return (`customer`,
+`refund`/`refundable`/`not_refundable_reason`, a subscription's `dunning`, a refund's `approval`,
+`customer_uuid` and `product_name`): those fields are `None` on events. It carries your
+`metadata` and the `settlement`.
 
 ### The event log
 
-Every event of the space, newest first (`events.iterate` walks every page):
+Every event of the space, newest first, each exactly as it was delivered (kept at least 90 days;
+`events.iterate` walks every page). `type` is sent as is, not checked against this SDK's types
+(newer ones appear):
 
 <!-- docs:snippet events-list -->
 ```python
 page = client.webhooks.events.list(type=qbitflow.EventType.PAYMENT_COMPLETED, limit=20)
-for event in page.items:  # newest first
+for event in page.items:  # newest first, each exactly as delivered
     print(event.id, event.type, event.created_at)
+if page.has_more:
+    print("more: pass", page.next_cursor, "as cursor=")  # opaque, never an event id
 ```
 <!-- /docs:snippet -->
 
@@ -1143,23 +1304,27 @@ for d in detail.deliveries:
 
 <!-- docs:snippet currencies-list -->
 ```python
-# A public route limited to 60 requests a minute: cache the list at start-up.
-currencies = client.currencies.list_available()
+# A public route limited to 60 requests a minute: cache the list at start-up. One bounded
+# list: the live currencies; test=True the test networks'; main=True the native coins only.
+currencies = client.currencies.list()
 for currency in currencies:
-    print(currency.id, currency.symbol, currency.name, currency.decimals)
+    print(currency.id, currency.code, currency.name, currency.chain, currency.decimals)
 ```
 <!-- /docs:snippet -->
 
-`list_available` lists every currency checkouts can take, `list_main` the chains' native coins,
-and `get` one by id, to resolve the `currency_id`, `available_currency_ids` and
-`accepted_currency_ids` fields. These routes are public and **limited to 60 requests a minute per
-IP: cache the list** at start-up instead of reading it per request. Payments, bills and
-subscriptions already carry their `currency`.
+`currencies.list` returns the catalog as a plain list (`test=True`: the test networks'
+currencies; `main=True`: only the chains' native coins), and `get` one by id (a token's
+`main_currency_id`). A `Currency` has its `code` (what requests name it by: `BASE:USDC`, or `ETH`
+for a native coin), `symbol`, `name`, `chain`, `decimals`, and `address` (`None` on a native
+coin). These routes are public and **limited to 60 requests a minute per IP: cache the list** at
+start-up instead of reading it per request. Every response that names a currency carries this
+object (`Payment.currency`, `Member.accepted_currencies`, …).
 
 ## Pagination and iterators
 
-Paginated lists return a `Page[T]`: `items`, and `next_cursor` (`None` on the last page, else
-the value to pass back as `cursor=`, verbatim); `page.has_more` says whether another page follows.
+Paginated lists return a `Page[T]`: `items`, `has_more` (another page follows), and
+`next_cursor` (set iff `has_more`: the value to pass back as `cursor=`, verbatim; it is opaque,
+never an id to build or parse, at most 200 characters).
 
 <!-- docs:snippet customers-list -->
 ```python
@@ -1167,35 +1332,39 @@ page = client.customers.list(limit=20)
 for customer in page.items:
     print(customer.uuid, customer.email, customer.reference)
 if page.has_more:
-    print("next page: cursor =", page.next_cursor)  # pass it back as cursor=
+    print("next page: cursor =", page.next_cursor)  # pass it back, verbatim, as cursor=
 ```
 <!-- /docs:snippet -->
 
 Each paginated list has an `iterate…` twin returning an iterator: it fetches one page at a time,
-only as you consume it, keeps your filters and page size, and stops when you `break`. An error is
-raised from the loop.
+only as you consume it, keeps your filters and page size, and stops when you `break`, after the
+page whose `has_more` is False (a full last page answers False: there is never an extra empty
+request), or defensively on a page that claims more without a new `next_cursor` (none, the cursor
+just requested, or an empty page). An error is raised from the loop.
 
 <!-- docs:snippet pagination-iterate -->
 ```python
-# Fetches one page at a time, only as the loop consumes it; break stops the fetching.
+# Fetches one page at a time, only as the loop consumes it; break stops the fetching. It
+# stops after the page whose has_more is False.
 for payment in client.payments.iterate(limit=50):
-    print(payment.uuid, f"{payment.amount:.2f} USD")
+    print(payment.uuid, payment.amount_usd, "USD")
 ```
 <!-- /docs:snippet -->
 
 | Method | Iterator | Page size: default / max |
 |---|---|---|
-| `customers.list` | `iterate` | 10 / 100 |
-| `payments.list`, `payments.list_combined` | `iterate`, `iterate_combined` | 10 / 50 |
-| `failures.list` | `iterate` | 10 / 50 |
+| `products.list`, `customers.list` | `iterate` | 20 / 100 |
+| `payments.list`, `transactions.list`, `failures.list` | `iterate` | 20 / 100 |
 | `subscriptions.list`, `subscriptions.list_bills` | `iterate`, `iterate_bills` | 20 / 100 |
-| `refunds.list_inactive` | `iterate_inactive` | 10 / 50 |
+| `refunds.list` | `iterate` | 20 / 100 |
 | `members.list`, `invitations.list` | `iterate` | 20 / 100 |
-| `webhooks.events.list` (cursor `evt_…`) | `iterate` | 20 / 100 |
+| `webhooks.endpoints.list`, `webhooks.events.list` | `iterate` | 20 / 100 |
 
-The other lists are short and return a plain `list`: `products.list`, `refunds.list`,
-`wallets.*`, `currencies.*`, `webhooks.endpoints.list` (at most 10), `members.list_held_funds`
-and `subscriptions.get_public_history` (the 10 latest bills).
+`limit` is sent as given and clamped by the API (0 or less: 20; above 100: 100). The bounded lists
+answer one page and return its items as a plain `list`: `currencies.list`, `wallets.list`,
+`wallets.list_for_member`, `wallets.list_accepted_currencies`, `members.list_held_funds` and
+`accounting.export_json` (a page that ever claims more is followed, under the same guards, so a
+list is never cut short silently).
 
 ## Errors
 
@@ -1205,11 +1374,11 @@ fields every error has; catch the most specific class you can act on:
 | Class | When | Codes and fields worth knowing |
 |---|---|---|
 | `ValidationError` | 400 `validation_failed`, or input the SDK refused **before sending** (`status` None) | `field_errors`: each failing input by its wire name, dotted when nested (`frequency.unit`) |
-| `BadRequestError` | any other 400 | `bad_request`, `foreign_key_violation` (`details["field"]`) |
+| `BadRequestError` | any other 400 | `foreign_key_violation` (`details["field"]`), `test_mode_only`, `sender_is_receiver` |
 | `AuthenticationError` | 401 | a missing, unknown, expired or revoked key (a removed member's keys too) |
 | `PermissionDeniedError` | 403 | `forbidden`, `policy_disabled` (`details["policy"]`), `plan_required` |
-| `NotFoundError` | 404 | unknown, deleted, or outside the request's space |
-| `ConflictError` | 409 | `unique_violation` (`details["field"]`), `tx_already_sent`, `merchant_not_ready` (`details["reason"]`), `refund_already_exists` (`details["refundUuid"]`), `held_funds_released`, `held_funds_pending`, `already_joined`, `payment_not_due`, `idempotency_key_in_use`, `conflict` |
+| `NotFoundError` | 404 | unknown, deleted, or outside the request's space; also a `get_by_reference` that found nothing (code `not_found`, the list's `request_id`) |
+| `ConflictError` | 409 | `unique_violation` (`details["field"]`), `tx_already_sent`, `merchant_not_ready` (`details["reason"]`), `refund_already_exists` (`details["refundUuid"]`), `held_funds_released`, `held_funds_pending`, `already_joined`, `payment_not_due`, `subscription_already_stopped_or_inactive`, `idempotency_key_in_use`, `conflict` |
 | `GoneError` | 410 | `merchant_closed`: a removed member's or a closed organization's space |
 | `IdempotencyError` | 422 `idempotency_key_reused` | an `Idempotency-Key` reused for another request: a bug, never retried |
 | `RateLimitError` | 429 | `retry_after` (seconds), `limit`, `period_seconds` |
@@ -1219,7 +1388,9 @@ fields every error has; catch the most specific class you can act on:
 | `ApiError` | any other HTTP error (e.g. 413 `request_too_large`), and the base of all the above | |
 
 Every error carries `status` (`None` without a response), `code` (branch on it, never on
-`message`), `message`, `details` (never `None`), `request_id`, `field_errors` and `raw_body`.
+`message`), `message`, `details` (never `None`, and raw: money in it is a string,
+`details["max"] == "5"`, but the accounting window's `max` is the integer 92), `request_id`,
+`field_errors` and `raw_body`.
 `str(error)` reads `"<message> (status <status>, code <code>, request <requestId>)"`, followed by
 `"; <field>: <message>"` for each field error.
 
@@ -1245,20 +1416,26 @@ names the taken field in `details["field"]`, a `RateLimitError` says when to ret
 `retry_after`. Quote the request id to support.
 
 **Client-side validation** runs before every request: names and texts (lengths in characters, no
-markup characters), references (`A-Z a-z 0-9 . _ : @ -`, 1 to 100), emails, phone numbers,
-absolute `http(s)` URLs, prices above 0, percents (at most 2 decimals), durations (a frequency
-between 1 unit and 1 year), UUIDs and transaction ids, dates, the checkout's product choice,
-exclusive filters, and argument types. A failure is a `ValidationError` with `status` None, and
-nothing is sent. What depends on the key's mode or on stored data is left to the API: the 5 USD
-test-mode cap, `https`-only live URLs, the frequency minimum (1 hour live, 5 minutes test), the
-95-day export window, uniqueness.
+markup characters), references (`A-Z a-z 0-9 . _ : @ -`, 1 to 100, on creates and on the
+`reference` filters and `get_by_reference`), emails (the customers' `email` filter too), phone
+numbers, absolute `http(s)` URLs, USD amounts (decimal strings with at most 2 decimals, above 0, at
+most 1,000,000), percents (decimal strings, at most 2 decimals: `refund_percent` above 0 up to
+100, `organization_fee_percent` 0 to 50), metadata (keys, values, at most 50 keys), durations (a
+frequency between 1 unit and 1 year), UUIDs and transaction ids, dates, cursors (at most 200
+characters), the checkout's product choice, the enum filters (refund `status`, transaction
+`type`, failure `kind` and `category`, invitation `status`), exclusive filters, and argument types
+(a float where money is expected included). A failure is a `ValidationError` with `status` None,
+`code` `""`, and nothing is sent. What depends on the key's mode or on stored data is left to the
+API: the `"5"` USD test-mode cap, `https`-only live URLs, the live subscription minimum
+(`"0.25"`), the frequency minimum (1 hour live, 5 minutes test), the 92-day export window, the
+50-key cap on merged metadata, uniqueness.
 
 ## Retries and idempotency
 
 | | |
 |---|---|
-| Retried methods | every read (GET), and the 7 creates: `checkout_sessions.create_payment`, `checkout_sessions.create_subscription`, `products.create`, `customers.create`, `webhooks.endpoints.create`, `invitations.create`, `refunds.initiate` |
-| Never retried | every other write: updates, deletes, `checkout_sessions.expire`, `subscriptions.cancel`, `subscriptions.execute_test_billing`, `members.trust`, `members.remove`, `invitations.revoke`, `webhooks.verify_remote` |
+| Retried methods | every read (GET), and the 7 creates: `checkout_sessions.create_payment`, `checkout_sessions.create_subscription`, `products.create`, `customers.create`, `webhooks.endpoints.create`, `invitations.create`, `refunds.create` |
+| Never retried | every other write: updates (`subscriptions.update` included), deletes, `checkout_sessions.expire`, `subscriptions.cancel`, `subscriptions.test_bill`, `members.trust`, `members.remove`, `invitations.revoke`, `webhooks.verify_remote`; a 429 on them is raised, not retried |
 | Retried on | a network error or timeout, a 5xx, a 429, a 409 `idempotency_key_in_use` |
 | Not retried on | any other 4xx (422 `idempotency_key_reused` included), a 3xx, an unusable response |
 | Attempts | 3 retries by default (`max_retries=n`; `0` disables them) |
@@ -1281,7 +1458,7 @@ order_reference = "order-1042"
 session = client.checkout_sessions.create_payment(
     product_name="T-shirt",
     description="Blue, size M",
-    price=4.99,
+    price_usd="4.99",  # a decimal string, never a float
     reference=order_reference,
     # A key derived from the order: any retry, even from another process after a crash,
     # returns this same checkout instead of creating a second one.
@@ -1320,11 +1497,11 @@ client = QBitFlow(
 | `timeout` | 30 (`DEFAULT_TIMEOUT`) | seconds, per attempt; positive |
 | `max_retries` | 3 (`DEFAULT_MAX_RETRIES`) | `0` disables retries; negative is refused |
 | `http_client` | an `httpx.Client` the SDK creates (and closes) | yours is never closed by the SDK, and never follows redirects for it |
-| `on_behalf_of` | none | every request acts in that member's space |
+| `on_behalf_of` | none | every request acts in that member's space; `None` or `""`: the organization level (no header) |
 
 | `RequestOptions` field (`options=`, every method) | |
 |---|---|
-| `on_behalf_of` | acts in that member's space for this call; `""` forces the organization's |
+| `on_behalf_of` | acts in that member's space for this call; `""` forces the organization's (the header is omitted, never sent blank) |
 | `idempotency_key` | the 7 creates only: your own `Idempotency-Key` |
 | `request_id` | sends `X-Request-Id` (1 to 128 of `A-Z a-z 0-9 - _ . :`) |
 
@@ -1347,7 +1524,8 @@ safe to share between threads.
 ## Migrating from 2.x
 
 3.0.0 is a rewrite for API v2: base URL `/v2`, a new client with keyword-only arguments, UUID ids,
-members and invitations instead of users and claims, a new webhook signature, typed errors.
+REST routes, money as decimal strings, members and invitations instead of users and claims, a new
+webhook signature, typed errors.
 **[MIGRATION-v3.md](MIGRATION-v3.md)** maps every 2.x method and type to its replacement, with
 before/after code for the common tasks.
 
@@ -1362,13 +1540,13 @@ regions ([CONTRIBUTING.md](CONTRIBUTING.md#website-snippets)).
 | [`client_setup.py`](examples/client_setup.py) | a client and `me()`, `QBitFlow.from_env` | |
 | [`checkout.py`](examples/checkout.py) | a payment checkout, its status, waiting, expiry; a checkout with fees | `WAIT=1` waits for the payment |
 | [`catalog.py`](examples/catalog.py) | create and list products, list customers, a checkout for a product | |
-| [`payments.py`](examples/payments.py) | a page of payments, one payment, every payment, `format_amount` | `PAYMENT_UUID` |
-| [`refunds.py`](examples/refunds.py) | refund half of a payment, the active refunds | `PAYMENT_UUID` (refunds it) |
-| [`subscriptions.py`](examples/subscriptions.py) | a subscription checkout with a trial; one subscription's access, bills, test billing, cancel at period end | `SUBSCRIPTION_UUID`, `TEST_BILL=1`, `CANCEL=1` |
+| [`payments.py`](examples/payments.py) | a page of payments, one payment, every payment, the payments-and-bills feed, `format_amount` | `PAYMENT_UUID` |
+| [`refunds.py`](examples/refunds.py) | refund half of a payment, the pending refunds, one refund | `PAYMENT_UUID` (refunds it) |
+| [`subscriptions.py`](examples/subscriptions.py) | a subscription checkout with a trial; one subscription's access, bills, metadata, a test bill, cancel at period end | `SUBSCRIPTION_UUID`, `TEST_BILL=1`, `CANCEL=1` |
 | [`marketplace.py`](examples/marketplace.py) | invitations, members, `on_behalf_of`, held funds, fee, trust, removal | `INVITE=1`, `INVITATION_UUID`, `MEMBER_UUID`, `UPDATE_FEE=1`, `TRUST=1`, `REMOVE=1` |
 | [`webhook_endpoints.py`](examples/webhook_endpoints.py) | create a webhook endpoint, the event log | `CREATE_ENDPOINT=1` |
 | [`webhook_fastapi.py`](examples/webhook_fastapi.py) | a `WebhookRouter` mounted in FastAPI (needs `fastapi` and `uvicorn`) | `QBITFLOW_WEBHOOK_SECRET` (no API key) |
-| [`webhook_handler.py`](examples/webhook_handler.py) | a `WebhookRouter` behind a standard-library server: typed handlers, deduplication, `has_access` | `QBITFLOW_WEBHOOK_SECRET` (no API key) |
+| [`webhook_handler.py`](examples/webhook_handler.py) | a `WebhookRouter` behind a standard-library server: typed handlers (payments, bills, refunds), deduplication, `has_access` | `QBITFLOW_WEBHOOK_SECRET` (no API key) |
 | [`webhook_verify.py`](examples/webhook_verify.py) | `construct_event` on a delivery signed with `webhooks.sign` (offline) | `QBITFLOW_WEBHOOK_SECRET` (optional, no API key) |
 | [`errors_and_retries.py`](examples/errors_and_retries.py) | error classes, `is_retryable`, idempotency keys across processes | |
 | [`accounting.py`](examples/accounting.py) | a year of accounting events, as models and as `qbitflow-2026.csv` | |

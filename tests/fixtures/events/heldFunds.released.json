@@ -1,134 +1,169 @@
 {
   "createdAt": "2026-10-01T12:00:00Z",
   "data": {
-    "amount": 98.9068,
+    "amount": "98.9068",
     "amountMinUnits": "98906800",
+    "amountUsd": "98.9068",
     "chain": "BASE",
     "createdAt": "2026-10-01T12:00:00Z",
     "currency": {
       "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "chain": "BASE",
+      "code": "BASE:USDC",
       "decimals": 6,
       "id": 8,
-      "mainCurrency": {
-        "address": "",
-        "decimals": 18,
-        "id": 3,
-        "mainCurrency": null,
-        "name": "Base",
-        "symbol": "BASE",
-        "test": false
-      },
       "mainCurrencyId": 3,
       "name": "USD Coin",
       "symbol": "USDC",
       "test": false
     },
-    "currencyId": 8,
     "explorerUrl": "https://basescan.org/tx/0x5555555555555555555555555555555555555555555555555555555555555555",
     "from": "0x9876543210fedcba9876543210fedcba98765432",
     "ledgers": [
       {
-        "amount": 100,
+        "amountUsd": "100",
         "createdAt": "2026-09-28T12:00:00Z",
-        "currencyId": 8,
+        "currency": {
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "chain": "BASE",
+          "code": "BASE:USDC",
+          "decimals": 6,
+          "id": 8,
+          "mainCurrencyId": 3,
+          "name": "USD Coin",
+          "symbol": "USDC",
+          "test": false
+        },
         "description": "Payment pay@01a0f755-f200-7000-8000-000000000001",
-        "metadata": {
-          "feePercent": 0.99,
-          "txAmounts": {
-            "minUnits": {
-              "merchant": "99010000",
-              "organization": "0",
-              "platform": "990000",
-              "referral": "0"
+        "owed": "99.01",
+        "owedMinUnits": "99010000",
+        "owedUsd": "99.01",
+        "settlement": {
+          "feePercent": "0.99",
+          "split": {
+            "merchant": {
+              "amount": "99.01",
+              "amountMinUnits": "99010000",
+              "amountUsd": "99.01"
             },
-            "usd": {
-              "merchant": 99.01,
-              "platform": 0.99
+            "networkFee": {
+              "amount": "0",
+              "amountMinUnits": "0",
+              "amountUsd": "0"
+            },
+            "platform": {
+              "amount": "0.99",
+              "amountMinUnits": "990000",
+              "amountUsd": "0.99"
             }
           },
-          "txMetadata": {
-            "blockData": {
-              "number": "52468103",
-              "timestamp": 1790596798
+          "transaction": {
+            "blockNumber": "52468103",
+            "blockTime": "2026-09-28T11:59:58Z",
+            "fee": {
+              "amount": "0.00000114",
+              "amountMinUnits": "1140000000000",
+              "amountUsd": "0.005144"
             },
-            "mainCurrencyPriceUsd": 4512.37,
-            "networkFees": {
-              "amount": "1140000000000",
-              "unitsConsumed": 95000
-            }
+            "gasUsed": 95000,
+            "nativePriceUsd": "4512.37"
           }
         },
-        "owedMinUnits": "99010000",
-        "owedUsd": 99.01,
         "txUuid": "pay@01a0f755-f200-7000-8000-000000000001",
         "type": "payment"
       },
       {
-        "amount": 10,
+        "amountUsd": "10",
         "createdAt": "2026-09-29T12:00:00Z",
-        "currencyId": 8,
+        "currency": {
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "chain": "BASE",
+          "code": "BASE:USDC",
+          "decimals": 6,
+          "id": 8,
+          "mainCurrencyId": 3,
+          "name": "USD Coin",
+          "symbol": "USDC",
+          "test": false
+        },
         "description": "Payment pay@01a0d6d7-c600-7000-8000-00000000000c",
-        "metadata": {
-          "feePercent": 0.99,
-          "txAmounts": {
-            "minUnits": {
-              "merchant": "9901000",
-              "networkFee": "4200",
-              "organization": "0",
-              "platform": "99000",
-              "referral": "0"
+        "owed": "9.901",
+        "owedMinUnits": "9901000",
+        "owedUsd": "9.901",
+        "settlement": {
+          "feePercent": "0.99",
+          "split": {
+            "merchant": {
+              "amount": "9.901",
+              "amountMinUnits": "9901000",
+              "amountUsd": "9.901"
             },
-            "usd": {
-              "merchant": 9.901,
-              "networkFee": 0.0042,
-              "platform": 0.099
+            "networkFee": {
+              "amount": "0.0042",
+              "amountMinUnits": "4200",
+              "amountUsd": "0.0042"
+            },
+            "platform": {
+              "amount": "0.099",
+              "amountMinUnits": "99000",
+              "amountUsd": "0.099"
             }
           },
-          "txMetadata": {
-            "blockData": {
-              "number": "52468103",
-              "timestamp": 1790683198
+          "transaction": {
+            "blockNumber": "52468103",
+            "blockTime": "2026-09-29T11:59:58Z",
+            "fee": {
+              "amount": "0.00000114",
+              "amountMinUnits": "1140000000000",
+              "amountUsd": "0.005144"
             },
-            "mainCurrencyPriceUsd": 4512.37,
-            "networkFees": {
-              "amount": "1140000000000",
-              "unitsConsumed": 95000
-            }
+            "gasUsed": 95000,
+            "nativePriceUsd": "4512.37"
           }
         },
-        "owedMinUnits": "9901000",
-        "owedUsd": 9.901,
         "txUuid": "pay@01a0d6d7-c600-7000-8000-00000000000c",
         "type": "payment"
       },
       {
-        "amount": 10.0042,
+        "amountUsd": "10.0042",
         "createdAt": "2026-09-30T12:00:00Z",
-        "currencyId": 8,
+        "currency": {
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "chain": "BASE",
+          "code": "BASE:USDC",
+          "decimals": 6,
+          "id": 8,
+          "mainCurrencyId": 3,
+          "name": "USD Coin",
+          "symbol": "USDC",
+          "test": false
+        },
         "description": "Refund of payment pay@01a0d6d7-c600-7000-8000-00000000000c",
-        "metadata": null,
+        "owed": "-10.0042",
         "owedMinUnits": "-10004200",
-        "owedUsd": -10.0042,
+        "owedUsd": "-10.0042",
         "refundedTxUuid": "pay@01a0d6d7-c600-7000-8000-00000000000c",
         "txUuid": "refund@01a0ec3b-3ba0-7000-8000-000000000006",
         "type": "refund"
       }
     ],
     "received": true,
+    "settlement": {
+      "transaction": {
+        "blockNumber": "52468103",
+        "blockTime": "2026-10-01T11:59:58Z",
+        "fee": {
+          "amount": "0.00000114",
+          "amountMinUnits": "1140000000000",
+          "amountUsd": "0.005144"
+        },
+        "gasUsed": 95000,
+        "nativePriceUsd": "4512.37"
+      }
+    },
     "test": false,
     "to": "0x1234567890abcdef1234567890abcdef12345678",
     "txHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
-    "txMetadata": {
-      "blockData": {
-        "number": "52468103",
-        "timestamp": 1790855998
-      },
-      "mainCurrencyPriceUsd": 4512.37,
-      "networkFees": {
-        "amount": "1140000000000",
-        "unitsConsumed": 95000
-      }
-    },
     "type": "heldFundsRelease",
     "userUuid": "019eca82-5680-7b00-8000-0000000000b1",
     "uuid": "transfer@01a0f755-f200-7000-8000-000000000007"

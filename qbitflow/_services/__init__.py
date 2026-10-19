@@ -16,7 +16,13 @@ from .organization import (
     MembersService,
     WalletsService,
 )
-from .transactions import FailuresService, PaymentsService, RefundsService, SubscriptionsService
+from .transactions import (
+    FailuresService,
+    PaymentsService,
+    RefundsService,
+    SubscriptionsService,
+    TransactionsService,
+)
 from .webhooks import WebhookEndpointsService, WebhookEventsService, WebhooksService
 
 __all__ = [
@@ -29,6 +35,7 @@ __all__ = [
     "CustomersService",
     "CheckoutSessionsService",
     "PaymentsService",
+    "TransactionsService",
     "FailuresService",
     "SubscriptionsService",
     "RefundsService",

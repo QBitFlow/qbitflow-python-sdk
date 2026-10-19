@@ -19,12 +19,13 @@ def invite(client: qbitflow.QBitFlow) -> None:
     # docs:start members-invite
     created = client.invitations.create(
         email="seller@example.com",
-        trust_layer=True,  # hold their funds until you trust them
-        organization_fee_percent=10,  # your commission on their payments
+        hold_funds=True,  # hold their payments until you trust them (always sent)
+        organization_fee_percent="10",  # your commission on their payments: "0" to "50" %
         redirect_url="https://shop.example.com/sellers/welcome",
     )
     # The seller exists once they accept: wait for the member.joined webhook.
-    print("invitation", created.invitation.uuid, "link:", created.link)  # also emailed
+    # created.uuid is what member.joined's invitation_uuid names; its user_uuid is the seller.
+    print("invitation", created.uuid, "link:", created.link)  # also emailed
     # docs:end members-invite
 
 
@@ -38,8 +39,8 @@ def list_invitations(client: qbitflow.QBitFlow) -> None:
 
 def revoke(client: qbitflow.QBitFlow, invitation_uuid: str) -> None:
     # docs:start invitations-revoke
-    invitation = client.invitations.revoke(invitation_uuid)  # a pending one only
-    print(invitation.status)  # revoked
+    client.invitations.revoke(invitation_uuid)  # 204: its link stops working
+    print("revoked", invitation_uuid)
     # docs:end invitations-revoke
 
 
@@ -54,14 +55,16 @@ def list_members(client: qbitflow.QBitFlow) -> None:
 def show_member(client: qbitflow.QBitFlow, member_uuid: str) -> None:
     # docs:start members-get
     member = client.members.get(member_uuid)  # their user uuid
-    print(member.name, member.last_name, "trusted:", member.trusted_at is not None)
+    print(member.first_name, member.last_name, "trusted:", member.trusted_at is not None)
+    for currency in member.accepted_currencies:  # empty: their checkouts answer 409
+        print("  accepts", currency.code)
     # docs:end members-get
 
 
 def member_wallets(client: qbitflow.QBitFlow, member_uuid: str) -> None:
     # docs:start members-wallets
     for wallet in client.wallets.list_for_member(member_uuid):
-        print(wallet.currency.symbol, wallet.public_key)
+        print(wallet.currency.chain, wallet.address)
     # docs:end members-wallets
 
 
@@ -70,18 +73,19 @@ def act_for_member(client: qbitflow.QBitFlow, member_uuid: str) -> qbitflow.QBit
     # Every request of this client sends On-Behalf-Of: it acts in the member's space.
     seller = client.on_behalf_of(member_uuid)  # shares the connections and settings of client
     products = seller.products.list()
-    print(len(products), "products in the seller's space")
+    print(len(products.items), "products on the first page of the seller's space")
     # docs:end client-on-behalf-of
     return seller
 
 
 def held_funds(client: qbitflow.QBitFlow, member_uuid: str) -> None:
     # docs:start members-held-funds
-    for summary in client.members.list_held_funds():  # every member you hold funds for
-        print(summary.user_uuid, f"{summary.total_amount:.2f} USD over {summary.count} lines")
+    # Every member you hold funds for, the longest held first.
+    for summary in client.members.list_held_funds():
+        print(summary.user_uuid, f"{summary.total_usd} USD over {summary.count} lines")
 
     held = client.members.get_held_funds(member_uuid)  # one member, line by line
-    print(f"owed to the seller: {held.total_amount:.2f} USD over {len(held.ledgers)} lines")
+    print(f"owed to the seller: {held.total_usd} USD over {len(held.ledgers)} lines")
     # docs:end members-held-funds
 
 
@@ -89,14 +93,15 @@ def own_held_funds(client: qbitflow.QBitFlow) -> None:
     # docs:start members-own-held-funds
     # With a member's key, or a client acting on behalf of the member.
     held = client.members.get_own_held_funds()
-    print(f"held for me: {held.total_amount:.2f} USD over {len(held.ledgers)} lines")
+    print(f"held for me: {held.total_usd} USD over {len(held.ledgers)} lines")
     # docs:end members-own-held-funds
 
 
 def update_fee(client: qbitflow.QBitFlow, member_uuid: str) -> None:
     # docs:start members-update
-    # The fee on their new payments (a checkout already created keeps its fee).
-    member = client.members.update(member_uuid, organization_fee_percent=10)
+    # The fee on their new payments, a percent string from "0" to "50" (a checkout already
+    # created keeps its fee).
+    member = client.members.update(member_uuid, organization_fee_percent="10")
     print(member.organization_fee_percent)
     # docs:end members-update
 

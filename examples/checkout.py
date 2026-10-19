@@ -11,12 +11,12 @@ from _common import new_client
 import qbitflow
 
 
-def create_checkout(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSession:
+def create_checkout(client: qbitflow.QBitFlow) -> qbitflow.CreatedCheckoutSession:
     # docs:start checkout-create-payment
     session = client.checkout_sessions.create_payment(
         product_name="T-shirt",
         description="Blue, size M",
-        price=4.99,  # USD
+        price_usd="4.99",  # USD, a decimal string: never a float
         reference="order-1042",  # your order id: unique per space
         # QBitFlow replaces the placeholder with the session's id when it redirects the customer.
         success_url=f"https://shop.example.com/orders/success?uuid={qbitflow.PLACEHOLDER_UUID}",
@@ -28,12 +28,12 @@ def create_checkout(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSession:
     return session
 
 
-def create_checkout_with_fees(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSession:
+def create_checkout_with_fees(client: qbitflow.QBitFlow) -> qbitflow.CreatedCheckoutSession:
     # docs:start checkout-create-payment-fees
     session = client.checkout_sessions.create_payment(
         product_name="T-shirt",
         description="Blue, size M",
-        price=3.99,  # USD: you keep the price and your lines
+        price_usd="3.99",  # USD: you keep the price and your lines
         reference="order-1044",
         success_url=f"https://shop.example.com/orders/success?uuid={qbitflow.PLACEHOLDER_UUID}",
         cancel_url="https://shop.example.com/orders/cancel",
@@ -41,7 +41,7 @@ def create_checkout_with_fees(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSes
             # Your own lines (up to 10), shown to the customer and paid with the price.
             items=[
                 qbitflow.FeeItem(
-                    label="Shipping", description="Standard, 3 to 5 days", amount_usd=0.75
+                    label="Shipping", description="Standard, 3 to 5 days", amount_usd="0.75"
                 ),
             ],
             # The customer also pays QBitFlow's processing fee, a last line computed by QBitFlow.
@@ -56,7 +56,7 @@ def create_checkout_with_fees(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSes
 
 def show_status(client: qbitflow.QBitFlow, session_uuid: str) -> None:
     # docs:start checkout-status
-    status = client.checkout_sessions.get_status(session_uuid)  # pay@… or sub@…
+    status = client.checkout_sessions.get(session_uuid)  # pay@… or sub@…
     if status.status == qbitflow.CheckoutSessionStatusValue.COMPLETED:
         print("paid, tx", status.tx_hash)  # the payment (or subscription) has the session's id
     elif status.status == qbitflow.CheckoutSessionStatusValue.EXPIRED:
@@ -70,14 +70,15 @@ def show_status(client: qbitflow.QBitFlow, session_uuid: str) -> None:
 
 def wait_for_payment(client: qbitflow.QBitFlow, session_uuid: str) -> str:
     # docs:start wait-for-completion
-    # For scripts and back-office jobs: fulfil orders on the payment.completed webhook.
+    # For scripts and back-office jobs: fulfil orders on the payment.completed webhook. It polls
+    # checkout_sessions.get; on timeout it returns the last status seen (check .status).
     final = client.checkout_sessions.wait_for_completion(session_uuid, timeout=600, interval=3)
     if final.status == qbitflow.CheckoutSessionStatusValue.COMPLETED:
         print("paid")
     else:
         print("not paid:", final.status)  # expired, or still open when the timeout elapsed
     # docs:end wait-for-completion
-    return final.status
+    return str(final.status)
 
 
 def expire_checkout(client: qbitflow.QBitFlow, session_uuid: str) -> None:

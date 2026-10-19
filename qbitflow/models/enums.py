@@ -20,7 +20,7 @@ __all__ = [
     "RefundStatus",
     "RefundInitiator",
     "NotRefundableReason",
-    "CombinedPaymentSource",
+    "TransactionKind",
     "FailureKind",
     "FailureCategory",
     "Chain",
@@ -83,7 +83,7 @@ class BillingFailureReason(StrEnum):
 
 
 class BillingStage(StrEnum):
-    """Where a billing run is (:attr:`BillingState.stage`)."""
+    """Where a bill stands (:attr:`TestBill.stage`)."""
 
     RUNNING = "running"  #: Being planned, charged or recorded.
     WAITING = "waiting"  #: Waiting for its next attempt, its due date, or a trial's grace end.
@@ -92,12 +92,14 @@ class BillingStage(StrEnum):
 
 
 class BillingOutcome(StrEnum):
-    """How a finished billing run ended (:attr:`BillingState.outcome`)."""
+    """How a bill ended (:attr:`TestBill.outcome`)."""
 
     PAID = "paid"
     NOT_DUE = "notDue"  #: Nothing to bill: paid already, cancelled, or gone.
     SKIPPED = "skipped"  #: Below the minimum amount: the period moved on without a charge.
-    CANCELLED = "cancelled"  #: The subscription was cancelled.
+    #: The subscription was cancelled (stopped, its trial over, its merchant closed, inactive
+    #: on-chain, or its last attempt failed).
+    CANCELLED = "cancelled"
     PAUSED = "paused"  #: Its customer paused the subscription: not charged.
 
 
@@ -107,7 +109,8 @@ class CheckoutSessionStatusValue(StrEnum):
     CREATED = "created"  #: Waiting for the customer (``last_attempt``: their last one failed).
     WAITING_CONFIRMATION = "waitingConfirmation"  #: Sent: waiting for the network and its record.
     COMPLETED = "completed"  #: Confirmed and recorded. Final.
-    EXPIRED = "expired"  #: Expired unpaid. Final.
+    #: Expired unpaid (at its ``expires_at``, or expired by its merchant). Final.
+    EXPIRED = "expired"
 
 
 class AttemptStatus(StrEnum):
@@ -117,11 +120,15 @@ class AttemptStatus(StrEnum):
 
 
 class RefundStatus(StrEnum):
-    """A refund's status."""
+    """Where a refund stands. An approval and a rejection are final: the transaction never gets
+    another refund. A cancelled one never moved money and blocks nothing."""
 
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
+    PENDING = "pending"  #: Requested, or started by the merchant and not sent yet.
+    APPROVED = "approved"  #: The refund transfer is confirmed (``refund.approved``).
+    REJECTED = "rejected"  #: Rejected by whoever decides it (``refund.rejected``).
+    #: A merchant's refund dropped before it was sent (announced by nothing).
+    CANCELLED = "cancelled"
+    FAILED = "failed"  #: Declared, never set: a failed approval leaves the refund pending.
 
 
 class RefundInitiator(StrEnum):
@@ -138,11 +145,12 @@ class NotRefundableReason(StrEnum):
     HELD_FUNDS_RELEASED = "heldFundsReleased"
 
 
-class CombinedPaymentSource(StrEnum):
-    """What a combined feed row is."""
+class TransactionKind(StrEnum):
+    """What a row of the transactions feed is (:attr:`Transaction.type`). Not
+    :class:`TransactionType`, which is a checkout's ``txType``."""
 
-    PAYMENT = "payment"  #: A one-time payment (``pay@…``).
-    SUBSCRIPTION_HISTORY = "subscriptionHistory"  #: A subscription's bill (``sub-hist@…``).
+    PAYMENT = "payment"  #: A one-time payment (``pay@…``): ``payments.get``.
+    BILL = "bill"  #: A subscription's bill (``sub-hist@…``): ``subscriptions.get_bill``.
 
 
 class FailureKind(StrEnum):
@@ -167,7 +175,8 @@ class FailureCategory(StrEnum):
 
 
 class Chain(StrEnum):
-    """A blockchain (the testnet's in test mode)."""
+    """A blockchain, by its native coin's symbol (:attr:`Currency.chain`; the testnet's in test
+    mode)."""
 
     ETH = "ETH"  #: Ethereum.
     BASE = "BASE"  #: Base.
@@ -195,7 +204,7 @@ class TransactionType(StrEnum):
 
 
 class TransferType(StrEnum):
-    """A transfer's kind (``heldFunds.released``)."""
+    """A transfer's kind (:attr:`HeldFundsReleased.type`: ``heldFundsRelease``)."""
 
     ACCOUNT_CLAIM = "accountClaim"  #: v1: funds held for a user, paid when they claimed.
     HELD_FUNDS_RELEASE = "heldFundsRelease"  #: Funds an organization held for a member, paid out.
@@ -206,18 +215,21 @@ class TransferType(StrEnum):
 class LedgerEntryType(StrEnum):
     """A held-funds line's kind."""
 
+    #: A payment made to the member while the organization held their funds.
     PAYMENT = "payment"
-    SUBSCRIPTION_HISTORY = "subscriptionHistory"
-    REFUND = "refund"
+    BILL = "bill"  #: A subscription bill paid to the member while held.
+    REFUND = "refund"  #: A refund the organization sent of one of them.
 
 
 class AccountingEventType(StrEnum):
     """An accounting export row's kind."""
 
-    PAYMENT = "payment"
-    SUBSCRIPTION_HISTORY = "subscriptionHistory"
-    REFUND = "refund"
+    PAYMENT = "payment"  #: A one-time payment (``pay@…``).
+    BILL = "bill"  #: A subscription's bill (``sub-hist@…``).
+    REFUND = "refund"  #: A refund the space sent (``refund@…``).
+    #: The fee the organization earned on a member's payment or bill.
     ORGANIZATION_FEE = "organizationFee"
+    #: The referrer's share earned on a referred organization's payment or bill.
     REFERRAL_FEE = "referralFee"
 
 
@@ -252,20 +264,22 @@ class EventType(StrEnum):
     SUBSCRIPTION_BILLING_FAILED = "subscription.billingFailed"
     SUBSCRIPTION_UPCOMING_BILL = "subscription.upcomingBill"
     REFUND_REQUESTED = "refund.requested"
-    REFUND_COMPLETED = "refund.completed"
-    REFUND_DENIED = "refund.denied"
+    REFUND_APPROVED = "refund.approved"  #: Was ``refund.completed``.
+    REFUND_REJECTED = "refund.rejected"  #: Was ``refund.denied``.
     MEMBER_JOINED = "member.joined"
     MEMBER_REMOVED = "member.removed"
     HELD_FUNDS_RELEASED = "heldFunds.released"
     CHECKOUT_EXPIRED = "checkout.expired"
+    #: Sent only by an endpoint's test (the dashboard); no endpoint subscribes to it.
     WEBHOOK_TEST = "webhook.test"
 
 
 class WebhookPayloadVersion(StrEnum):
     """A webhook endpoint's (and an event's) payload version."""
 
-    V1 = "v1"  #: v1's bodies (endpoints migrated from v1; not parsed by this SDK).
-    V2 = "v2"  #: The event envelope.
+    #: The event envelope ``{id, type, version, createdAt, test, userUuid, data}``: the only
+    #: version.
+    V2 = "v2"
 
 
 class EndpointDisabledReason(StrEnum):

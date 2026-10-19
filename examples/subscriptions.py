@@ -1,4 +1,5 @@
-"""A subscription checkout with a trial; then one subscription: access, bills, test billing, cancel.
+"""A subscription checkout with a trial; then one subscription: access, bills, metadata, a test
+bill, cancel.
 
 QBITFLOW_API_KEY=sk_… python examples/subscriptions.py
 QBITFLOW_API_KEY=sk_… SUBSCRIPTION_UUID=sub@… [TEST_BILL=1] [CANCEL=1] \\
@@ -12,12 +13,12 @@ from _common import new_client
 import qbitflow
 
 
-def create_subscription_checkout(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSession:
+def create_subscription_checkout(client: qbitflow.QBitFlow) -> qbitflow.CreatedCheckoutSession:
     # docs:start checkout-create-subscription
     session = client.checkout_sessions.create_subscription(
         product_name="T-shirt",
         description="Blue, size M",
-        price=4.99,  # USD per period
+        price_usd="4.99",  # USD per period, a decimal string
         frequency=qbitflow.Duration(value=1, unit=qbitflow.DurationUnit.MONTHS),
         trial_period=qbitflow.Duration(value=7, unit=qbitflow.DurationUnit.DAYS),
         reference="order-1043",
@@ -47,11 +48,20 @@ def check_access(client: qbitflow.QBitFlow, subscription_uuid: str) -> None:
     # docs:end has-access
 
 
+def tag(client: qbitflow.QBitFlow, subscription_uuid: str) -> None:
+    # docs:start subscriptions-update
+    # Metadata is merged into the subscription's: "" deletes a key, keys not named are kept.
+    # It is the only thing a merchant edits on a subscription; webhooks carry it.
+    updated = client.subscriptions.update(subscription_uuid, metadata={"plan": "pro", "coupon": ""})
+    print(updated.metadata.get("plan"))
+    # docs:end subscriptions-update
+
+
 def bill_now(client: qbitflow.QBitFlow, subscription_uuid: str) -> None:
     # docs:start subscriptions-test-bill
-    # Test mode only: run the next billing now instead of on its due date.
-    state = client.subscriptions.execute_test_billing(subscription_uuid)
-    print(state.stage, state.outcome, state.failure_code)
+    # Test mode only: run the next bill now instead of on its due date.
+    bill = client.subscriptions.test_bill(subscription_uuid)
+    print(bill.bill_uuid, bill.stage, bill.outcome, bill.failure_code)  # sub-hist@…
     # docs:end subscriptions-test-bill
 
 
@@ -82,13 +92,16 @@ def main() -> None:
         show_subscription(client, subscription_uuid)
         check_access(client, subscription_uuid)
         for bill in client.subscriptions.iterate_bills(subscription_uuid, limit=50):
-            print(f"  bill {bill.uuid}: {bill.amount:.2f} USD until {bill.period_end}")
+            print(f"  bill {bill.uuid}: {bill.amount_usd} USD, paid until {bill.period_end}")
+        tag(client, subscription_uuid)
 
         if os.environ.get("TEST_BILL") == "1":
             try:
                 bill_now(client, subscription_uuid)
             except qbitflow.ConflictError as exc:
-                print("not billed:", exc.code)  # payment_not_due before next_billing_date
+                print("not billed:", exc.code)  # payment_not_due before next_billing_at
+            except qbitflow.BadRequestError as exc:
+                print("not billed:", exc.code)  # test_mode_only for a live subscription
         if os.environ.get("CANCEL") == "1":
             try:
                 cancel_at_period_end(client, subscription_uuid)

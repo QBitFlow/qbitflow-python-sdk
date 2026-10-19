@@ -70,7 +70,7 @@ SIGNATURE_HEADER = "QBitFlow-Signature"
 EVENT_ID_HEADER = "QBitFlow-Event-Id"
 #: Carries the event's type.
 EVENT_TYPE_HEADER = "QBitFlow-Event-Type"
-#: Carries the payload version (``v1`` or ``v2``).
+#: Carries the payload version (``v2``, the only one).
 WEBHOOK_VERSION_HEADER = "QBitFlow-Webhook-Version"
 #: How far a signature's timestamp may be from now, in seconds.
 DEFAULT_TOLERANCE = 300
@@ -213,9 +213,9 @@ def parse_event(raw_body: RawBody) -> Event:
         does not know: never an error).
 
     Raises:
-        ValidationError: a body that is not a JSON object, whose ``version`` is not ``v2`` (an
-            endpoint still on v1: move it to v2 in the dashboard), or that does not match its
-            event type.
+        ValidationError: a body that is not a JSON object, whose ``version`` is not ``v2``
+            (unsupported payload version: v1 is retired), or that does not match its event type
+            (a wrong JSON type in the envelope or in ``data``).
     """
     body = _body_bytes(raw_body).strip()
     if not body or not body.startswith(b"{"):
@@ -227,9 +227,7 @@ def parse_event(raw_body: RawBody) -> Event:
     if not isinstance(data, dict):  # pragma: no cover - guarded by the "{" check
         raise field_error("body", "must be a JSON object (a webhook event)")
     if data.get("version") != WebhookPayloadVersion.V2:
-        raise field_error(
-            "version", "must be v2: the endpoint is still on v1, move it to v2 in the dashboard"
-        )
+        raise field_error("version", "must be v2 (unsupported payload version)")
     try:
         event: Event = adapter(Event).validate_python(data)
     except pydantic.ValidationError as exc:
@@ -444,7 +442,25 @@ class WebhookRouter:
 
     def on(self, type: Union[EventType, str]) -> Callable[[_F], _F]:
         """A decorator registering ``fn(data, event)`` for an event type
-        (``@router.on("payment.completed")`` or ``@router.on(EventType.PAYMENT_COMPLETED)``)."""
+        (``@router.on("payment.completed")`` or ``@router.on(EventType.PAYMENT_COMPLETED)``).
+
+        ``data`` is the type's model: ``payment.completed`` → :class:`~qbitflow.PaymentCompleted`;
+        ``subscription.created`` → :class:`~qbitflow.Subscription` (grant access until
+        ``current_period_end``); ``subscription.billed`` → :class:`~qbitflow.SubscriptionBilled`
+        (``data.bill``, ``data.subscription``); ``subscription.statusChanged``,
+        ``.actionRequiredChanged``, ``.billingFailed``, ``.upcomingBill`` → the subscription and
+        the change (``SubscriptionStatusChanged``, …); ``refund.requested``, ``refund.approved``
+        (reverse the order, in full or in part: ``refund_percent`` below 100) and
+        ``refund.rejected`` → :class:`~qbitflow.Refund`; ``member.joined`` →
+        :class:`~qbitflow.MemberJoined`; ``member.removed`` → :class:`~qbitflow.Member`;
+        ``heldFunds.released`` → :class:`~qbitflow.HeldFundsReleased`; ``checkout.expired`` →
+        :class:`~qbitflow.PaymentSessionData` or :class:`~qbitflow.SubscriptionSessionData`;
+        ``webhook.test`` → :class:`~qbitflow.WebhookTest`.
+
+        Raises:
+            ValidationError: a type this SDK does not know (``"refund.completed"`` is retired:
+                ``"refund.approved"``).
+        """
         name = _event_type(type)
 
         def decorator(fn: _F) -> _F:

@@ -14,6 +14,7 @@ from pydantic import Field
 
 from qbitflow import (
     BadRequestError,
+    Page,
     Product,
     RequestOptions,
     ServerError,
@@ -32,16 +33,16 @@ from .conftest import MEMBER_UUID, make_client, reply, static
 @pytest.mark.parametrize(
     "got, want",
     [
-        (pathf("/product/reference/{}", "a/b c"), "/product/reference/a%2Fb%20c"),
-        (pathf("/transaction/payment/{}", "pay@019c-1"), "/transaction/payment/pay@019c-1"),
-        (pathf("/customer/email/{}", "a+b@example.com"), "/customer/email/a+b@example.com"),
-        (pathf("/product/reference/{}", ".."), "/product/reference/%2E%2E"),
-        (pathf("/product/reference/{}", "."), "/product/reference/%2E"),
-        (pathf("/product/reference/{}", "v1..2"), "/product/reference/v1..2"),
+        (pathf("/webhooks/events/{}", "a/b c"), "/webhooks/events/a%2Fb%20c"),
+        (pathf("/payments/{}", "pay@019c-1"), "/payments/pay@019c-1"),
+        (pathf("/webhooks/events/{}", "a+b@example.com"), "/webhooks/events/a+b@example.com"),
+        (pathf("/webhooks/events/{}", ".."), "/webhooks/events/%2E%2E"),
+        (pathf("/webhooks/events/{}", "."), "/webhooks/events/%2E"),
+        (pathf("/webhooks/events/{}", "v1..2"), "/webhooks/events/v1..2"),
         (pathf("/x/{}/y/{}", "?q=1#f", "%41"), "/x/%3Fq=1%23f/y/%2541"),
         (
-            pathf("/transaction/subscription/reference/{}/{}", "subscription", "ord:1"),
-            "/transaction/subscription/reference/subscription/ord:1",
+            pathf("/subscriptions/{}/bills", "sub@019c-1"),
+            "/subscriptions/sub@019c-1/bills",
         ),
     ],
 )
@@ -51,8 +52,20 @@ def test_path_escaping(got: str, want: str) -> None:
 
 def test_escaped_path_reaches_the_server() -> None:
     client, server, _ = make_client(static(200, "{}"))
-    client.products.get_by_reference("a/b")
-    assert server.requests[0].path == "/product/reference/a%2Fb"
+    client.webhooks.events.get("evt_a/b")
+    assert server.requests[0].path == "/webhooks/events/evt_a%2Fb"
+
+
+def test_reference_lookup_is_a_query_filter() -> None:
+    page = '{"items":[{"uuid":"p-1","reference":"ord:1@x"}],"hasMore":false}'
+    client, server, _ = make_client(static(200, page))
+    assert client.products.get_by_reference("ord:1@x").uuid == "p-1"
+    assert server.requests[0].path == "/products"
+    assert parse_qs(server.requests[0].query) == {"reference": ["ord:1@x"]}
+    # A "/" is no reference character: refused before any request (never a path separator).
+    with pytest.raises(ValidationError):
+        client.products.get_by_reference("a/b")
+    assert len(server.requests) == 1
 
 
 def test_query_encoding() -> None:
@@ -60,7 +73,7 @@ def test_query_encoding() -> None:
     before = datetime(2026, 10, 5, 0, 0, 0, 500, tzinfo=timezone.utc)
     assert format_time(after) == "2026-10-04T12:00:00+02:00"
     assert format_time(before) == "2026-10-05T00:00:00.0005Z"
-    client, server, _ = make_client(static(200, '{"items":[],"nextCursor":null}'))
+    client, server, _ = make_client(static(200, '{"items":[],"hasMore":false}'))
     client.payments.list(
         limit=25,
         cursor="019c-cursor",
@@ -104,9 +117,14 @@ def test_naive_datetime_refused() -> None:
             "email=a%2Bb%40x.io&limit=5&verified=false",
         ),
         (
-            Query().string("source", "subscriptionHistory").string("subscriptionUuid", "sub@x"),
-            "source=subscriptionHistory&subscriptionUuid=sub%40x",
+            Query().string("type", "bill").string("subscriptionUuid", "sub@x"),
+            "subscriptionUuid=sub%40x&type=bill",
         ),
+        (
+            Query().many("status", ["approved", "rejected"]).string("held", "false"),
+            "held=false&status=approved&status=rejected",
+        ),
+        (Query().many("status", []).many("x", None), ""),
         (Query().page(-1, ""), "limit=-1"),
         (Query().string("x", ""), ""),
     ],
@@ -118,8 +136,8 @@ def test_query_helpers(query: Query, want: str) -> None:
 @pytest.mark.parametrize(
     "body, field",
     [
-        ({"name": "Pro", "price": math.nan}, None),
-        ({"price": math.inf}, None),
+        ({"name": "Pro", "priceUsd": math.nan}, None),
+        ({"priceUsd": math.inf}, None),
         ({"name": "Ad\udcffa", "email": "a@b.co"}, "name"),
         ({"address": "bad \udcfe"}, "address"),
         ({"frequency": {"value": 1, "unit": "mon\udcffths"}}, "frequency.unit"),
@@ -145,7 +163,7 @@ def test_body_utf8_sent_untouched() -> None:
 def test_service_body_with_lone_surrogate() -> None:
     client, server, _ = make_client(static(200))
     with pytest.raises(ValidationError) as info:
-        client.customers.create(name="Ada", email="a@b.co", address="bad \udcfe")
+        client.customers.create(first_name="Ada", email="a@b.co", address="bad \udcfe")
     assert [f.field for f in info.value.field_errors] == ["address"]
     assert server.requests == []
 
@@ -252,8 +270,23 @@ def test_decoding_failures_are_server_errors(body: str) -> None:
     assert not is_retryable(info.value)
 
 
-def test_null_list_is_empty() -> None:
-    assert decode(List[Product], Response(200, httpx.Headers(), b"null")) == []
+@pytest.mark.parametrize("tp", [Product, Page[Product], List[Product]])
+def test_null_body_is_a_server_error(tp: Any) -> None:
+    # Every answer is a JSON object (lists are pages): null is no answer at all, whatever the
+    # method's result (no list special case).
+    with pytest.raises(ServerError) as info:
+        decode(tp, Response(200, httpx.Headers(), b"null"))
+    assert info.value.status == 200
+
+
+def test_null_body_through_the_client() -> None:
+    client, _, _ = make_client(static(200, "null"))
+    with pytest.raises(ServerError):
+        client.currencies.list()
+    with pytest.raises(ServerError):
+        client.products.list()
+    with pytest.raises(ServerError):
+        client.me()
 
 
 def test_status_text_and_void() -> None:
@@ -261,29 +294,43 @@ def test_status_text_and_void() -> None:
         path = request.url.path
         if path == "/accounting/export":
             if request.url.params.get("from") == "2026-01-01":
-                return reply(400, '{"error":"too long","code":"bad_request"}')
+                return reply(400, '{"error":"window too long","code":"window_too_long"}')
             return httpx.Response(
-                200, text="paymentUuid,type\npay@1,payment\n", headers={"Content-Type": "text/csv"}
+                200, text="txUuid,type\npay@1,payment\n", headers={"Content-Type": "text/csv"}
             )
-        if path.startswith("/product/") and request.method == "DELETE":
+        if path.startswith("/products/") and request.method == "DELETE":
             return {
-                "/product/019eca82-5680-7b00-8000-0000000000c1": reply(
+                "/products/019eca82-5680-7b00-8000-0000000000c1": reply(
                     200, '{"message":"deleted"}'
                 ),
-                "/product/019eca82-5680-7b00-8000-0000000000c2": httpx.Response(204),
+                "/products/019eca82-5680-7b00-8000-0000000000c2": httpx.Response(204),
             }.get(path, httpx.Response(200))
-        if path.startswith("/product/uuid/"):
+        if path.startswith("/products/"):
             return httpx.Response(204) if path.endswith("c2") else httpx.Response(200)
+        if request.method == "DELETE":  # every DELETE answers 204, no body
+            return httpx.Response(204)
         return reply(404, "{}")
 
     client, server, _ = make_client(handler)
     text = client.accounting.export_csv("2026-09-01", "2026-09-30")
-    assert text == "paymentUuid,type\npay@1,payment\n"
+    assert text == "txUuid,type\npay@1,payment\n"
     assert server.requests[0].headers["Accept"] == "text/csv, application/json"
     with pytest.raises(BadRequestError):
         client.accounting.export_csv("2026-01-01", "2026-09-30")
     for suffix in ("c1", "c2", "c3"):
         assert client.products.delete(f"019eca82-5680-7b00-8000-0000000000{suffix}") is None
+    uuid = "019eca82-5680-7b00-8000-0000000000d1"
+    assert client.customers.delete(uuid) is None
+    assert client.members.remove(uuid) is None
+    assert client.invitations.revoke(uuid) is None
+    assert client.webhooks.endpoints.delete(uuid) is None
+    assert [r.method for r in server.requests[-4:]] == ["DELETE"] * 4
+    assert [r.path for r in server.requests[-4:]] == [
+        f"/customers/{uuid}",
+        f"/members/{uuid}",
+        f"/invitations/{uuid}",
+        f"/webhooks/endpoints/{uuid}",
+    ]
     for suffix in ("c1", "c2"):  # an empty 200, a 204: where JSON is expected
         with pytest.raises(ServerError):
             client.products.get(f"019eca82-5680-7b00-8000-0000000000{suffix}")

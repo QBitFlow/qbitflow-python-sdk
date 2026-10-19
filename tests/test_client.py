@@ -115,7 +115,9 @@ def test_context_manager_closes_its_own_client() -> None:
 def test_headers() -> None:
     client, server, _ = make_client(static(200, '{"credential":"apiKey"}'))
     client.me()
-    client.products.create(name="Pro", price=1, options=RequestOptions(request_id="req-1.a:b_c"))
+    client.products.create(
+        name="Pro", price_usd="1", options=RequestOptions(request_id="req-1.a:b_c")
+    )
     get, post = server.requests
     for r in server.requests:
         assert r.headers["X-API-Key"] == TEST_API_KEY
@@ -126,7 +128,8 @@ def test_headers() -> None:
     for h in ("Content-Type", "Idempotency-Key", "X-Request-Id"):
         assert h not in get.headers
     assert post.headers["Content-Type"] == "application/json"
-    assert post.body == b'{"name":"Pro","price":1}'
+    assert post.method == "POST" and post.path == "/products"
+    assert post.body == b'{"name":"Pro","priceUsd":"1"}'
     assert post.headers["X-Request-Id"] == "req-1.a:b_c"
     assert UUID_RE.fullmatch(post.headers["Idempotency-Key"])
 
@@ -173,15 +176,26 @@ def test_on_behalf_of() -> None:
     client2.me()
     assert server2.requests[0].headers["On-Behalf-Of"] == MEMBER_UUID
 
+    # "" is the organization level: the header is omitted, never sent blank (a blank one is a
+    # 403), at every level.
+    client3, server3, _ = make_client(static(200), on_behalf_of="")
+    client3.me()
+    client3.on_behalf_of(None).me()
+    client3.me(options=RequestOptions(on_behalf_of=""))
+    for r in server3.requests:
+        assert "On-Behalf-Of" not in r.headers
+
 
 def test_on_behalf_of_invalid() -> None:
     client, server, _ = make_client(static(200))
-    for bad in ("not-a-uuid", "00000000-0000-0000-0000-000000000000"):
+    # A whitespace-only value is invalid, not the organization level (only "" or None is).
+    for bad in ("not-a-uuid", "00000000-0000-0000-0000-000000000000", "   ", "\t"):
         with pytest.raises(ValidationError) as info:
             client.on_behalf_of(bad)  # eager: the derived client is never built
         assert info.value.field_errors[0].field == "onBehalfOf"
-    with pytest.raises(ValidationError):
-        client.me(options=RequestOptions(on_behalf_of="123"))
+    for bad in ("123", " "):
+        with pytest.raises(ValidationError):
+            client.me(options=RequestOptions(on_behalf_of=bad))
     assert server.requests == []
     client.me()  # the original client is unaffected
     upper = client.on_behalf_of("019ECA82-5680-7B00-8000-0000000000B1")
@@ -194,24 +208,64 @@ def test_me() -> None:
         "credential": "apiKey",
         "apiKeyUuid": "019cadfd-8900-7b00-8000-0000000000f1",
         "role": "user",
-        "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b1",
+        "onBehalfOfUserUuid": "019eca82-5680-7b00-8000-0000000000b1",
         "space": {
             "uuid": "019eca82-5680-7c00-8000-0000000000b2",
             "organizationUuid": "019cadfd-8900-7a00-8000-0000000000a1",
             "organizationName": "Example Shop",
             "userUuid": "019eca82-5680-7b00-8000-0000000000b1",
-            "member": {"userUuid": "019eca82-5680-7b00-8000-0000000000b1", "name": "Ada",
+            "member": {"userUuid": "019eca82-5680-7b00-8000-0000000000b1", "firstName": "Ada",
                        "lastName": "Lovelace", "email": "ada@example.com"},
-            "test": true
+            "test": true,
+            "role": "owner",
+            "organizationFeePercent": "7.5",
+            "createdAt": "2026-09-01T12:00:00Z"
         },
         "user": {"ignored": true}
     }"""
     client, _, _ = make_client(lambda _r, _n: reply(200, body))
     me = client.me()
     assert me.credential == Credential.API_KEY and me.role == Role.USER
-    assert me.on_behalf_of == MEMBER_UUID and me.user_uuid is None
+    assert me.on_behalf_of_user_uuid == MEMBER_UUID and me.user_uuid is None
     assert me.space is not None and me.space.test and me.space.organization_name == "Example Shop"
-    assert me.space.member is not None and me.space.member.name == "Ada"
+    assert me.space.member is not None and me.space.member.first_name == "Ada"
+    assert me.space.role == Role.OWNER and me.space.organization_fee_percent == "7.5"
+    assert me.space.trusted_at is None and me.space.created_at.year == 2026
+    assert "user" not in me.to_dict()
+
+
+def test_services() -> None:
+    client = QBitFlow(TEST_API_KEY)
+    for name, cls in (
+        ("products", qbitflow.ProductsService),
+        ("customers", qbitflow.CustomersService),
+        ("checkout_sessions", qbitflow.CheckoutSessionsService),
+        ("payments", qbitflow.PaymentsService),
+        ("transactions", qbitflow.TransactionsService),
+        ("failures", qbitflow.FailuresService),
+        ("subscriptions", qbitflow.SubscriptionsService),
+        ("refunds", qbitflow.RefundsService),
+        ("members", qbitflow.MembersService),
+        ("invitations", qbitflow.InvitationsService),
+        ("wallets", qbitflow.WalletsService),
+        ("accounting", qbitflow.AccountingService),
+        ("webhooks", qbitflow.WebhooksService),
+        ("currencies", qbitflow.CurrenciesService),
+    ):
+        assert isinstance(getattr(client, name), cls), name
+    assert isinstance(client.webhooks.endpoints, qbitflow.WebhookEndpointsService)
+    assert isinstance(client.webhooks.events, qbitflow.WebhookEventsService)
+    member = client.on_behalf_of(MEMBER_UUID)
+    assert member.transactions._client is member
+    # The draft's names are gone.
+    for gone in ("get_status", "get_by_email", "get_public_history", "list_combined"):
+        for service in (client.checkout_sessions, client.customers, client.subscriptions):
+            assert not hasattr(service, gone)
+    assert not hasattr(client.payments, "list_combined")
+    assert not hasattr(client.refunds, "initiate") and not hasattr(client.refunds, "list_inactive")
+    assert not hasattr(client.subscriptions, "execute_test_billing")
+    assert not hasattr(client.wallets, "list_supported_currencies")
+    assert not hasattr(client.currencies, "list_available")
 
 
 def test_repr() -> None:

@@ -6,7 +6,6 @@ from __future__ import annotations
 import base64
 import inspect
 import json
-import math
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
@@ -20,6 +19,7 @@ from qbitflow import (
     CheckoutFees,
     Duration,
     FeeItem,
+    NotFoundError,
     QBitFlow,
     RequestOptions,
     ServerError,
@@ -51,7 +51,6 @@ def ids(cases: List[Dict[str, Any]]) -> List[str]:
 # ── Invoking a method from a vector ──────────────────────────────────────────
 
 _SNAKE = re.compile(r"(?<!^)(?=[A-Z])")
-_NON_FINITE = {"NaN": math.nan, "Infinity": math.inf, "-Infinity": -math.inf}
 
 
 def snake(name: str) -> str:
@@ -67,15 +66,17 @@ def _duration(value: Any) -> Any:
 def _fee_item(item: Any) -> Any:
     if not isinstance(item, dict):
         return item
-    amount = item.get("amountUsd")
-    if isinstance(amount, str) and amount in _NON_FINITE:  # the IEEE values, as for price
-        amount = _NON_FINITE[amount]
-    return FeeItem(label=item.get("label"), amount_usd=amount, description=item.get("description"))
+    # Money is a string, passed verbatim ("NaN" or "1e2" are just strings failing the grammar).
+    return FeeItem(
+        label=item.get("label"),
+        amount_usd=item.get("amountUsd"),
+        description=item.get("description"),
+    )
 
 
 def convert_param(key: str, value: Any) -> Any:
-    if key in ("price", "refundPercent", "organizationFeePercent") and value in _NON_FINITE:
-        return _NON_FINITE[value]
+    """A vector's wire-named param as the Python argument: money strings and metadata maps as
+    given; durations, terms and fees as their params classes; times as aware datetimes."""
     if key in ("frequency", "trialPeriod"):
         return _duration(value)
     if key == "subscription" and isinstance(value, dict):
@@ -304,8 +305,10 @@ def test_validation_vectors(case: Dict[str, Any]) -> None:
         assert not seen
         assert expect == {"errorClass": "WebhookSignatureError", "reason": str(exc.reason)}
         return
-    except ServerError:
-        assert seen  # a decoding failure after the request was sent
+    except (ServerError, NotFoundError):
+        # A decoding failure after the request was sent, or a getByReference whose list (the
+        # stub's {}) is an empty page: the request was sent, which is what is checked here.
+        assert seen
     assert expect == "ok", f"expected a local refusal {expect}, the request was sent"
     assert len(seen) == 1
 
@@ -326,6 +329,13 @@ def test_decoding_vectors(case: Dict[str, Any]) -> None:
         with pytest.raises(ServerError):
             invoke(client, case)
         return
+    if case["expect"] == "notFound":
+        # A getByReference whose list has no item with the reference asked for: the SDK's
+        # NotFoundError, exactly like a 404.
+        with pytest.raises(NotFoundError) as caught:
+            invoke(client, case)
+        assert caught.value.status == 404 and caught.value.code == "not_found"
+        return
     result = invoke(client, case)
     for probe in case.get("probes", []):
         check_probe(result, probe)
@@ -341,8 +351,10 @@ def test_request_vectors(case: Dict[str, Any]) -> None:
     client, seen = conformance_client(lambda _r: httpx.Response(200, json={}))
     try:
         invoke(client, case)
-    except ServerError:
-        pass  # the stub's {} may not fit the method's answer: only the request matters
+    except (ServerError, NotFoundError):
+        # The stub's {} may not fit the method's answer (a getByReference finds an empty page and
+        # raises NotFoundError): only the request matters.
+        pass
     assert len(seen) == 1
     req, want = seen[0], case["request"]
     assert req.method == want["verb"]

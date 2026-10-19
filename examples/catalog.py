@@ -13,7 +13,7 @@ def create_product(client: qbitflow.QBitFlow) -> qbitflow.Product:
     product = client.products.create(
         name="T-shirt",
         description="Blue, size M",
-        price=4.99,  # USD
+        price_usd="4.99",  # USD, a decimal string: never a float
         reference="tshirt-blue-m",  # your own id: unique per space
     )
     print(product.uuid, product.payment_link)
@@ -23,8 +23,9 @@ def create_product(client: qbitflow.QBitFlow) -> qbitflow.Product:
 
 def list_products(client: qbitflow.QBitFlow) -> None:
     # docs:start products-list
-    for product in client.products.list():
-        print(product.reference, product.name, product.price)
+    # iterate walks every page (list returns one); hidden products only with include_hidden.
+    for product in client.products.iterate():
+        print(product.reference, product.name, product.price_usd, "USD")
     # docs:end products-list
 
 
@@ -34,11 +35,11 @@ def list_customers(client: qbitflow.QBitFlow) -> None:
     for customer in page.items:
         print(customer.uuid, customer.email, customer.reference)
     if page.has_more:
-        print("next page: cursor =", page.next_cursor)  # pass it back as cursor=
+        print("next page: cursor =", page.next_cursor)  # pass it back, verbatim, as cursor=
     # docs:end customers-list
 
 
-def sell_product(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSession:
+def sell_product(client: qbitflow.QBitFlow) -> qbitflow.CreatedCheckoutSession:
     # docs:start checkout-create-payment-product
     session = client.checkout_sessions.create_payment(
         product_reference="tshirt-blue-m",  # or product_uuid=

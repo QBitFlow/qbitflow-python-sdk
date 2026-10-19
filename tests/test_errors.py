@@ -26,6 +26,7 @@ from qbitflow import (
     ValidationError,
     WebhookSignatureError,
     WebhookSignatureReason,
+    is_retryable,
 )
 from qbitflow._transport import Response, as_webhook_signature_error, error_from_response
 from qbitflow.errors import field_error
@@ -43,7 +44,7 @@ def mapped(status: int, body: str, headers: Optional[Dict[str, str]] = None) -> 
     "status, code, cls",
     [
         (400, "validation_failed", ValidationError),
-        (400, "bad_request", BadRequestError),
+        (400, "test_mode_only", BadRequestError),
         (400, "foreign_key_violation", BadRequestError),
         (400, "invalid_signature", BadRequestError),
         (400, "", BadRequestError),
@@ -188,9 +189,9 @@ def test_errors_through_the_client() -> None:
 
 
 def test_client_side_errors() -> None:
-    err = field_error("price", "must be a number above 0")
+    err = field_error("priceUsd", "must be a decimal string")
     assert err.status is None and err.code == "" and err.details == {}
-    assert str(err) == "validation failed; price: price must be a number above 0"
+    assert str(err) == "validation failed; priceUsd: priceUsd must be a decimal string"
     assert isinstance(err, QBitFlowError)
 
 
@@ -203,7 +204,7 @@ def test_as_webhook_signature_error() -> None:
     assert err.request_id == "r"
     for other in (
         mapped(400, '{"code":"validation_failed"}'),
-        mapped(400, '{"code":"bad_request"}'),
+        mapped(400, '{"code":"foreign_key_violation"}'),
         mapped(404, "{}"),
     ):
         assert as_webhook_signature_error(other) is other
@@ -213,3 +214,34 @@ def test_rate_limit_fields_default_none() -> None:
     err = mapped(429, "{}")
     assert isinstance(err, RateLimitError)
     assert err.retry_after is None and err.limit is None and err.period_seconds is None
+
+
+def test_details_are_raw() -> None:
+    # details.max is a string for money ("5", the test-mode cap) but an integer for the
+    # accounting window (92): exposed raw, never converted.
+    money = mapped(
+        400,
+        '{"error":"too much","code":"validation_failed","details":{"max":"5","errors":'
+        '[{"field":"priceUsd","message":"priceUsd must be at most 5"}]}}',
+    )
+    assert isinstance(money, ValidationError) and money.details["max"] == "5"
+    assert [f.field for f in money.field_errors] == ["priceUsd"]
+    window = mapped(
+        400,
+        '{"error":"too long","code":"validation_failed","details":{"max":92,"errors":'
+        '[{"field":"to","message":"to must be at most 92 days after from"}]}}',
+    )
+    assert window.details["max"] == 92 and window.field_errors[0].field == "to"
+
+
+def test_get_by_reference_not_found_is_a_404() -> None:
+    client, server, _ = make_client(
+        lambda _r, _n: reply(200, '{"items":[],"hasMore":false}', {"X-Request-Id": "req-9"})
+    )
+    with pytest.raises(NotFoundError) as info:
+        client.customers.get_by_reference("crm-5521")
+    err = info.value
+    assert err.status == 404 and err.code == "not_found" and err.request_id == "req-9"
+    assert err.details == {} and "customer" in str(err)
+    assert isinstance(err, ApiError) and not is_retryable(err)
+    assert len(server.requests) == 1

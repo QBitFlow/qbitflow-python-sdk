@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Iterator, Optional, Sequence, Union
 
 from .. import webhooks as _webhooks
 from .._transport import Endpoint, Query, RequestOptions, as_webhook_signature_error, pathf
-from .._validation import Validator, check_path_required, check_path_uuid, known
+from .._validation import Validator, check_path_required, check_path_uuid
 from ..errors import BadRequestError, WebhookSignatureReason, field_error, signature_error
 from ..models.common import Page
 from ..models.enums import EventType, WebhookPayloadVersion
@@ -24,9 +24,37 @@ class WebhookEndpointsService(Service):
     """The space's webhook endpoints (``client.webhooks.endpoints``). A member's key needs the
     organization's ``members.webhooks`` policy (403 ``policy_disabled``)."""
 
-    def list(self, *, options: Optional[RequestOptions] = None) -> List[WebhookEndpoint]:
-        """The space's endpoints (``GET /webhooks/endpoints``; at most 10, not paginated)."""
-        return self._call(List[WebhookEndpoint], Endpoint("GET", "/webhooks/endpoints"), options)
+    def list(
+        self,
+        *,
+        limit: Optional[int] = None,
+        cursor: Optional[str] = None,
+        options: Optional[RequestOptions] = None,
+    ) -> Page[WebhookEndpoint]:
+        """One page of the space's webhook endpoints (``GET /webhooks/endpoints``; newest first,
+        page size 20 by default, at most 100; a space has at most 10 per mode). :meth:`iterate`
+        walks every page.
+
+        Raises:
+            PermissionDeniedError: a member's key needs the organization's ``members.webhooks``
+                policy (403 ``policy_disabled``), as every endpoints and events method.
+        """
+        v = Validator()
+        v.page(limit, cursor)
+        v.check()
+        endpoint = Endpoint("GET", "/webhooks/endpoints", Query().page(limit, cursor))
+        return self._call(Page[WebhookEndpoint], endpoint, options)
+
+    def iterate(
+        self,
+        *,
+        limit: Optional[int] = None,
+        cursor: Optional[str] = None,
+        options: Optional[RequestOptions] = None,
+    ) -> Iterator[WebhookEndpoint]:
+        """Every endpoint :meth:`list` returns, fetching the pages lazily and keeping the page
+        size."""
+        return iterate_pages(lambda c: self.list(limit=limit, cursor=c, options=options), cursor)
 
     def create(
         self,
@@ -37,19 +65,22 @@ class WebhookEndpointsService(Service):
         description: Optional[str] = None,
         options: Optional[RequestOptions] = None,
     ) -> WebhookEndpointCreated:
-        """Add a webhook endpoint (``POST /webhooks/endpoints``, 201). The answer carries the
-        endpoint's ``secret`` (``whsec_…``), shown only this once: store it. Sends an
-        ``Idempotency-Key``; retried on transient failures.
+        """Add a webhook endpoint to the space (``POST /webhooks/endpoints``, 201). The answer
+        carries the endpoint's ``secret`` (``whsec_…``), shown only this once: store it to verify
+        the deliveries. Sends an ``Idempotency-Key``; retried on transient failures (a replay of
+        the same key within 24 h returns the same endpoint and secret).
 
         Args:
             url: Where the events are posted (https and a public host in live mode).
-            events: The event types to receive (at most 20, not ``webhook.test``); ``None``:
-                every type, including the ones added later.
+            events: The event types to receive (at most 20, not ``webhook.test``; an unknown type
+                is the API's 400); ``None``: every type, including the ones added later.
             include_members: Whether an organization endpoint also receives its members' events
                 (``None``: True for an organization endpoint, False for a member's).
             description: A note for the dashboard (at most 200 characters).
 
         Raises:
+            ValidationError: an invalid input (nothing is sent); the API's 400 (live mode needs
+                https and a public host).
             ConflictError: 409 ``conflict`` beyond 10 endpoints per space and mode.
         """
         v = Validator()
@@ -86,15 +117,19 @@ class WebhookEndpointsService(Service):
         enabled: Optional[bool] = None,
         options: Optional[RequestOptions] = None,
     ) -> WebhookEndpoint:
-        """Change an endpoint (``PUT /webhooks/endpoints/:uuid``): only the arguments given
-        change. Not retried.
+        """Change a webhook endpoint (``PATCH /webhooks/endpoints/:uuid``): only the arguments
+        given change. Not retried.
 
         Args:
-            events: Replaces the event types; ``[]`` means every type, ``None`` keeps them.
+            url: The new URL.
+            events: Replaces the event types (at most 20, not ``webhook.test``): ``[]`` means
+                every type, ``None`` keeps them.
+            include_members: Whether an organization endpoint receives its members' events.
             description: The new note; ``""`` (or ``None``) clears it, left out keeps it.
-            payload_version: ``v2`` moves an endpoint migrated from v1 to the event envelope
-                (never back).
-            enabled: False pauses the endpoint; True enables it again.
+            payload_version: ``v2``, the only version today (anything else is refused);
+                ``None`` leaves it unchanged.
+            enabled: False pauses the endpoint (it receives nothing, deliveries in progress
+                stop); True enables it again, also after it was disabled for failing.
         """
         check_path_uuid("uuid", uuid)
         clear_description = None if isinstance(description, NotGiven) else (description or "")
@@ -115,11 +150,12 @@ class WebhookEndpointsService(Service):
             body["description"] = clear_description
         if enabled is not None:
             body["enabled"] = enabled
-        endpoint = Endpoint("PUT", pathf("/webhooks/endpoints/{}", uuid), body=body)
+        endpoint = Endpoint("PATCH", pathf("/webhooks/endpoints/{}", uuid), body=body)
         return self._call(WebhookEndpoint, endpoint, options)
 
     def delete(self, uuid: str, *, options: Optional[RequestOptions] = None) -> None:
-        """Delete an endpoint (``DELETE /webhooks/endpoints/:uuid``). Not retried."""
+        """Delete a webhook endpoint (``DELETE /webhooks/endpoints/:uuid``, 204): it receives
+        nothing more. Not retried."""
         check_path_uuid("uuid", uuid)
         self._send(Endpoint("DELETE", pathf("/webhooks/endpoints/{}", uuid)), options)
 
@@ -136,16 +172,20 @@ class WebhookEventsService(Service):
         include_members: bool = False,
         options: Optional[RequestOptions] = None,
     ) -> Page[Event]:
-        """One page of the event log (``GET /webhooks/events``; newest first, page size 20, at
-        most 100; the cursor is an event id, ``evt_…``).
+        """One page of the space's event log (``GET /webhooks/events``; newest first, page size
+        20 by default, at most 100; events are kept at least 90 days), each event exactly as it
+        was delivered, typed by its ``type``. The cursor is opaque (never an event id).
+        :meth:`iterate` walks every page.
 
         Args:
-            type: Keep only the events of this type.
-            include_members: Add the members' events (organization key).
+            type: Keep only the events of this type. Not checked against the SDK's known types
+                (newer ones appear over time); an unknown type is the API's 400.
+            include_members: Add the members' events (organization space only; 400 from a
+                member's).
         """
         v = Validator()
         v.page(limit, cursor)
-        v.one_of("type", type, known(EventType))
+        v.string("type", type)
         v.boolean("includeMembers", include_members)
         v.check()
         query = (
@@ -162,7 +202,8 @@ class WebhookEventsService(Service):
         include_members: bool = False,
         options: Optional[RequestOptions] = None,
     ) -> Iterator[Event]:
-        """Every event :meth:`list` returns, fetching the pages lazily."""
+        """Every event :meth:`list` returns, fetching the pages lazily and keeping the filters and
+        the page size."""
         return iterate_pages(
             lambda c: self.list(
                 limit=limit, cursor=c, type=type, include_members=include_members, options=options
@@ -172,7 +213,7 @@ class WebhookEventsService(Service):
 
     def get(self, id: str, *, options: Optional[RequestOptions] = None) -> EventDetail:
         """An event of the log with its deliveries to the space's endpoints
-        (``GET /webhooks/events/:id``; ``id`` is ``evt_…``)."""
+        (``GET /webhooks/events/:id``; ``id`` is ``evt_…``, at most 64 characters)."""
         check_path_required("id", id)
         return self._call(EventDetail, Endpoint("GET", pathf("/webhooks/events/{}", id)), options)
 

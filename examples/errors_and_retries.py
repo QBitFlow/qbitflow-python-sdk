@@ -21,7 +21,9 @@ def describe(what: str, error: Optional[Exception]) -> None:
     elif isinstance(error, qbitflow.NotFoundError):
         print(f"not found (request {error.request_id})")
     elif isinstance(error, qbitflow.ConflictError):
-        print(f"conflict {error.code}, details {error.details}")  # e.g. unique_violation
+        # e.g. unique_violation (details["field"]: a reference is unique per space, an email is
+        # not), merchant_not_ready, refund_already_exists.
+        print(f"conflict {error.code}, details {error.details}")
     elif isinstance(error, qbitflow.IdempotencyError):
         print("idempotency key reused with another request: use a new key")
     elif isinstance(error, qbitflow.RateLimitError):
@@ -65,7 +67,7 @@ def handle_errors(client: qbitflow.QBitFlow) -> None:
     # docs:end errors-handling
 
 
-def create_once() -> qbitflow.CheckoutSession:
+def create_once() -> qbitflow.CreatedCheckoutSession:
     # docs:start retries-idempotency
     # Network errors, timeouts, 5xx and 429 are retried with back-off (3 retries by default).
     client = qbitflow.QBitFlow.from_env(max_retries=5)
@@ -74,7 +76,7 @@ def create_once() -> qbitflow.CheckoutSession:
     session = client.checkout_sessions.create_payment(
         product_name="T-shirt",
         description="Blue, size M",
-        price=4.99,
+        price_usd="4.99",  # a decimal string, never a float
         reference=order_reference,
         # A key derived from the order: any retry, even from another process after a crash,
         # returns this same checkout instead of creating a second one.
@@ -89,11 +91,11 @@ def create_once() -> qbitflow.CheckoutSession:
 def main() -> None:
     with new_client() as client:
         # Refused before sending: field errors by wire name.
-        attempt("invalid params", lambda: client.products.create(name="x", price=-1))
+        attempt("invalid params", lambda: client.products.create(name="x", price_usd="-1"))
         # A 404 from the API.
         attempt(
             "unknown session",
-            lambda: client.checkout_sessions.get_status("pay@019eca82-5680-7b00-8000-00000000dead"),
+            lambda: client.checkout_sessions.get("pay@019eca82-5680-7b00-8000-00000000dead"),
         )
         handle_errors(client)
 
@@ -107,7 +109,7 @@ def main() -> None:
             "same key, other body",
             lambda: client.checkout_sessions.create_payment(
                 product_name="T-shirt",
-                price=9.99,
+                price_usd="9.99",
                 reference="order-1042",
                 options=qbitflow.RequestOptions(idempotency_key="checkout-order-1042"),
             ),
