@@ -88,7 +88,7 @@ class MembersService(Service):
         check_path_uuid("userUuid", user_uuid)
         v = Validator()
         if v.money_required("organizationFeePercent", organization_fee_percent):
-            v.percent("organizationFeePercent", organization_fee_percent, 50, False)
+            v.percent("organizationFeePercent", organization_fee_percent, 50)
         v.check()
         endpoint = Endpoint(
             "PATCH",
@@ -187,7 +187,7 @@ class InvitationsService(Service):
         else:
             v.boolean("holdFunds", given)
         if organization_fee_percent is not None and organization_fee_percent != "":
-            v.percent("organizationFeePercent", organization_fee_percent, 50, False)
+            v.percent("organizationFeePercent", organization_fee_percent, 50)
         v.url("redirectUrl", redirect_url)
         v.check()
         body: Dict[str, Any] = {"email": email, "role": str(Role.USER), "holdFunds": hold_funds}

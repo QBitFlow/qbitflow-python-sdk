@@ -330,23 +330,22 @@ class Validator:
                 f"{max_value}, with at most 2 decimals",
             )
 
-    def percent(self, field: str, value: Any, max_value: int, positive: bool) -> None:
+    def percent(self, field: str, value: Any, max_value: int) -> None:
         """A rate in percent (the ``percent`` rule): a decimal string (or a ``Decimal``) of digits
-        with at most 2 decimals, at most 16 characters, from 0 (above 0 when ``positive``) to
-        ``max_value``, compared exactly."""
+        with at most 2 decimals, at most 16 characters, from 0 to ``max_value``, compared
+        exactly."""
         text = self._money(field, value)
         if text is None:
             return
         if (
             len(text) > MAX_PERCENT_LEN
             or _DECIMAL.fullmatch(text) is None
-            or not _decimal_within(text, positive, max_value)
+            or not _decimal_within(text, False, max_value)
         ):
-            low = "above 0" if positive else "0"
             self.add(
                 field,
-                f'must be a percentage as a decimal string (e.g. "7.5"): from {low} to '
-                f"{max_value}, with at most 2 decimals",
+                f'must be a percentage as a decimal string (e.g. "7.5"): from 0 to {max_value}, '
+                "with at most 2 decimals",
             )
 
     def metadata(self, field: str, value: Any) -> None:

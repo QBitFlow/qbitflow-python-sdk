@@ -64,7 +64,7 @@ Python 3.10+, `httpx` and `pydantic>=2.5`. **Import everything from `qbitflow`**
 |---|---|
 | `QBitFlow(api_key, timeout=None, max_retries=None)` | `QBitFlow(api_key, *, base_url=None, timeout=None, max_retries=None, on_behalf_of=None, http_client=None)` |
 | `timeout` (whole request) | `timeout`: seconds per attempt (default 30) |
-| `max_retries` (GET only) | `max_retries`: reads and the 7 creates (default 3; `0` disables) |
+| `max_retries` (GET only) | `max_retries`: reads and the 6 creates (default 3; `0` disables) |
 | `client.one_time_payments.on_behalf_of(user_id)` (per service) | `client.on_behalf_of(user_uuid)`: a whole client acting in the member's space (`""` or `None`: the organization level, the header omitted) |
 | `client.api_key` | not exposed |
 | — | `client.me()`, `client.close()`, `with QBitFlow(...) as client:`, `QBitFlow.from_env()` |
@@ -95,7 +95,7 @@ print(payment.amount_usd)
 | `RequestOptions` field | |
 |---|---|
 | `on_behalf_of` | act in a member's space for this call (overrides the client's; `""` = the organization, the header omitted) |
-| `idempotency_key` | the 7 creates only: your own `Idempotency-Key` |
+| `idempotency_key` | the 6 creates only: your own `Idempotency-Key` |
 | `request_id` | sent as `X-Request-Id`, echoed in errors |
 
 Arguments are checked before anything is sent: a wrong value or type is a `ValidationError`
@@ -148,7 +148,6 @@ them.
 | `refunds.get_all_inactive(limit, cursor)` | `refunds.list(status=[RefundStatus.APPROVED, RefundStatus.REJECTED], limit=…, cursor=…)` / `iterate(…)` | one list, filtered by `status` (a list, up to 5) |
 | `refunds.get_by_transaction(uuid)` | `refunds.list(tx_uuid=uuid)` | or `payment.refund` / `bill.refund` (a `RefundSummary`) |
 | — | `refunds.get(refund_uuid)` | new: `GET /refunds/:uuid` |
-| — | `refunds.create(tx_uuid=…, refund_percent="50", reason=…, merchant_message=…)` | new: `POST /refunds`, a pending refund you sign in the dashboard (`refund_percent` a string) |
 
 ### Customers and products
 
@@ -255,7 +254,7 @@ hold (`trusted_at is None`). The [README](README.md#marketplaces) walks the flow
 (`price_usd="4.99"`, `amount_usd`, `paid_usd`, `total_usd`), token amounts in the token's units
 (`amount == "10"` for 10 USDC, next to `amount_min_units == "10000000"` and the `currency` object)
 and fee rates in **percent** (`fee_bps=150` → `fee_percent == "1.5"`, `organization_fee_bps=250` →
-`organization_fee_percent="2.5"`, `refund_percent="50"`). The money inputs take a `str` or a
+`organization_fee_percent="2.5"`, `refund_percent == "50"`). The money inputs take a `str` or a
 `decimal.Decimal` (sent as `str(value)`); a `float` or an `int` is a `ValidationError` (the API
 answers 400 to a JSON number, and a float cannot carry `0.1` exactly). Inputs are validated before
 sending (at most 2 decimals, no sign or exponent). Compute with `decimal.Decimal`, or
@@ -347,7 +346,7 @@ never cancel an order on it.
 | `TransactionType.EXECUTE_SUBSCRIPTION_PAYMENT` | `TransactionType.EXECUTE_SUBSCRIPTION` |
 | `TransactionType.CREATE_PAYG_SUBSCRIPTION` / `CANCEL_PAYG_SUBSCRIPTION` (`createPAYGSubscription`…) | same names, values `createPaygSubscription` / `cancelPaygSubscription` |
 | — | `TransactionType.FORCE_CANCEL_SUBSCRIPTION`, `TransactionType.RELEASE_HELD_FUNDS` |
-| `RefundStatus` (`dto.transaction`) | `RefundStatus`: `PENDING`, `APPROVED`, `REJECTED`, + `CANCELLED` (your draft dropped before it was sent); `FAILED` is declared, never set |
+| `RefundStatus` (`dto.transaction`) | `RefundStatus`: `PENDING` (a customer's request), `APPROVED`, `REJECTED`; `FAILED` is declared, never set |
 | `CombinedPaymentItem.source` `"subscription_history"` | `Transaction.type` `TransactionKind.BILL` (`bill`) |
 | `AccountingEvent.type` (a `str`) | `AccountingEventType` (`subscription_history` → `AccountingEventType.BILL`, `bill`) |
 | ledger lines `subscription_history` | `LedgerEntryType.BILL` (`bill`) |
@@ -592,8 +591,9 @@ deprecated `claim` alias and the 2.x services it kept are gone.
 build, these names changed: `checkout_sessions.get_status` → `get`; `payments.list_combined` /
 `iterate_combined` → `transactions.list` / `iterate` (`CombinedPayment` → `Transaction`, `source`
 → `type`, `CombinedPaymentSource` → `TransactionKind`); `subscriptions.execute_test_billing` →
-`test_bill` (`BillingState` → `TestBill`); `refunds.initiate` → `create`; `refunds.list_inactive`
-/ `iterate_inactive` → `refunds.list` / `iterate` with `status`;
+`test_bill` (`BillingState` → `TestBill`); `refunds.initiate` is removed (refunds are read only:
+a merchant's refund is sent from the dashboard); `refunds.list_inactive` / `iterate_inactive` →
+`refunds.list` / `iterate` with `status`;
 `wallets.list_supported_currencies` → `list_accepted_currencies`; `currencies.list_available` /
 `list_main` → `currencies.list(main=…)`; `CheckoutSession` → `CreatedCheckoutSession`;
 `InvitationCreated` → `CreatedInvitation` (flat); `MemberHeldFundsSummary` → `MemberHeldFunds`;

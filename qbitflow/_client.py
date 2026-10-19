@@ -70,7 +70,7 @@ class QBitFlow:
             URL, a trailing ``/`` is stripped.
         timeout: Bounds each HTTP attempt, in seconds (default 30); a retried call may take
             longer in total.
-        max_retries: How many times a retryable call (a read, or one of the 7 idempotent
+        max_retries: How many times a retryable call (a read, or one of the 6 idempotent
             creates) is re-sent after a transient failure (default 3; 0 disables retries).
         on_behalf_of: Act in this member's space on every request (a member's ``userUuid``;
             organization key only). ``None`` or ``""``: the organization level (the header is
@@ -173,7 +173,7 @@ class QBitFlow:
         #: Subscriptions and their bills: read, update, cancel, test-bill (``/subscriptions…``,
         #: ``/bills…``).
         self.subscriptions = SubscriptionsService(self)
-        #: Refunds: list, read, create (``/refunds…``).
+        #: Refunds: list and read (``/refunds…``).
         self.refunds = RefundsService(self)
         #: The organization's members and their held funds (organization key).
         self.members = MembersService(self)

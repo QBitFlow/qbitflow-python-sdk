@@ -150,9 +150,8 @@ class NotFoundError(ApiError):
 
 class ConflictError(ApiError):
     """A 409 (``unique_violation`` with ``details["field"]``, ``tx_already_sent``,
-    ``merchant_not_ready`` with ``details["reason"]``, ``refund_already_exists`` with
-    ``details["refundUuid"]``, ``held_funds_pending``, ``already_joined``, ``payment_not_due``,
-    ``conflict``, ``idempotency_key_in_use``, …)."""
+    ``merchant_not_ready`` with ``details["reason"]``, ``held_funds_pending``, ``already_joined``,
+    ``payment_not_due``, ``conflict``, ``idempotency_key_in_use``, …)."""
 
 
 class GoneError(ApiError):
@@ -235,7 +234,7 @@ def is_retryable(error: Optional[BaseException]) -> bool:
     """Whether ``error`` is a failure the SDK's retry policy treats as transient: a network error
     or timeout, a 5xx, a 429, or a 409 ``idempotency_key_in_use``.
 
-    It does not say whether the method may be retried (only reads and the 7 idempotent creates
+    It does not say whether the method may be retried (only reads and the 6 idempotent creates
     are retried automatically).
     """
     if isinstance(error, (NetworkError, RateLimitError)):

@@ -114,7 +114,7 @@ Then fulfil the order when the [`payment.completed` webhook](#webhooks) arrives 
 - **Money is a decimal string, never a float**, in requests and responses alike: USD amounts
   (`price_usd="4.99"`, `amount_usd`, `total_usd`), token amounts (`amount == "10"` in the token's
   units, next to `amount_min_units == "10000000"` on-chain and the `currency` object) and fee rates
-  in percent (`fee_percent == "0.99"` is 0.99 %, `refund_percent="50"`). Inputs take a `str` or a
+  in percent (`fee_percent == "0.99"` is 0.99 %, `refund_percent == "50"`). Inputs take a `str` or a
   `decimal.Decimal` (sent as `str(value)`); a `float` or an `int` is a `ValidationError`, because
   a float cannot carry `0.1` exactly and the API refuses a JSON number. Inputs are checked before
   sending: at most 2 decimals, no sign or exponent (`"12.50"` is fine). Compute with `Decimal`, or
@@ -789,43 +789,29 @@ for r in client.refunds.iterate(status=[RefundStatus.APPROVED, RefundStatus.REJE
     print(r.uuid, r.status, r.explorer_url)
 ```
 
-`refunds.get` reads one refund by its `refund@…` id, cancelled ones included:
+`refunds.get` reads one refund by its `refund@…` id:
 
 <!-- docs:snippet refunds-get -->
 ```python
 refund = client.refunds.get(refund_uuid)  # refund@…
-# pending, approved, rejected or cancelled (a merchant's draft dropped before it was sent).
+# pending (a customer's request), approved or rejected.
 print(refund.uuid, refund.status, f"{refund.refund_percent}%", refund.amount)
 ```
 <!-- /docs:snippet -->
 
-`refunds.create` starts a refund of a payment (`pay@…`) or a bill (`sub-hist@…`) of the space.
-**It creates a pending refund: no money moves until you sign the transfer in the dashboard**, from
-the wallet that was paid. `refund.approved` tells you when it is sent.
+Refunds are read only here: there is no create. A refund is **requested by the customer** (the
+refund page; you approve or reject it in the dashboard) or **sent by you from the dashboard**,
+signed from the wallet that was paid. Yours exists only once its transfer confirmed: it is recorded
+`approved`, and `refund.approved` (with `initiated_by` `merchant`) is the first and only event
+about it. `refund.requested` is always a customer's request.
 
-<!-- docs:snippet refunds-create -->
-```python
-refund = client.refunds.create(
-    tx_uuid=payment_uuid,  # pay@… (or a bill's sub-hist@…)
-    refund_percent="50",  # a percent string, of what the customer paid; None refunds all
-    reason="Damaged item",
-)
-# Pending: no money moves until you sign the transfer in the dashboard (refund.approved).
-print(refund.uuid, refund.status, refund.amount, refund.currency.symbol)
-```
-<!-- /docs:snippet -->
+`refund_percent` is a percent string (`"100"`: all of it) of everything the customer paid (`paid`,
+network fee included); `amount` / `amount_min_units` / `amount_usd` is what it sends back. There
+is one refund per transaction, whatever it became: `Payment.refundable` / `not_refundable_reason`
+say whether one would be accepted now.
 
-`refund_percent` is a percent string (`"50"`, or a `Decimal`: above 0, at most `"100"`, the
-default) of everything the customer paid (`paid`, network fee included); `amount` /
-`amount_min_units` / `amount_usd` is what it sends back. `merchant_message` adds a note for the
-customer. There is one refund per transaction: another is a `ConflictError` (409
-`refund_already_exists`, the existing one in `details["refundUuid"]`; only your own unsent draft
-gives way).
-
-A refund is `pending`, `approved`, `rejected` or `cancelled` (your draft dropped before it was
-sent; `failed` is declared but never set); `initiated_by` is `customer` (a request you answer in
-the dashboard) or `merchant`. A held seller's payment already released to them can no
-longer be refunded (`409 held_funds_released`).
+A refund is `pending` (a customer's request waiting for your answer), `approved` or `rejected`
+(both final); `failed` is declared but never set. `initiated_by` is `customer` or `merchant`.
 
 ## Marketplaces
 
@@ -1378,7 +1364,7 @@ fields every error has; catch the most specific class you can act on:
 | `AuthenticationError` | 401 | a missing, unknown, expired or revoked key (a removed member's keys too) |
 | `PermissionDeniedError` | 403 | `forbidden`, `policy_disabled` (`details["policy"]`), `plan_required` |
 | `NotFoundError` | 404 | unknown, deleted, or outside the request's space; also a `get_by_reference` that found nothing (code `not_found`, the list's `request_id`) |
-| `ConflictError` | 409 | `unique_violation` (`details["field"]`), `tx_already_sent`, `merchant_not_ready` (`details["reason"]`), `refund_already_exists` (`details["refundUuid"]`), `held_funds_released`, `held_funds_pending`, `already_joined`, `payment_not_due`, `subscription_already_stopped_or_inactive`, `idempotency_key_in_use`, `conflict` |
+| `ConflictError` | 409 | `unique_violation` (`details["field"]`), `tx_already_sent`, `merchant_not_ready` (`details["reason"]`), `held_funds_pending`, `already_joined`, `payment_not_due`, `subscription_already_stopped_or_inactive`, `idempotency_key_in_use`, `conflict` |
 | `GoneError` | 410 | `merchant_closed`: a removed member's or a closed organization's space |
 | `IdempotencyError` | 422 `idempotency_key_reused` | an `Idempotency-Key` reused for another request: a bug, never retried |
 | `RateLimitError` | 429 | `retry_after` (seconds), `limit`, `period_seconds` |
@@ -1419,9 +1405,8 @@ names the taken field in `details["field"]`, a `RateLimitError` says when to ret
 markup characters), references (`A-Z a-z 0-9 . _ : @ -`, 1 to 100, on creates and on the
 `reference` filters and `get_by_reference`), emails (the customers' `email` filter too), phone
 numbers, absolute `http(s)` URLs, USD amounts (decimal strings with at most 2 decimals, above 0, at
-most 1,000,000), percents (decimal strings, at most 2 decimals: `refund_percent` above 0 up to
-100, `organization_fee_percent` 0 to 50), metadata (keys, values, at most 50 keys), durations (a
-frequency between 1 unit and 1 year), UUIDs and transaction ids, dates, cursors (at most 200
+most 1,000,000), percents (decimal strings, at most 2 decimals: `organization_fee_percent` 0 to
+50), metadata (keys, values, at most 50 keys), durations (a frequency between 1 unit and 1 year), UUIDs and transaction ids, dates, cursors (at most 200
 characters), the checkout's product choice, the enum filters (refund `status`, transaction
 `type`, failure `kind` and `category`, invitation `status`), exclusive filters, and argument types
 (a float where money is expected included). A failure is a `ValidationError` with `status` None,
@@ -1434,7 +1419,7 @@ API: the `"5"` USD test-mode cap, `https`-only live URLs, the live subscription 
 
 | | |
 |---|---|
-| Retried methods | every read (GET), and the 7 creates: `checkout_sessions.create_payment`, `checkout_sessions.create_subscription`, `products.create`, `customers.create`, `webhooks.endpoints.create`, `invitations.create`, `refunds.create` |
+| Retried methods | every read (GET), and the 6 creates: `checkout_sessions.create_payment`, `checkout_sessions.create_subscription`, `products.create`, `customers.create`, `webhooks.endpoints.create`, `invitations.create` |
 | Never retried | every other write: updates (`subscriptions.update` included), deletes, `checkout_sessions.expire`, `subscriptions.cancel`, `subscriptions.test_bill`, `members.trust`, `members.remove`, `invitations.revoke`, `webhooks.verify_remote`; a 429 on them is raised, not retried |
 | Retried on | a network error or timeout, a 5xx, a 429, a 409 `idempotency_key_in_use` |
 | Not retried on | any other 4xx (422 `idempotency_key_reused` included), a 3xx, an unusable response |
@@ -1502,7 +1487,7 @@ client = QBitFlow(
 | `RequestOptions` field (`options=`, every method) | |
 |---|---|
 | `on_behalf_of` | acts in that member's space for this call; `""` forces the organization's (the header is omitted, never sent blank) |
-| `idempotency_key` | the 7 creates only: your own `Idempotency-Key` |
+| `idempotency_key` | the 6 creates only: your own `Idempotency-Key` |
 | `request_id` | sends `X-Request-Id` (1 to 128 of `A-Z a-z 0-9 - _ . :`) |
 
 | Webhook argument (`WebhookRouter`, `verify`, `construct_event`) | Default |
@@ -1541,7 +1526,7 @@ regions ([CONTRIBUTING.md](CONTRIBUTING.md#website-snippets)).
 | [`checkout.py`](examples/checkout.py) | a payment checkout, its status, waiting, expiry; a checkout with fees | `WAIT=1` waits for the payment |
 | [`catalog.py`](examples/catalog.py) | create and list products, list customers, a checkout for a product | |
 | [`payments.py`](examples/payments.py) | a page of payments, one payment, every payment, the payments-and-bills feed, `format_amount` | `PAYMENT_UUID` |
-| [`refunds.py`](examples/refunds.py) | refund half of a payment, the pending refunds, one refund | `PAYMENT_UUID` (refunds it) |
+| [`refunds.py`](examples/refunds.py) | the pending refunds (customers' requests), one refund | |
 | [`subscriptions.py`](examples/subscriptions.py) | a subscription checkout with a trial; one subscription's access, bills, metadata, a test bill, cancel at period end | `SUBSCRIPTION_UUID`, `TEST_BILL=1`, `CANCEL=1` |
 | [`marketplace.py`](examples/marketplace.py) | invitations, members, `on_behalf_of`, held funds, fee, trust, removal | `INVITE=1`, `INVITATION_UUID`, `MEMBER_UUID`, `UPDATE_FEE=1`, `TRUST=1`, `REMOVE=1` |
 | [`webhook_endpoints.py`](examples/webhook_endpoints.py) | create a webhook endpoint, the event log | `CREATE_ENDPOINT=1` |

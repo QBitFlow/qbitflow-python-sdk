@@ -146,7 +146,7 @@ class RefundSummary(Model):
 
     #: The refund (``refund@…``).
     uuid: Str = ""
-    #: pending, approved, rejected or cancelled.
+    #: pending, approved or rejected.
     status: RefundStatusT = ""
     #: ``customer`` (a request) or ``merchant``.
     initiated_by: RefundInitiatorT = Field(default="", alias="initiatedBy")
@@ -159,9 +159,9 @@ class RefundSummary(Model):
     amount_min_units: Str = Field(default="", alias="amountMinUnits")
     #: The same in USD, at the payment's time (a decimal string); ``None`` when unknown.
     amount_usd: Optional[Str] = Field(default=None, alias="amountUsd")
-    #: When it was requested or started.
+    #: When it was requested or prepared.
     created_at: Time = Field(default=ZERO_TIME, alias="createdAt")
-    #: When it was approved (confirmed), rejected or cancelled; ``None`` while pending.
+    #: When it was approved (confirmed) or rejected; ``None`` while pending.
     responded_at: Optional[Time] = Field(default=None, alias="respondedAt")
 
 

@@ -1292,41 +1292,6 @@
     {
       "args": {
         "params": {
-          "merchantMessage": "Sorry!",
-          "reason": "Damaged item",
-          "refundPercent": "50",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "method": "refunds.create",
-      "name": "refunds.create",
-      "request": {
-        "body": {
-          "merchantMessage": "Sorry!",
-          "reason": "Damaged item",
-          "refundPercent": "50",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        },
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Idempotency-Key": "<uuid-v4>",
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/refunds",
-        "pathSegments": [
-          "refunds"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "POST"
-      }
-    },
-    {
-      "args": {
-        "params": {
           "limit": 100
         }
       },
@@ -3515,35 +3480,6 @@
     {
       "args": {
         "params": {
-          "txUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
-        }
-      },
-      "method": "refunds.create",
-      "name": "body: refund without refundPercent",
-      "request": {
-        "body": {
-          "txUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
-        },
-        "headers": {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Idempotency-Key": "<uuid-v4>",
-          "On-Behalf-Of": null,
-          "X-API-Key": "sk_test_conformance",
-          "X-Request-Id": null
-        },
-        "path": "/refunds",
-        "pathSegments": [
-          "refunds"
-        ],
-        "query": [],
-        "rawQuery": "",
-        "verb": "POST"
-      }
-    },
-    {
-      "args": {
-        "params": {
           "metadata": {
             "note": "très bien ☕"
           },
@@ -3900,33 +3836,33 @@
     {
       "args": {
         "params": {
-          "refundPercent": "100",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+          "name": "Pro",
+          "priceUsd": "9.99"
         }
       },
-      "method": "refunds.create",
+      "method": "products.create",
       "name": "options: all three on an idempotent create",
       "options": {
-        "idempotencyKey": "refund-01a0f22f-9600-7000-8000-000000000008",
+        "idempotencyKey": "product-01a0f22f-9600-7000-8000-000000000008",
         "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b1",
         "requestId": "trace-1"
       },
       "request": {
         "body": {
-          "refundPercent": "100",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+          "name": "Pro",
+          "priceUsd": "9.99"
         },
         "headers": {
           "Accept": "application/json",
           "Content-Type": "application/json",
-          "Idempotency-Key": "refund-01a0f22f-9600-7000-8000-000000000008",
+          "Idempotency-Key": "product-01a0f22f-9600-7000-8000-000000000008",
           "On-Behalf-Of": "019eca82-5680-7b00-8000-0000000000b1",
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": "trace-1"
         },
-        "path": "/refunds",
+        "path": "/products",
         "pathSegments": [
-          "refunds"
+          "products"
         ],
         "query": [],
         "rawQuery": "",

@@ -149,7 +149,7 @@ def test_model_values() -> None:
     assert p.paid == "10.0042" and p.paid_usd == "10.0042"
     assert p.from_ == "0xfrom" and p.to_dict()["from"] == "0xfrom"
     assert p.customer is not None and p.customer.deleted and p.customer.first_name == "Ada"
-    assert p.refund is not None and p.refund.status == RefundStatus.CANCELLED
+    assert p.refund is not None and p.refund.status == RefundStatus.APPROVED
     assert p.refund.refund_percent == "50" and p.refund.amount == "5.0021"
     assert p.refund.responded_at is not None
     assert p.refundable is False and p.not_refundable_reason == NotRefundableReason.REFUND_EXISTS

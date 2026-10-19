@@ -25,7 +25,6 @@
     "subscriptions-cancel": "examples/subscriptions.py",
     "subscriptions-test-bill": "examples/subscriptions.py",
     "has-access": "examples/subscriptions.py",
-    "refunds-create": "examples/refunds.py",
     "refunds-list": "examples/refunds.py",
     "refunds-get": "examples/refunds.py",
     "members-invite": "examples/marketplace.py",
@@ -48,5 +47,7 @@
     "accounting-export": "examples/accounting.py",
     "currencies-list": "examples/currencies.py"
   },
-  "unsupported": {}
+  "unsupported": {
+    "refunds-create": "API v2 has no refund create for API keys: a merchant's refund is sent from the dashboard (POST /refunds/intent, then POST /refunds, frontend only). Refunds are read only in the SDK."
+  }
 }

@@ -63,7 +63,7 @@ __all__ = [
 
 
 class RefundApproval(Model):
-    """Where a pending refund's transfer stands once sent."""
+    """Where a pending request's refund transfer stands once sent."""
 
     #: ``waitingConfirmation`` (sent, being confirmed on-chain) or ``created`` (its last attempt
     #: failed: ``last_attempt``; send it again from the dashboard).
@@ -76,9 +76,10 @@ class RefundApproval(Model):
 
 class Refund(Model):
     """A refund of a payment (``pay@…``) or a subscription bill (``sub-hist@…``): a customer's
-    request the merchant approves or rejects, or a refund the merchant starts
-    (``refunds.create``). Also the data of the ``refund.requested``, ``refund.approved`` and
-    ``refund.rejected`` events."""
+    request the merchant approves or rejects, or a refund the merchant sent from the dashboard
+    (recorded once its transfer confirmed: approved, nothing before). Refunds are read only here.
+    Also the data of the ``refund.requested``, ``refund.approved`` and ``refund.rejected``
+    events."""
 
     #: The refund's id (``refund@…``).
     uuid: Str = ""
@@ -87,11 +88,10 @@ class Refund(Model):
     #: Why the refund: the customer's reason, or the merchant's when it started the refund;
     #: ``None`` when it gave none.
     reason: Optional[Str] = None
-    #: pending (not answered yet: a request, or a merchant's refund not sent), approved (its
-    #: transfer confirmed), rejected or cancelled (a merchant's refund dropped before it was
-    #: sent). ``failed`` is declared but never set.
+    #: pending (a customer's request not answered yet), approved (its transfer confirmed) or
+    #: rejected. ``failed`` is declared but never set.
     status: RefundStatusT = ""
-    #: When it was requested (or started by the merchant).
+    #: When it was requested (or prepared by the merchant).
     created_at: Time = Field(default=ZERO_TIME, alias="createdAt")
     #: The merchant's message to the customer (why it rejected the request, or a note on a refund
     #: it started); ``None`` when none.
@@ -105,7 +105,7 @@ class Refund(Model):
     #: The refund transfer's transaction, once approved; ``None`` before.
     tx_hash: Optional[Str] = Field(default=None, alias="txHash")
     #: ``customer`` (requested by the customer, the merchant answers) or ``merchant`` (sent by the
-    #: merchant without a request; until it is sent, a draft that blocks nothing).
+    #: merchant without a request, from the dashboard: recorded once confirmed, approved).
     initiated_by: RefundInitiatorT = Field(default="", alias="initiatedBy")
     #: True when the refunded payment or bill was paid to the organization's wallet, which holds
     #: the seller's funds: the organization decides the refund and sends it from its wallet. Once
@@ -139,8 +139,9 @@ class Refund(Model):
     chain: Optional[ChainT] = None
     #: The refund transfer on the chain's explorer, once sent.
     explorer_url: Optional[Str] = Field(default=None, alias="explorerUrl")
-    #: Where the refund transfer stands while the refund is pending and it was sent: being
-    #: confirmed, or its last attempt failed (API reads only, never in webhooks).
+    #: Where the refund transfer stands while the request is pending and it was sent (approved, or
+    #: answered by the merchant's own refund): being confirmed, or its last attempt failed (API
+    #: reads only, never in webhooks).
     approval: Optional[RefundApproval] = None
     #: The refunded transaction's customer (API reads only).
     customer_uuid: Optional[Str] = Field(default=None, alias="customerUuid")

@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any, Dict, Iterator, Mapping, Optional, Sequence, Union
 
 from .._transport import Endpoint, Query, RequestOptions, decode, pathf
-from .._validation import Money, Validator, check_path_tx_id, known
+from .._validation import Validator, check_path_tx_id, known
 from ..models.common import Page
 from ..models.enums import (
     FailureCategory,
@@ -18,7 +18,7 @@ from ..models.enums import (
 from ..models.payments import Bill, Failure, Payment, Transaction
 from ..models.resources import Refund
 from ..models.subscriptions import Subscription, SubscriptionCancellation, TestBill
-from ._base import Service, compact, iterate_pages, metadata_body, money
+from ._base import Service, iterate_pages, metadata_body
 
 __all__ = [
     "PaymentsService",
@@ -661,7 +661,8 @@ def _validate_statuses(v: Validator, status: Any) -> None:
 
 
 class RefundsService(Service):
-    """Refunds (``client.refunds``): list, read, and create them."""
+    """Refunds (``client.refunds``): list and read them. Refunds are read only here: a
+    customer's request is answered, and a merchant's own refund sent, from the dashboard."""
 
     def list(
         self,
@@ -682,7 +683,7 @@ class RefundsService(Service):
             limit: The page size (the API's default 20 when ``None``, at most 100).
             cursor: The previous page's ``next_cursor``, verbatim; ``None`` for the first page.
             status: Keep only the refunds in one of these statuses (at most 5 of pending,
-                approved, rejected, cancelled, failed; sent as repeated ``?status=``); ``None`` or
+                approved, rejected, failed; sent as repeated ``?status=``); ``None`` or
                 empty: every status. ``[RefundStatus.PENDING]`` lists the ones awaiting an
                 answer.
             tx_uuid: Keep only the refund of this transaction (``pay@…``, ``sub-hist@…``, or the
@@ -747,55 +748,3 @@ class RefundsService(Service):
         space's refund is a :class:`~qbitflow.NotFoundError`."""
         check_path_tx_id("uuid", uuid)
         return self._call(Refund, Endpoint("GET", pathf("/refunds/{}", uuid)), options)
-
-    def create(
-        self,
-        *,
-        tx_uuid: str,
-        refund_percent: Optional[Money] = None,
-        reason: Optional[str] = None,
-        merchant_message: Optional[str] = None,
-        options: Optional[RequestOptions] = None,
-    ) -> Refund:
-        """Start a refund of a payment (``pay@…``) or a bill (``sub-hist@…``) of the space
-        (``POST /refunds``, 201). Sends an ``Idempotency-Key``; retried on transient failures.
-
-        It creates a **pending** refund, a draft that blocks nothing: no money moves until you
-        sign the transfer in the dashboard, and a new refund of the same transaction replaces it.
-        ``refund_percent`` (default ``"100"``) applies to everything the customer paid, network
-        fee included, rounded down.
-
-        Args:
-            tx_uuid: The payment or bill to refund (``pay@…``, ``sub-hist@…``, or its bare UUID).
-            refund_percent: The share of what the customer paid to send back, a percent string
-                (``"50"``) or a ``Decimal``: above 0, at most 100, at most 2 decimals (``None``:
-                ``"100"``, everything the customer paid, network fee included).
-            reason: Why you refund (at most 500 characters).
-            merchant_message: A note to the customer (at most 500 characters).
-
-        Raises:
-            NotFoundError: a transaction outside the space.
-            ValidationError: an invalid input (nothing is sent); the API's 400 (a refund
-                rounding to nothing).
-            ConflictError: 409 ``refund_already_exists`` (``details["refundUuid"]``: one refund
-                per transaction, whatever it became; only an unsent draft gives way) or
-                ``held_funds_released`` (a held payment already released to its member).
-            PermissionDeniedError: a member's key needs the ``members.refunds`` policy (403
-                ``policy_disabled``).
-        """
-        v = Validator()
-        if v.required("txUuid", tx_uuid):
-            v.tx_id("txUuid", tx_uuid)
-        if refund_percent is not None and refund_percent != "":
-            v.percent("refundPercent", refund_percent, 100, True)
-        v.text("reason", reason, 0, 500)
-        v.text("merchantMessage", merchant_message, 0, 500)
-        v.check()
-        body = compact(
-            txUuid=tx_uuid,
-            refundPercent=money(refund_percent),
-            reason=reason,
-            merchantMessage=merchant_message,
-        )
-        endpoint = Endpoint("POST", "/refunds", body=body, idempotent=True)
-        return self._call(Refund, endpoint, options)

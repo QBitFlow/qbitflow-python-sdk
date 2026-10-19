@@ -814,28 +814,6 @@ ROUTES: List[Route] = [
         reply=fx("Refund"),
         check=lambda v: v.uuid == "refund@1" and v.amount == "5",
     ),
-    Route(
-        "refunds.create",
-        lambda c, o: c.refunds.create(
-            tx_uuid=BILL_ID,
-            refund_percent="50.5",
-            reason="Damaged",
-            merchant_message="Sorry",
-            options=o,
-        ),
-        "POST",
-        "/refunds",
-        body={
-            "txUuid": BILL_ID,
-            "refundPercent": "50.5",
-            "reason": "Damaged",
-            "merchantMessage": "Sorry",
-        },
-        idempotent=True,
-        status=201,
-        reply=fx("Refund"),
-        check=lambda v: v.uuid == "refund@1" and v.tx_uuid == "pay@1",
-    ),
     # Members.
     Route(
         "members.list",
@@ -1250,14 +1228,13 @@ def test_service_retries(route: Route) -> None:
         assert first.body == second.body
 
 
-def test_seven_idempotent_creates() -> None:
+def test_six_idempotent_creates() -> None:
     names = {r.name for r in ROUTES if r.idempotent and not r.name.endswith("minimal")}
     assert names == {
         "products.create",
         "customers.create",
         "checkout_sessions.create_payment",
         "checkout_sessions.create_subscription",
-        "refunds.create",
         "invitations.create",
         "webhooks.endpoints.create",
     }
@@ -1266,7 +1243,6 @@ def test_seven_idempotent_creates() -> None:
         ("POST", "/customers"),
         ("POST", "/checkout-sessions/payment"),
         ("POST", "/checkout-sessions/subscription"),
-        ("POST", "/refunds"),
         ("POST", "/invitations"),
         ("POST", "/webhooks/endpoints"),
     }
@@ -1299,7 +1275,7 @@ def test_removed_and_renamed_methods() -> None:
         "subscriptions": ["get_public_history", "execute_test_billing"],
         "checkout_sessions": ["get_status"],
         "payments": ["list_combined", "iterate_combined"],
-        "refunds": ["initiate", "list_inactive", "iterate_inactive"],
+        "refunds": ["initiate", "create", "list_inactive", "iterate_inactive"],
         "wallets": ["list_supported_currencies"],
         "currencies": ["list_available", "list_main"],
     }
@@ -1310,7 +1286,6 @@ def test_removed_and_renamed_methods() -> None:
         ("transactions", "list"),
         ("transactions", "iterate"),
         ("refunds", "get"),
-        ("refunds", "create"),
         ("subscriptions", "update"),
         ("subscriptions", "test_bill"),
         ("checkout_sessions", "get"),
@@ -1652,7 +1627,6 @@ VALIDATION_CASES: Dict[str, Any] = {
         "productUuid",
         lambda c: c.checkout_sessions.create_payment(),
     ),
-    "refunds.create": ("txUuid", lambda c: c.refunds.create(tx_uuid=None)),
     "members.update fee": (
         "organizationFeePercent",
         lambda c: c.members.update(MEMBER_UUID, organization_fee_percent=None),
@@ -1688,10 +1662,6 @@ VALIDATION_CASES: Dict[str, Any] = {
         lambda c: c.checkout_sessions.create_payment(
             product_uuid=UUID_A, fees=CheckoutFees(items=[FeeItem("Tax", 1.5)])
         ),
-    ),
-    "refunds.create float percent": (
-        "refundPercent",
-        lambda c: c.refunds.create(tx_uuid=PAY_ID, refund_percent=50.0),
     ),
     "members.update int fee": (
         "organizationFeePercent",
@@ -1763,10 +1733,6 @@ VALIDATION_CASES: Dict[str, Any] = {
     "refunds.list too many statuses": (
         "status",
         lambda c: c.refunds.list(status=[RefundStatus.PENDING] * 6),
-    ),
-    "refunds.create percent": (
-        "refundPercent",
-        lambda c: c.refunds.create(tx_uuid=PAY_ID, refund_percent="0"),
     ),
     "members.update over 50": (
         "organizationFeePercent",

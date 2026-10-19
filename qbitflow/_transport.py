@@ -3,7 +3,7 @@ The HTTP layer: request building, the retry policy, error mapping and response d
 
 Retry policy (the same in every QBitFlow SDK):
 
-* Retried: every GET, and the 7 idempotent creates (they send an ``Idempotency-Key``, generated
+* Retried: every GET, and the 6 idempotent creates (they send an ``Idempotency-Key``, generated
   once per call and reused on every retry). Every other write is attempted once.
 * Retried on: a network error or timeout, a 5xx, a 429, and (creates only) a 409
   ``idempotency_key_in_use``. Never on another 4xx, a 3xx or an unusable response.
@@ -94,7 +94,7 @@ class RequestOptions:
         on_behalf_of: Act in this member's space for this call (a member's ``userUuid``);
             overrides the client's. ``""`` forces the organization level; ``None`` keeps the
             client's.
-        idempotency_key: The ``Idempotency-Key`` of one of the 7 idempotent creates (the SDK
+        idempotency_key: The ``Idempotency-Key`` of one of the 6 idempotent creates (the SDK
             otherwise generates a UUID v4 per call): 1 to 255 printable ASCII characters without
             spaces. Ignored (and not checked) by the other methods.
         request_id: Sent as ``X-Request-Id`` (1 to 128 of ``A-Z a-z 0-9 - _ . :``); the API echoes
@@ -114,7 +114,7 @@ class Endpoint:
     path: str
     query: Optional["Query"] = None
     body: Any = None
-    #: The 7 idempotent creates: they send an Idempotency-Key and are retried like reads.
+    #: The 6 idempotent creates: they send an Idempotency-Key and are retried like reads.
     idempotent: bool = False
     #: Overrides the Accept header (default ``application/json``).
     accept: Optional[str] = None

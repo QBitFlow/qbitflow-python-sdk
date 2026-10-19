@@ -99,8 +99,8 @@ class Payment(Transfer):
     paid_min_units: Optional[Str] = Field(default=None, alias="paidMinUnits")
     #: The same in USD, at the payment's time.
     paid_usd: Optional[Str] = Field(default=None, alias="paidUsd")
-    #: Its refund (one per transaction), if any (API reads only). A merchant's refund not sent
-    #: yet is shown, and doesn't make it unrefundable: a new refund replaces it.
+    #: Its refund (one per transaction), if any (API reads only). The merchant's own refund
+    #: appears once its transfer confirmed (approved).
     refund: Optional[RefundSummary] = None
     #: Whether it can be refunded now (API reads only).
     refundable: Optional[Bool] = None

@@ -2094,7 +2094,7 @@
       "args": {
         "billUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
       },
-      "body": "{\"uuid\":\"sub-hist@01a0f755-f200-7000-8000-000000000005\",\"periodStart\":\"2026-09-01T12:00:00Z\",\"periodEnd\":\"2026-10-01T12:00:00Z\",\"refund\":{\"uuid\":\"refund@x\",\"status\":\"cancelled\",\"initiatedBy\":\"merchant\",\"refundPercent\":\"100\",\"amountMinUnits\":\"1\",\"createdAt\":\"2026-10-02T00:00:00Z\"},\"refundable\":true,\"notRefundableReason\":\"somethingNew\"}",
+      "body": "{\"uuid\":\"sub-hist@01a0f755-f200-7000-8000-000000000005\",\"periodStart\":\"2026-09-01T12:00:00Z\",\"periodEnd\":\"2026-10-01T12:00:00Z\",\"refund\":{\"uuid\":\"refund@x\",\"status\":\"approved\",\"initiatedBy\":\"merchant\",\"refundPercent\":\"100\",\"amountMinUnits\":\"1\",\"createdAt\":\"2026-10-02T00:00:00Z\"},\"refundable\":true,\"notRefundableReason\":\"somethingNew\"}",
       "expect": "ok",
       "method": "subscriptions.getBill",
       "model": "Bill",
@@ -2114,7 +2114,7 @@
         },
         {
           "path": "refund.status",
-          "value": "cancelled"
+          "value": "approved"
         },
         {
           "path": "refund.refundPercent",
@@ -2939,16 +2939,11 @@
     },
     {
       "args": {
-        "params": {
-          "merchantMessage": "Sorry!",
-          "reason": "Damaged item",
-          "refundPercent": "50",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
+        "uuid": "refund@01a0f755-f200-7000-8000-000000000007"
       },
-      "body": "{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"txUuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"reason\":\"Damaged\",\"status\":\"pending\",\"createdAt\":\"2026-09-29T08:15:00Z\",\"test\":false,\"initiatedBy\":\"merchant\",\"held\":false,\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundPercent\":\"50\",\"amount\":\"5.0021\",\"amountMinUnits\":\"5002100\",\"amountUsd\":\"5.0021\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"chain\":\"BASE\"}",
+      "body": "{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"txUuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"reason\":\"Damaged\",\"status\":\"pending\",\"createdAt\":\"2026-09-29T08:15:00Z\",\"test\":false,\"initiatedBy\":\"customer\",\"held\":false,\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundPercent\":\"50\",\"amount\":\"5.0021\",\"amountMinUnits\":\"5002100\",\"amountUsd\":\"5.0021\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"chain\":\"BASE\"}",
       "expect": "ok",
-      "method": "refunds.create",
+      "method": "refunds.get",
       "model": "Refund",
       "name": "Refund pending: optional fields absent",
       "probes": [
@@ -3023,7 +3018,7 @@
           "value": ""
         }
       ],
-      "status": 201
+      "status": 200
     },
     {
       "args": {
@@ -3084,7 +3079,8 @@
       "expect": "ok",
       "method": "refunds.get",
       "model": "Refund",
-      "name": "Refund cancelled status kept",
+      "name": "Refund unknown status kept",
+      "note": "cancelled was retired: an unknown value now, kept as given",
       "probes": [
         {
           "path": "status",
@@ -3143,7 +3139,7 @@
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
-      "body": "{\"items\":[{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"txUuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"reason\":\"Damaged\",\"status\":\"pending\",\"createdAt\":\"2026-09-29T08:15:00Z\",\"test\":false,\"initiatedBy\":\"merchant\",\"held\":false,\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundPercent\":\"50\",\"amount\":\"5.0021\",\"amountMinUnits\":\"5002100\",\"amountUsd\":\"5.0021\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"chain\":\"BASE\"}],\"hasMore\":false}",
+      "body": "{\"items\":[{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"txUuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"reason\":\"Damaged\",\"status\":\"pending\",\"createdAt\":\"2026-09-29T08:15:00Z\",\"test\":false,\"initiatedBy\":\"customer\",\"held\":false,\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundPercent\":\"50\",\"amount\":\"5.0021\",\"amountMinUnits\":\"5002100\",\"amountUsd\":\"5.0021\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"chain\":\"BASE\"}],\"hasMore\":false}",
       "expect": "ok",
       "method": "refunds.list",
       "model": "Page<Refund>",
@@ -3155,7 +3151,7 @@
         },
         {
           "path": "items[0].initiatedBy",
-          "value": "merchant"
+          "value": "customer"
         },
         {
           "path": "hasMore",
@@ -3178,7 +3174,7 @@
           "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
         }
       },
-      "body": "[{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"txUuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"reason\":\"Damaged\",\"status\":\"pending\",\"createdAt\":\"2026-09-29T08:15:00Z\",\"test\":false,\"initiatedBy\":\"merchant\",\"held\":false,\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundPercent\":\"50\",\"amount\":\"5.0021\",\"amountMinUnits\":\"5002100\",\"amountUsd\":\"5.0021\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"chain\":\"BASE\"}]",
+      "body": "[{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"txUuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"reason\":\"Damaged\",\"status\":\"pending\",\"createdAt\":\"2026-09-29T08:15:00Z\",\"test\":false,\"initiatedBy\":\"customer\",\"held\":false,\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundPercent\":\"50\",\"amount\":\"5.0021\",\"amountMinUnits\":\"5002100\",\"amountUsd\":\"5.0021\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"chain\":\"BASE\"}]",
       "expect": "serverError",
       "method": "refunds.list",
       "model": "Page<Refund>",

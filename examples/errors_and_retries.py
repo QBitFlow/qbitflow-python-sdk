@@ -22,7 +22,7 @@ def describe(what: str, error: Optional[Exception]) -> None:
         print(f"not found (request {error.request_id})")
     elif isinstance(error, qbitflow.ConflictError):
         # e.g. unique_violation (details["field"]: a reference is unique per space, an email is
-        # not), merchant_not_ready, refund_already_exists.
+        # not), merchant_not_ready, held_funds_pending.
         print(f"conflict {error.code}, details {error.details}")
     elif isinstance(error, qbitflow.IdempotencyError):
         print("idempotency key reused with another request: use a new key")

@@ -48,8 +48,8 @@ never published; its changes are part of 3.0.0).
     (`amount`, `paid`, `owed`, next to their `…_min_units`) and fee rates in percent
     (`fee_percent`, `organization_fee_percent`, `refund_percent`: `"1.5"` is 1.5 %). The money
     inputs (`products.create(price_usd=…)` / `update`, the sessions' inline `price_usd`,
-    `FeeItem.amount_usd`, `refunds.create(refund_percent=…)`,
-    `invitations.create(organization_fee_percent=…)`, `members.update(organization_fee_percent=…)`)
+    `FeeItem.amount_usd`, `invitations.create(organization_fee_percent=…)`,
+    `members.update(organization_fee_percent=…)`)
     take a `str` or a `decimal.Decimal` (sent as `str(value)`, which must then match the grammar);
     a `float` or an `int` is refused with a `ValidationError` (a float cannot carry `0.1`
     exactly, and the API answers 400 to a JSON number). No float is left in a model.
@@ -117,9 +117,8 @@ never published; its changes are part of 3.0.0).
     `TransactionType.ONE_TIME_PAYMENT` → `PAYMENT`, `EXECUTE_SUBSCRIPTION_PAYMENT` →
     `EXECUTE_SUBSCRIPTION`, the PAYG values are `createPaygSubscription` /
     `cancelPaygSubscription`. `LedgerEntryType` and `AccountingEventType` `subscriptionHistory` →
-    `bill` (`LedgerEntryType.BILL`, `AccountingEventType.BILL`). `RefundStatus` adds `CANCELLED` (a
-    merchant's draft dropped before it was sent) and `FAILED` (declared, never set).
-    `WebhookPayloadVersion` has `V2` only: v2 is the only payload.
+    `bill` (`LedgerEntryType.BILL`, `AccountingEventType.BILL`). `RefundStatus` adds `FAILED`
+    (declared, never set). `WebhookPayloadVersion` has `V2` only: v2 is the only payload.
 -   **Pagination**: `get_all(limit, cursor)` → `list(limit=…, cursor=…, filters…)` returning a
     `Page[T]` (`items`, `has_more`, `next_cursor`): `has_more` is a field (it was a property),
     `next_cursor` an opaque string (`None` on the last page). Iterators stop when `has_more` is
@@ -176,7 +175,8 @@ never published; its changes are part of 3.0.0).
     `transactions.list` / `iterate` (`CombinedPayment` → `Transaction`, `CombinedPaymentSource` →
     `TransactionKind` with `payment` / `bill`, the `source` filter → `type`);
     `subscriptions.execute_test_billing` → `test_bill` (`BillingState` → `TestBill`);
-    `refunds.initiate` → `create`; `refunds.list` (active) and `list_inactive` /
+    `refunds.initiate` is removed (refunds are read only, below); `refunds.list` (active) and
+    `list_inactive` /
     `iterate_inactive` → one `refunds.list` / `iterate` with a `status` filter;
     `wallets.list_supported_currencies` → `list_accepted_currencies`; `currencies.list_available`
     / `list_main` → `currencies.list(test=…, main=…)`; `webhooks.endpoints.list` takes
@@ -231,9 +231,11 @@ never published; its changes are part of 3.0.0).
     `price_usd`, `cancellation_reason`, `dunning`, `metadata`, `management_page_link`;
     `Allowance`.
 -   `refunds.list` / `iterate` (`status` (a list, sent as repeated `?status=`), `tx_uuid`, `held`,
-    `include_members`, `user_uuid`), `refunds.get` (`GET /refunds/:uuid`) and `refunds.create`
-    (`POST /refunds`): a merchant's refund of a payment or a bill, signed in the dashboard. A
-    `Refund` carries `paid`, `amount`, its `currency` and, once approved, its `settlement`.
+    `include_members`, `user_uuid`) and `refunds.get` (`GET /refunds/:uuid`), read only: a
+    customer's request is answered, and a merchant's own refund sent, from the dashboard (the
+    merchant's is recorded only once its transfer confirmed, `approved`: `refund.approved` is its
+    only event). A `Refund` carries `paid`, `amount`, its `currency` and, once approved, its
+    `settlement`.
 -   `members` (`list`, `iterate`, `get`, `update`, `remove`, `trust`, `list_held_funds`,
     `get_held_funds`, `get_own_held_funds`) and `invitations` (`create`, `list`, `iterate`,
     `revoke`) for marketplaces.
@@ -249,7 +251,7 @@ never published; its changes are part of 3.0.0).
     `v1=` signature is checked, so a secret rotation needs nothing on the receiver's side.
 -   **Iterators** for every paginated list (`iterate`, `iterate_bills`): lazy, one request per
     page, filters and page size kept.
--   **Retries**: reads and the 7 creates are retried on network errors, timeouts, 5xx, 429
+-   **Retries**: reads and the 6 creates are retried on network errors, timeouts, 5xx, 429
     (honouring `Retry-After`, up to 60 s) and 409 `idempotency_key_in_use`, 3 times by default
     with a 1 s · 2ⁿ back-off; `max_retries=0` disables them; `is_retryable`.
 -   An `Idempotency-Key` on each create, generated per call and reused on every retry
@@ -258,8 +260,8 @@ never published; its changes are part of 3.0.0).
     `ValidationError` with wire field names before anything is sent: names, texts, references
     (also on the `reference` filters and `get_by_reference`), emails (also the customers'
     `email` filter), phones, URLs, USD amounts as strings (at most 2 decimals, above 0, at most
-    1,000,000), percents as strings (at most 2 decimals and 16 characters; `refund_percent` above
-    0 up to 100, `organization_fee_percent` 0 to 50, required on `members.update`), metadata (at
+    1,000,000), percents as strings (at most 2 decimals and 16 characters;
+    `organization_fee_percent` 0 to 50, required on `members.update`), metadata (at
     most 50 keys of 1 to 40 of `A-Z a-z 0-9 _ - . :`, values of at most 500 characters without
     control or bidirectional characters), durations, ids (the `release@` prefix included),
     dates, cursors (at most 200 characters), the refunds' `status` filter (at most 5 known
@@ -367,7 +369,8 @@ never published; its changes are part of 3.0.0).
 -   Lengths are counted in characters (code points), as the API does.
 
 The website snippet ids are unchanged (none renamed or retired); `transactions-list`,
-`subscriptions-update` and `refunds-get` are new.
+`subscriptions-update` and `refunds-get` are new; `refunds-create` is listed as unsupported
+(refunds are read only in the SDK).
 
 ## [2.1.0] - 2026-09-21
 

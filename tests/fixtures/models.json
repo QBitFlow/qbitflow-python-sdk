@@ -137,7 +137,7 @@
     "paidUsd": "10.0042",
     "refund": {
       "uuid": "refund@1",
-      "status": "cancelled",
+      "status": "approved",
       "initiatedBy": "merchant",
       "refundPercent": "50",
       "amount": "5.0021",
@@ -403,7 +403,7 @@
     "paidUsd": "10.0042",
     "refund": {
       "uuid": "refund@1",
-      "status": "cancelled",
+      "status": "approved",
       "initiatedBy": "merchant",
       "refundPercent": "50",
       "amount": "5.0021",
@@ -536,7 +536,7 @@
     "paidUsd": "10.0042",
     "refund": {
       "uuid": "refund@1",
-      "status": "cancelled",
+      "status": "approved",
       "initiatedBy": "merchant",
       "refundPercent": "50",
       "amount": "5.0021",

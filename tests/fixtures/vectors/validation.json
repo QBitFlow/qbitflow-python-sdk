@@ -7291,464 +7291,6 @@
     },
     {
       "args": {
-        "params": {
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: valid minimal"
-    },
-    {
-      "args": {
-        "params": {}
-      },
-      "expect": {
-        "fields": [
-          "txUuid"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: txUuid absent"
-    },
-    {
-      "args": {
-        "params": {
-          "txUuid": "order-1043"
-        }
-      },
-      "expect": {
-        "fields": [
-          "txUuid"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: txUuid invalid"
-    },
-    {
-      "args": {
-        "params": {
-          "txUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: txUuid sub-hist@"
-    },
-    {
-      "args": {
-        "params": {
-          "txUuid": "01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: txUuid bare"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "0",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 0"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "0.00",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 0.00"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "0.01",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 0.01"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "50",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 50"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "50.5",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 50.5"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "50.50",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 50.50"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "100",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 100"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "100.00",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 100.00"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "100.01",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 100.01"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "101",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 101"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "33.333",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 33.333"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "0.001",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 0.001"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "-5",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent -5"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "1e1",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 1e1"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": ".5",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent .5"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "5.",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 5."
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": " 50",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent  50"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "+50",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent +50"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "abc",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent abc"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "NaN",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent NaN"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "00000000000050.5",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 00000000000050.5"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "000000000000050.5",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "refundPercent"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent 000000000000050.5"
-    },
-    {
-      "args": {
-        "params": {
-          "refundPercent": "",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: refundPercent empty means 100 (not sent)"
-    },
-    {
-      "args": {
-        "params": {
-          "reason": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: reason 500"
-    },
-    {
-      "args": {
-        "params": {
-          "reason": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "reason"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: reason 501"
-    },
-    {
-      "args": {
-        "params": {
-          "reason": "r",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: reason 1 char"
-    },
-    {
-      "args": {
-        "params": {
-          "reason": "Damaged\nitem",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: reason multiline"
-    },
-    {
-      "args": {
-        "params": {
-          "reason": "  ",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "reason"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: reason blank"
-    },
-    {
-      "args": {
-        "params": {
-          "merchantMessage": "<b>Sorry</b>",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": {
-        "fields": [
-          "merchantMessage"
-        ]
-      },
-      "method": "refunds.create",
-      "name": "refunds.create: merchantMessage with <"
-    },
-    {
-      "args": {
-        "params": {
-          "merchantMessage": "🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏🙏",
-          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
-        }
-      },
-      "expect": "ok",
-      "method": "refunds.create",
-      "name": "refunds.create: merchantMessage 500 emoji"
-    },
-    {
-      "args": {
         "params": {}
       },
       "expect": "ok",
@@ -7814,7 +7356,6 @@
             "pending",
             "approved",
             "rejected",
-            "cancelled",
             "failed"
           ]
         }
@@ -7830,9 +7371,25 @@
             "pending",
             "approved",
             "rejected",
-            "cancelled",
             "failed",
             "pending"
+          ]
+        }
+      },
+      "expect": "ok",
+      "method": "refunds.list",
+      "name": "refunds.list: status 5 entries"
+    },
+    {
+      "args": {
+        "params": {
+          "status": [
+            "pending",
+            "approved",
+            "rejected",
+            "failed",
+            "pending",
+            "approved"
           ]
         }
       },
@@ -7843,6 +7400,23 @@
       },
       "method": "refunds.list",
       "name": "refunds.list: status 6 entries"
+    },
+    {
+      "args": {
+        "params": {
+          "status": [
+            "pending",
+            "cancelled"
+          ]
+        }
+      },
+      "expect": {
+        "fields": [
+          "status[1]"
+        ]
+      },
+      "method": "refunds.list",
+      "name": "refunds.list: status cancelled (retired)"
     },
     {
       "args": {
@@ -7996,6 +7570,17 @@
     {
       "args": {
         "params": {
+          "organizationFeePercent": "0.00"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": "ok",
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 0.00"
+    },
+    {
+      "args": {
+        "params": {
           "organizationFeePercent": "0.01"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
@@ -8003,6 +7588,21 @@
       "expect": "ok",
       "method": "members.update",
       "name": "members.update: organizationFeePercent 0.01"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "0.001"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 0.001"
     },
     {
       "args": {
@@ -8141,6 +7741,51 @@
     {
       "args": {
         "params": {
+          "organizationFeePercent": "5."
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 5."
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": " 5"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent  5"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "+5"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent +5"
+    },
+    {
+      "args": {
+        "params": {
           "organizationFeePercent": "abc"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
@@ -8156,6 +7801,21 @@
     {
       "args": {
         "params": {
+          "organizationFeePercent": "NaN"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent NaN"
+    },
+    {
+      "args": {
+        "params": {
           "organizationFeePercent": "Infinity"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
@@ -8167,6 +7827,32 @@
       },
       "method": "members.update",
       "name": "members.update: organizationFeePercent Infinity"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "00000000000005.5"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": "ok",
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 00000000000005.5"
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "000000000000005.5"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "expect": {
+        "fields": [
+          "organizationFeePercent"
+        ]
+      },
+      "method": "members.update",
+      "name": "members.update: organizationFeePercent 000000000000005.5"
     },
     {
       "args": {

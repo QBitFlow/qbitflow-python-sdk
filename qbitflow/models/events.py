@@ -291,8 +291,8 @@ class SubscriptionUpcomingBillEvent(BaseEvent):
 
 
 class RefundRequestedEvent(BaseEvent):
-    """``refund.requested``: a new pending refund, a customer's request (``initiated_by``
-    ``customer``) or a merchant's own (``refunds.create``)."""
+    """``refund.requested``: a new pending refund, always a customer's request (``initiated_by``
+    ``customer``). A merchant's own refund is announced only by ``refund.approved``."""
 
     type: Literal["refund.requested"] = "refund.requested"
     data: Refund = Field(default_factory=Refund)
@@ -301,7 +301,8 @@ class RefundRequestedEvent(BaseEvent):
 class RefundApprovedEvent(BaseEvent):
     """``refund.approved`` (was ``refund.completed``): the refund, approved, its transfer
     confirmed (``tx_hash``, ``settlement.transaction``); ``refund_percent`` and ``amount`` are the
-    share actually paid back. Reverse the order, in full or in part."""
+    share actually paid back. Reverse the order, in full or in part. For a merchant's own refund
+    (``initiated_by`` ``merchant``) it is the first and only event."""
 
     type: Literal["refund.approved"] = "refund.approved"
     data: Refund = Field(default_factory=Refund)

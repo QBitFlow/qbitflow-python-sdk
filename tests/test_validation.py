@@ -138,18 +138,6 @@ def test_text_bounds(client: QBitFlow) -> None:
     assert fields(
         lambda: client.webhooks.endpoints.create(url="https://x.io", description="x" * 201)
     ) == ["description"]
-    tx = "pay@" + MEMBER_UUID
-    assert (
-        fields(
-            lambda: client.refunds.create(
-                tx_uuid=tx, reason="Broken, can you refund?", merchant_message="Sorry\nTeam"
-            )
-        )
-        == []
-    )
-    assert fields(
-        lambda: client.refunds.create(tx_uuid=tx, reason="{x}", merchant_message="m" * 501)
-    ) == ["reason", "merchantMessage"]
 
 
 @pytest.mark.parametrize("ref", ["order-1042", "INV_2026.10:01@shop", "a", "r" * 100])
@@ -382,49 +370,26 @@ def test_price_update(client: QBitFlow) -> None:
     assert fields(lambda: client.products.update(MEMBER_UUID)) == []
 
 
-@pytest.mark.parametrize(
-    "pct",
-    ["0.01", "1.5", "33.33", "100", "100.00", "0000000000000050", Decimal("50"), Decimal("0.5")],
-    ids=repr,
-)
-def test_refund_percent_good(client: QBitFlow, pct: Any) -> None:
-    assert fields(lambda: client.refunds.create(tx_uuid=MEMBER_UUID, refund_percent=pct)) == []
-
-
+# The percent rule: a decimal string (or a Decimal), digits with at most 2 decimals, at most 16
+# characters, from 0 to its maximum (50 for organization_fee_percent), compared exactly.
 @pytest.mark.parametrize(
     "pct",
     [
         "0",
         "0.00",
-        "-1",
-        "100.01",
-        "101",
-        "1.155",
-        "1e2",
-        ".5",
-        "00000000000000050",  # 17 characters: over the 16 a percentage may have
+        "0.05",
+        "1.5",
+        "33.33",
+        "50",
+        "50.00",
+        "007.5",
+        "0000000000000050",  # 16 characters: the most a percentage may have
+        Decimal("7.5"),
         Decimal("0"),
-        Decimal("1E+1"),
-        50,
-        0.5,
-        0.1 + 0.2,
-        True,
+        Decimal("0.5"),
+        Decimal("50"),
     ],
     ids=repr,
-)
-def test_refund_percent_bad(client: QBitFlow, pct: Any) -> None:
-    assert fields(lambda: client.refunds.create(tx_uuid=MEMBER_UUID, refund_percent=pct)) == [
-        "refundPercent"
-    ]
-
-
-def test_refund_percent_unset(client: QBitFlow) -> None:
-    assert fields(lambda: client.refunds.create(tx_uuid=MEMBER_UUID, refund_percent=None)) == []
-    assert fields(lambda: client.refunds.create(tx_uuid=MEMBER_UUID, refund_percent="")) == []
-
-
-@pytest.mark.parametrize(
-    "pct", ["0", "0.00", "0.05", "1.5", "50", "50.00", Decimal("7.5")], ids=repr
 )
 def test_fee_good(client: QBitFlow, pct: Any) -> None:
     assert fields(lambda: client.members.update(MEMBER_UUID, organization_fee_percent=pct)) == []
@@ -439,7 +404,34 @@ def test_fee_good(client: QBitFlow, pct: Any) -> None:
 
 
 @pytest.mark.parametrize(
-    "pct", ["-0.01", "50.01", "51", "1.234", "x", 5, 0.0, Decimal("-1")], ids=repr
+    "pct",
+    [
+        "-0.01",
+        "-1",
+        "50.01",
+        "51",
+        "1.234",
+        "1.155",
+        "0.30000000000000004",
+        "1e1",
+        ".5",
+        "5.",
+        "50%",
+        " 5",
+        "NaN",
+        "Infinity",
+        "x",
+        "00000000000000050",  # 17 characters: over the 16 a percentage may have
+        Decimal("-1"),
+        Decimal("1E+1"),
+        5,
+        50,
+        0.0,
+        0.5,
+        0.1 + 0.2,
+        True,
+    ],
+    ids=repr,
 )
 def test_fee_bad(client: QBitFlow, pct: Any) -> None:
     assert fields(lambda: client.members.update(MEMBER_UUID, organization_fee_percent=pct)) == [
@@ -952,9 +944,8 @@ def test_ids() -> None:
 
 
 def test_tx_id_params(client: QBitFlow) -> None:
-    assert fields(lambda: client.refunds.create(tx_uuid=None)) == ["txUuid"]
-    assert fields(lambda: client.refunds.create(tx_uuid="order-1")) == ["txUuid"]
-    assert fields(lambda: client.refunds.create(tx_uuid="release@" + MEMBER_UUID)) == []
+    assert fields(lambda: client.refunds.list(tx_uuid="order-1")) == ["txUuid"]
+    assert fields(lambda: client.refunds.list(tx_uuid="release@" + MEMBER_UUID)) == []
     assert fields(lambda: client.failures.list(subscription_uuid="sub@nope")) == [
         "subscriptionUuid"
     ]
@@ -1007,8 +998,9 @@ def test_filters(client: QBitFlow) -> None:
         (None, []),
         ([], []),
         (["pending"], []),
-        ([RefundStatus.CANCELLED, RefundStatus.FAILED], []),
-        (["pending", "approved", "rejected", "cancelled", "failed"], []),
+        ([RefundStatus.REJECTED, RefundStatus.FAILED], []),
+        (["pending", "approved", "rejected", "failed", "pending"], []),  # duplicates allowed
+        (["approved", "cancelled"], ["status[1]"]),  # no longer a refund status
         (["pending"] * 6, ["status"]),
         (["pending", "", "nope"], ["status[1]", "status[2]"]),
         (["completed"], ["status[0]"]),  # the retired refund.completed is no status
@@ -1276,16 +1268,6 @@ UPDATE_CASES: List[Tuple[str, Callable[[QBitFlow], Any], dict]] = [
             "expiresInMinutes": 30,
             "frequency": {"value": 1, "unit": "weeks"},
         },
-    ),
-    (
-        "refund minimal",
-        lambda c: c.refunds.create(tx_uuid="pay@" + MEMBER_UUID),
-        {"txUuid": "pay@" + MEMBER_UUID},
-    ),
-    (
-        "refund Decimal percent",
-        lambda c: c.refunds.create(tx_uuid="pay@" + MEMBER_UUID, refund_percent=Decimal("33.5")),
-        {"txUuid": "pay@" + MEMBER_UUID, "refundPercent": "33.5"},
     ),
     (
         "endpoint create",

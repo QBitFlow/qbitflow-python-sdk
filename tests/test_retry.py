@@ -190,7 +190,7 @@ SUB = "sub@01a05cd7-2a00-7000-8000-000000000003"
 PAY = "pay@01a0f22f-9600-7000-8000-000000000008"
 MEMBER = "019eca82-5680-7b00-8000-0000000000b1"
 
-#: The 7 idempotent creates, through their services (behaviour §3).
+#: The 6 idempotent creates, through their services (behaviour §3).
 CREATES: List[Tuple[str, Any]] = [
     (
         "POST /checkout-sessions/payment",
@@ -210,7 +210,6 @@ CREATES: List[Tuple[str, Any]] = [
         "POST /invitations",
         lambda c: c.invitations.create(email="seller@example.com", hold_funds=True),
     ),
-    ("POST /refunds", lambda c: c.refunds.create(tx_uuid=PAY, refund_percent="50")),
 ]
 
 

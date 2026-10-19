@@ -121,14 +121,14 @@ class AttemptStatus(StrEnum):
 
 class RefundStatus(StrEnum):
     """Where a refund stands. An approval and a rejection are final: the transaction never gets
-    another refund. A cancelled one never moved money and blocks nothing."""
+    another refund."""
 
-    PENDING = "pending"  #: Requested, or started by the merchant and not sent yet.
-    APPROVED = "approved"  #: The refund transfer is confirmed (``refund.approved``).
+    PENDING = "pending"  #: A customer's request not answered yet.
+    #: The refund transfer is confirmed (``refund.approved``); the merchant's own refund is
+    #: recorded only then.
+    APPROVED = "approved"
     REJECTED = "rejected"  #: Rejected by whoever decides it (``refund.rejected``).
-    #: A merchant's refund dropped before it was sent (announced by nothing).
-    CANCELLED = "cancelled"
-    FAILED = "failed"  #: Declared, never set: a failed approval leaves the refund pending.
+    FAILED = "failed"  #: Declared, never set: a failed approval leaves the request pending.
 
 
 class RefundInitiator(StrEnum):
