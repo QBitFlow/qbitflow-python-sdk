@@ -139,7 +139,8 @@ class SubscriptionUpcomingBill(Subscription):
 
     #: When it is billed (for a trial: when the trial ends).
     billing_date: Time = Field(default=ZERO_TIME, alias="billingDate")
-    #: The bill, in USD: a **number** here (a string on ``subscription.billingFailed``).
+    #: The bill, in USD: a **number** here (a string on ``subscription.billingFailed``): its
+    #: ``price_usd`` plus its ``fees`` lines.
     amount_usd: Float = Field(default=0.0, alias="amountUsd")
     #: True when the trial ends then: the customer must confirm it to be billed.
     trial_ending: Bool = Field(default=False, alias="trialEnding")

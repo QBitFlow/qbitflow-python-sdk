@@ -56,12 +56,13 @@ class PaymentSessionData(Model):
     description: Optional[Str] = None
     #: The product's price in USD.
     price: Optional[Float] = None
-    #: What a one-time payment's checkout adds to the price, in the order shown: the merchant's
-    #: lines, then the processing fee (when the customer pays it). Empty without any, and always
-    #: on a subscription session.
+    #: What the checkout adds to the price, in the order shown: the merchant's lines, then the
+    #: processing fee (when the customer pays it). A subscription's are charged with every bill.
+    #: Empty without any.
     fees: List[FeeLine] = Field(default_factory=list)
     #: What the customer pays in USD before the network fee: the price plus every line of
-    #: ``fees`` (the payment's ``amount``). ``None`` on a subscription session.
+    #: ``fees`` (the payment's ``amount``, or each bill's of a subscription). The network fee
+    #: comes on top.
     amount: Optional[Float] = None
     #: Where the customer goes after paying (placeholders filled).
     success_url: Optional[Str] = Field(default=None, alias="successUrl")

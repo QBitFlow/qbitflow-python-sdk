@@ -108,14 +108,15 @@ def test_payment_completed() -> None:
     assert p.currency.main_currency is not None and p.currency.main_currency.main_currency is None
     assert p.currency.main_currency_id == 3
     m = p.metadata
-    assert m.fee_percent == 1.5 and m.tx_amounts.min_units.merchant == "9850000"
-    assert m.tx_amounts.min_units.network_fee == "4200" and m.tx_amounts.usd.merchant == 9.85
+    assert m.fee_percent == 0.99 and m.tx_amounts.min_units.merchant == "9901000"
+    assert m.tx_amounts.min_units.network_fee == "4200" and m.tx_amounts.usd.merchant == 9.901
     assert m.tx_amounts.usd.organization is None and m.tx_amounts.usd.network_fee is not None
     assert (
         m.tx_metadata.block_data.timestamp == 1790855998
         and m.tx_metadata.network_fees.units_consumed == 95000
     )
     assert m.organization_fee is None
+    assert m.tx_metadata.main_currency_price_usd == 4512.37
     assert p.customer is None and p.refund is None and p.refundable is None  # API reads only
     assert p.price == 10 and p.fees == []  # a payment without fees: amount = price
     assert p.confirmed_at is not None and p.checkout_opened_at is not None
@@ -205,7 +206,7 @@ def test_members_and_funds() -> None:
     )
     first = released.ledgers[0]
     assert first.type == LedgerEntryType.PAYMENT and first.metadata is not None
-    assert first.owed_min_units == "98500000" and first.owed_usd == 98.5
+    assert first.owed_min_units == "99010000" and first.owed_usd == 99.01
     for line in released.ledgers:
         if line.type == LedgerEntryType.REFUND:
             assert (

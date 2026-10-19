@@ -611,6 +611,33 @@ def test_fee_paths_and_types(client: QBitFlow) -> None:
     assert fee_fields(client, None) == []
 
 
+def sub_fee_fields(client: QBitFlow, fees: Any, **kwargs: Any) -> List[str]:
+    return fields(
+        lambda: client.checkout_sessions.create_subscription(
+            product_uuid=MEMBER_UUID, fees=fees, **kwargs
+        )
+    )
+
+
+def test_subscription_fees(client: QBitFlow) -> None:
+    # A subscription checkout's fees follow the same rules, reported with the terms.
+    ten = [FeeItem(f"Line {i}", 1) for i in range(10)]
+    assert sub_fee_fields(client, None) == []
+    assert sub_fee_fields(client, CheckoutFees(processing_fee=True)) == []
+    assert sub_fee_fields(client, CheckoutFees(processing_fee=False, items=ten)) == []
+    eleven = ten + [FeeItem("Line 10", 1)]
+    assert sub_fee_fields(client, CheckoutFees(items=eleven)) == ["fees.items"]
+    bad = CheckoutFees(items=[FeeItem("a|b", 0.001, " ")])
+    assert sub_fee_fields(client, bad) == [
+        "fees.items[0].label",
+        "fees.items[0].description",
+        "fees.items[0].amountUsd",
+    ]
+    assert sub_fee_fields(
+        client, CheckoutFees(items=[FeeItem("Tax", -1)]), frequency=Duration(value=1)
+    ) == ["frequency.unit", "fees.items[0].amountUsd"]
+
+
 def test_ids() -> None:
     for good in (
         MEMBER_UUID,

@@ -24,6 +24,7 @@ from .enums import (
     FeeLineType,
     InvitationStatus,
     LedgerEntryType,
+    NetworkFeesPayer,
     NotRefundableReason,
     RefundInitiator,
     RefundStatus,
@@ -59,6 +60,7 @@ FailureKindT = Annotated[Union[FailureKind, str], open_enum(FailureKind)]
 FeeLineTypeT = Annotated[Union[FeeLineType, str], open_enum(FeeLineType)]
 InvitationStatusT = Annotated[Union[InvitationStatus, str], open_enum(InvitationStatus)]
 LedgerEntryTypeT = Annotated[Union[LedgerEntryType, str], open_enum(LedgerEntryType)]
+NetworkFeesPayerT = Annotated[Union[NetworkFeesPayer, str], open_enum(NetworkFeesPayer)]
 NotRefundableReasonT = Annotated[Union[NotRefundableReason, str], open_enum(NotRefundableReason)]
 RefundInitiatorT = Annotated[Union[RefundInitiator, str], open_enum(RefundInitiator)]
 RefundStatusT = Annotated[Union[RefundStatus, str], open_enum(RefundStatus)]

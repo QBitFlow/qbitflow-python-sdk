@@ -28,6 +28,7 @@ __all__ = [
     "TransferType",
     "LedgerEntryType",
     "AccountingEventType",
+    "NetworkFeesPayer",
     "InvitationStatus",
     "EventType",
     "WebhookPayloadVersion",
@@ -220,6 +221,17 @@ class AccountingEventType(StrEnum):
     REFERRAL_FEE = "referralFee"
 
 
+class NetworkFeesPayer(StrEnum):
+    """Whose wallet paid an accounting event's network fees
+    (:attr:`AccountingEvent.network_fees_paid_by`)."""
+
+    PAYER = "payer"  #: A payment or a bill: the payer, on top of the amount.
+    MERCHANT = "merchant"  #: A refund the space sent from its wallet.
+    #: A refund of a payment the organization held for its member, sent from the organization's
+    #: wallet.
+    ORGANIZATION = "organization"
+
+
 class InvitationStatus(StrEnum):
     """An invitation's status (computed when read)."""
 
@@ -302,7 +314,7 @@ class MerchantNotReadyReason(StrEnum):
 
 
 class FeeLineType(StrEnum):
-    """Who added a line to a payment checkout's price (:class:`FeeLine`)."""
+    """Who added a line to a checkout's price (:class:`FeeLine`)."""
 
     CUSTOM = "custom"  #: The merchant's own line: a tax, shipping, a service fee.
     #: QBitFlow's processing fee, which the merchant has the customer pay (computed by QBitFlow).

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import Field
 
@@ -16,7 +16,7 @@ from ._fields import (
     CancellationReasonT,
     SubscriptionStatusT,
 )
-from .common import Currency, CustomerSummary, Duration
+from .common import Currency, CustomerSummary, Duration, FeeLine
 
 __all__ = [
     "Subscription",
@@ -70,8 +70,12 @@ class Subscription(Model):
     #: The end of the period paid for (or of the trial): grant access while now is before it.
     current_period_end: Optional[Time] = Field(default=None, alias="currentPeriodEnd")
     #: The price per period the customer subscribed at, in USD (a decimal string; "0" for old
-    #: v1 subscriptions).
+    #: v1 subscriptions). Every bill charges it plus ``fees``.
     price_usd: Str = Field(default="", alias="priceUsd")
+    #: What its checkout added to the price, line by line, as the customer saw them (a tax,
+    #: shipping, the processing fee when the customer pays it), locked at signup with the price:
+    #: every bill charges ``price_usd`` plus these lines. Empty without any.
+    fees: List[FeeLine] = Field(default_factory=list)
     #: The customer's maximum per period, in min units (a decimal string).
     max_amount_per_period: Optional[Str] = Field(default=None, alias="maxAmountPerPeriod")
     last_billing_date: Time = Field(default=ZERO_TIME, alias="lastBillingDate")

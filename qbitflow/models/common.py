@@ -126,8 +126,9 @@ class Attempt(Model):
 
 
 class FeeLine(Model):
-    """An amount a one-time payment's checkout adds to its product's price (a tax, shipping,
-    QBitFlow's processing fee), shown to the customer line by line and paid with the price."""
+    """An amount a checkout adds to its product's price (a tax, shipping, QBitFlow's processing
+    fee), shown to the customer line by line and paid with the price, a subscription's with every
+    bill (:attr:`Payment.fees`, :attr:`PaymentSessionData.fees`, :attr:`Subscription.fees`)."""
 
     #: ``custom`` (the merchant's line) or ``processingFee`` (QBitFlow's fee, which the merchant
     #: has the customer pay).

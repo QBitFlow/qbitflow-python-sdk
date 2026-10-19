@@ -13,7 +13,7 @@ def export_year(client: qbitflow.QBitFlow) -> None:
     # Any range: the SDK splits it into the API's 95-day windows and joins the parts.
     events = client.accounting.export_json_range("2026-01-01", "2026-12-31")
     for event in events:
-        print(event.type, event.payment_uuid, event.token_symbol, event.net_amount)
+        print(event.type, event.payment_uuid, event.currency, event.net_amount)
 
     csv_text = client.accounting.export_csv_range("2026-01-01", "2026-12-31")
     with open("qbitflow-2026.csv", "w", encoding="utf-8") as file:

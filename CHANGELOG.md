@@ -118,7 +118,7 @@ never published; its changes are part of 3.0.0).
         the processing fee (grossed up so you keep the price and your lines; `None` follows the
         dashboard's `checkout.customerPaysProcessingFee` setting). `amount_usd` is a number (sent
         as a JSON number) or a string / `Decimal` (sent as a string, as written). Omitted when not
-        given; `create_subscription` takes no fees.
+        given.
     -   Validated before sending: at most 10 lines (`fees.items`), `label` the name rule in 1 to
         40 characters, `description` the text rule up to 200, `amount_usd` above 0, at most
         1,000,000, at most 2 decimals, no sign or exponent (`fees.items[i].amountUsd`…). The
@@ -128,6 +128,18 @@ never published; its changes are part of 3.0.0).
         `Payment.fees` (so `payment.completed` has them: `amount` = `price` + the fees);
         `PaymentSessionData.fees` and `amount` (`checkout.expired`: what the customer pays
         before the network fee).
+-   Checkout fees on subscriptions: `checkout_sessions.create_subscription(..., fees=…)` (the
+    same `CheckoutFees` and rules, errors on `fees.items[i].<field>` after the terms'), locked
+    with the price: every bill charges the price plus every line. `Subscription.fees` (the lines,
+    next to `price_usd`, which stays the price; also on every `subscription.*` webhook); the
+    session's `fees` and `amount` on a subscription checkout too.
+-   `AccountingEvent` follows the API's export: amounts in the currency's units (not min units),
+    `currency` (was `token_symbol`), `currency_price_usd`, and the network fees apart from the
+    net: `network_fees_paid_by` (the open enum `NetworkFeesPayer`: `PAYER`, `MERCHANT`,
+    `ORGANIZATION`), `network_fees`, `network_fees_currency`, `network_fees_currency_decimals`,
+    `network_fees_currency_price_usd`, `network_fees_usd`. Its fields are in the CSV's column
+    order; the always-empty `user_name`, `user_last_name`, `customer_name` and
+    `customer_last_name` are gone.
 -   `X-Request-Id` (`RequestOptions(request_id=…)`), echoed as `request_id` on errors.
 -   `NOT_GIVEN`: the default of the clearable update fields (`""` or `None` clears them).
 -   `qbitflow.__version__` single-sourced in `qbitflow/_version.py`; `User-Agent:

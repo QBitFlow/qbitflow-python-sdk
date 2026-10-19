@@ -33,19 +33,19 @@
     "from": "0xabcdef1234567890abcdef1234567890abcdef12",
     "managementPageLink": "https://qbitflow.app/user/019cadfd-8900-7a00-8000-0000000000a1/manage?uuid=pay@01a0f755-f200-7000-8000-000000000001",
     "metadata": {
-      "feePercent": 1.5,
+      "feePercent": 0.99,
       "txAmounts": {
         "minUnits": {
-          "merchant": "9850000",
+          "merchant": "9901000",
           "networkFee": "4200",
           "organization": "0",
-          "platform": "150000",
+          "platform": "99000",
           "referral": "0"
         },
         "usd": {
-          "merchant": 9.85,
+          "merchant": 9.901,
           "networkFee": 0.0042,
-          "platform": 0.15
+          "platform": 0.099
         }
       },
       "txMetadata": {
@@ -53,6 +53,7 @@
           "number": "52468103",
           "timestamp": 1790855998
         },
+        "mainCurrencyPriceUsd": 4512.37,
         "networkFees": {
           "amount": "1140000000000",
           "unitsConsumed": 95000

@@ -4533,6 +4533,349 @@
     {
       "args": {
         "params": {
+          "fees": {
+            "processingFee": true
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: fees processingFee true only"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ],
+            "processingFee": true
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: fees one line and the processing fee"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: fees 10 lines"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: fees 11 lines",
+      "note": "the count fails on fees.items"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 0.001,
+                "description": "   ",
+                "label": "a|b"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd",
+          "fees.items[0].description",
+          "fees.items[0].label"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: fees a bad line"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 1000000.01,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: fees amountUsd 1000000.01"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "NaN",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: fees amountUsd NaN"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": -1,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "frequency": {
+            "value": 1
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items[0].amountUsd",
+          "frequency.unit"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: fees and a bad frequency",
+      "note": "the terms and the fees are reported together (as a set)"
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              },
+              {
+                "amountUsd": 4.99,
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "fields": [
+          "fees.items",
+          "productUuid"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: fees and no product"
+    },
+    {
+      "args": {
+        "params": {
           "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
         }
       },

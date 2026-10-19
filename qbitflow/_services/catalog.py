@@ -44,8 +44,8 @@ class SubscriptionTermsParams:
 
 @dataclass
 class FeeItem:
-    """A line of your own on a payment checkout (:class:`CheckoutFees`): a tax, shipping, a
-    service fee, shown to the customer and paid with the price.
+    """A line of your own on a checkout (:class:`CheckoutFees`): a tax, shipping, a service fee,
+    shown to the customer and paid with the price (a subscription's: with every bill).
 
     Attributes:
         label: The line's name, as the checkout shows it: one line, 1 to 40 characters, the
@@ -63,18 +63,24 @@ class FeeItem:
 
 @dataclass
 class CheckoutFees:
-    """What a one-time payment's checkout adds to its price (``checkout_sessions.create_payment``
-    ``fees``). The customer pays ``amount`` = the price plus every line; QBitFlow's fee (and an
-    organization's) is taken on that amount, and the network fee comes on top of it. In test mode
-    ``amount``, fees included, is capped at $5 (a 400 on ``fees``).
+    """What a checkout adds to its price: a one-time payment's
+    (``checkout_sessions.create_payment`` ``fees``), or a subscription's
+    (``checkout_sessions.create_subscription`` ``fees``, each of its bills then charging the price
+    and the same lines). The customer pays ``amount`` = the price plus every line; QBitFlow's fee
+    (and an organization's) is taken on that amount, and the network fee comes on top of it. In
+    test mode ``amount``, fees included, is capped at $5 (a 400 on ``fees``).
 
     Attributes:
         processing_fee: The customer pays QBitFlow's processing fee, as a last line computed by
-            QBitFlow on the price and your lines at your platform fee, grossed up (the fee is
-            also taken on that line) and rounded up to the cent, so you keep at least the price
-            and your lines. ``None``: the space's ``checkout.customerPaysProcessingFee`` setting
-            decides (off by default; set in the dashboard). ``False`` turns it off for this
-            checkout.
+            QBitFlow on the price and your lines at your platform fee p (never below 0.5 %) as
+            base × p / (1 − p), rounded up to the cent. QBitFlow's fee is also taken on that
+            line, so this gross-up leaves you at least the price and your lines, as if no fee
+            were taken ($100 + $20 VAT at 0.99 % → a $1.20 fee, $121.20 charged, $120.00 kept).
+            p is the checkout's rate: QBitFlow's fee for your space when the checkout is created
+            (a volume schedule unless QBitFlow set you a custom rate). A marketplace's
+            organization fee is not passed on. ``None``: the space's
+            ``checkout.customerPaysProcessingFee`` setting decides (off by default; set in the
+            dashboard). ``False`` turns it off for this checkout.
         items: Up to 10 lines of your own, shown in this order, before the processing fee.
     """
 
@@ -241,6 +247,9 @@ class ProductsService(Service):
         Raises:
             ValidationError: an invalid input (nothing is sent), or the API's 400.
             ConflictError: 409 ``unique_violation`` (``details["field"]``: the reference).
+            PermissionDeniedError: a member's key needs the organization's ``members.products``
+                policy, and ``members.subscriptions`` to give the product subscription terms (403
+                ``policy_disabled``, ``details["policy"]`` names it).
         """
         v = Validator()
         if v.required("name", name):
@@ -295,6 +304,11 @@ class ProductsService(Service):
             subscription: Sets (or changes) the subscription terms; a one-time product needs
                 ``frequency``.
             remove_subscription: Makes it a one-time product (not with ``subscription``).
+
+        Raises:
+            PermissionDeniedError: a member's key gives a product subscription terms only with
+                the organization's ``members.subscriptions`` policy (403 ``policy_disabled``);
+                ``remove_subscription`` and other edits never need it.
         """
         check_path_uuid("uuid", uuid)
         clear_description = _clearable(description)
@@ -634,6 +648,7 @@ class CheckoutSessionsService(Service):
         frequency: Optional[Duration] = None,
         trial_period: Optional[Duration] = None,
         min_periods: Optional[int] = None,
+        fees: Optional[CheckoutFees] = None,
         options: Optional[RequestOptions] = None,
     ) -> CheckoutSession:
         """Create a subscription checkout session
@@ -641,12 +656,30 @@ class CheckoutSessionsService(Service):
         arguments, plus the terms, each optional over a subscription product's. Sends an
         ``Idempotency-Key``; retried on transient failures.
 
+        The :class:`Subscription` exists, with the same id, once the customer signed (a free
+        trial) or paid: act on ``subscription.created``.
+
         Args:
             frequency: How often it bills: at least 1 unit, at most 1 year (the API also
                 requires at least 1 hour in live mode, 5 minutes in test mode).
             trial_period: A free trial before the first bill (``Duration(0)``: none, removing a
                 product's).
             min_periods: The periods the customer commits to before cancelling, at most 1000.
+            fees: Amounts added to the price (a tax, shipping, QBitFlow's processing fee), as
+                for :meth:`create_payment`, shown to the customer line by line and locked with
+                the price: every bill (the first one, at creation, and each next one) charges the
+                price plus every line (the session's ``amount``; the subscription's
+                ``price_usd`` plus its ``fees``), and the network fee on top of that. The
+                maximum per period and the allowance the subscriber signs are sized on that
+                amount, and QBitFlow's fee is taken on it. ``None``: no lines of your own.
+
+        Raises:
+            ConflictError: as :meth:`create_payment`.
+            ValidationError: 400 on ``frequency`` / ``trialPeriod`` (the frequency minimum is 1
+                hour live, 5 minutes test); 400 ``validation_failed`` on ``fees`` in test mode
+                when a bill, fees included, is above $5.
+            PermissionDeniedError: a member's key needs the ``members.subscriptions`` policy
+                (403 ``policy_disabled``).
         """
         v = Validator()
         _validate_session(
@@ -664,6 +697,7 @@ class CheckoutSessionsService(Service):
             expires_in_minutes,
         )
         validate_terms(v, "", frequency, trial_period, min_periods, False)
+        _validate_fees(v, fees)
         v.check()
         body = compact(
             reference=reference,
@@ -679,6 +713,8 @@ class CheckoutSessionsService(Service):
             expiresInMinutes=expires_in_minutes or None,
         )
         body.update(terms_body(frequency, trial_period, min_periods))
+        if fees is not None:
+            body["fees"] = fees_body(fees)
         endpoint = Endpoint(
             "POST", "/transaction/session-checkout/new/subscription", body=body, idempotent=True
         )

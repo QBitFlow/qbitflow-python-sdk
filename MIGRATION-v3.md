@@ -250,7 +250,7 @@ absent value decodes to `""`, `0`, `False`, `[]` or `ZERO_TIME`); optional field
 | `User` | `Member` (or `Me`) | `id` → `user_uuid`; `organization_fee_bps` → `organization_fee_percent`; `claimed_at` → `trusted_at`; + `joined_at`, `accepted_currency_ids`, `space_uuid` |
 | `UserRole` | `Role` (+ `HANDLE`) | |
 | `ApiKey`, `ClaimRequest`, `Organization`, `CreateClaimRequestResponse`, `ClaimFund`, `StatusResponse`, `StatusResponseError`, `TransactionShortType`, `SuccessResponse` | removed | |
-| `AccountingEvent` | `AccountingEvent` | `payment_id` → `payment_uuid`; `related_payment_id` → `related_payment_uuid`; `product_id` → `product_uuid`; `type` and `chain` are enums; + `user_uuid`, member and customer names |
+| `AccountingEvent` | `AccountingEvent` | `payment_id` → `payment_uuid`; `related_payment_id` → `related_payment_uuid`; `product_id` → `product_uuid`; `token_symbol` → `currency` (always set, a native currency's too); amounts (`gross_amount`, `platform_fee`, `organization_fee`, `net_amount`, `network_fees`) are in the currency's units, not its min units (`"7.5"`, not `"7500000"`); network fees are never part of `net_amount` (a refund's net is the refunded amount); `type` and `chain` are enums; fields in the CSV's column order; + `user_uuid`, `referral_fee*`, `currency_price_usd`, `network_fees_paid_by` (`NetworkFeesPayer`), `network_fees_currency`, `network_fees_currency_decimals`, `network_fees_currency_price_usd` |
 | `PaymentMetadata` | `PaymentMetadata` | `fee_bps` → `fee_percent`; `tx_amounts` is a `TxAmounts` (`TxAmountsFull` renamed, `TxAmountsUSD` → `TxAmountsUsd`); + network fees |
 | `OrganizationFee`, `ReferralFee` | same names | `fee_bps` → `fee_percent`; the ids are removed |
 | `Currency` | `Currency` | + `main_currency` |

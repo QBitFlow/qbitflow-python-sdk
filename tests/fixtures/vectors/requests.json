@@ -3050,6 +3050,140 @@
     {
       "args": {
         "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 2,
+                "description": "French VAT",
+                "label": "VAT (20%)"
+              }
+            ],
+            "processingFee": true
+          },
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          },
+          "price": 9.99,
+          "productName": "Pro"
+        }
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "body: subscription fees with a line and the processing fee",
+      "request": {
+        "body": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": 2,
+                "description": "French VAT",
+                "label": "VAT (20%)"
+              }
+            ],
+            "processingFee": true
+          },
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          },
+          "price": 9.99,
+          "productName": "Pro"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/subscription",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "subscription"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "processingFee": false
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "body: subscription fees processingFee false",
+      "note": "no items: items omitted",
+      "request": {
+        "body": {
+          "fees": {
+            "processingFee": false
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/subscription",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "subscription"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "body: subscription without fees",
+      "note": "fees not given: no fees key",
+      "request": {
+        "body": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transaction/session-checkout/new/subscription",
+        "pathSegments": [
+          "transaction",
+          "session-checkout",
+          "new",
+          "subscription"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
           "txUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
         }
       },

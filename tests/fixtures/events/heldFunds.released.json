@@ -1,8 +1,8 @@
 {
   "createdAt": "2026-10-01T12:00:00Z",
   "data": {
-    "amount": 98.3458,
-    "amountMinUnits": "98345800",
+    "amount": 98.9068,
+    "amountMinUnits": "98906800",
     "chain": "BASE",
     "createdAt": "2026-10-01T12:00:00Z",
     "currency": {
@@ -33,17 +33,17 @@
         "currencyId": 8,
         "description": "Payment pay@01a0f755-f200-7000-8000-000000000001",
         "metadata": {
-          "feePercent": 1.5,
+          "feePercent": 0.99,
           "txAmounts": {
             "minUnits": {
-              "merchant": "98500000",
+              "merchant": "99010000",
               "organization": "0",
-              "platform": "1500000",
+              "platform": "990000",
               "referral": "0"
             },
             "usd": {
-              "merchant": 98.5,
-              "platform": 1.5
+              "merchant": 99.01,
+              "platform": 0.99
             }
           },
           "txMetadata": {
@@ -51,14 +51,15 @@
               "number": "52468103",
               "timestamp": 1790596798
             },
+            "mainCurrencyPriceUsd": 4512.37,
             "networkFees": {
               "amount": "1140000000000",
               "unitsConsumed": 95000
             }
           }
         },
-        "owedMinUnits": "98500000",
-        "owedUsd": 98.5,
+        "owedMinUnits": "99010000",
+        "owedUsd": 99.01,
         "txUuid": "pay@01a0f755-f200-7000-8000-000000000001",
         "type": "payment"
       },
@@ -68,19 +69,19 @@
         "currencyId": 8,
         "description": "Payment pay@01a0d6d7-c600-7000-8000-00000000000c",
         "metadata": {
-          "feePercent": 1.5,
+          "feePercent": 0.99,
           "txAmounts": {
             "minUnits": {
-              "merchant": "9850000",
+              "merchant": "9901000",
               "networkFee": "4200",
               "organization": "0",
-              "platform": "150000",
+              "platform": "99000",
               "referral": "0"
             },
             "usd": {
-              "merchant": 9.85,
+              "merchant": 9.901,
               "networkFee": 0.0042,
-              "platform": 0.15
+              "platform": 0.099
             }
           },
           "txMetadata": {
@@ -88,14 +89,15 @@
               "number": "52468103",
               "timestamp": 1790683198
             },
+            "mainCurrencyPriceUsd": 4512.37,
             "networkFees": {
               "amount": "1140000000000",
               "unitsConsumed": 95000
             }
           }
         },
-        "owedMinUnits": "9850000",
-        "owedUsd": 9.85,
+        "owedMinUnits": "9901000",
+        "owedUsd": 9.901,
         "txUuid": "pay@01a0d6d7-c600-7000-8000-00000000000c",
         "type": "payment"
       },

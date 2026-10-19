@@ -992,6 +992,93 @@
         },
         "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
       },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"status\":\"active\",\"priceUsd\":\"9.99\",\"fees\":[{\"type\":\"custom\",\"label\":\"VAT (20%)\",\"description\":\"French VAT\",\"amountUsd\":\"2.00\"},{\"type\":\"processingFee\",\"label\":\"Processing fee\",\"amountUsd\":\"0.13\"}]}",
+      "expect": "ok",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription with fees",
+      "note": "priceUsd stays the price; fees are the lines every bill adds",
+      "probes": [
+        {
+          "path": "priceUsd",
+          "value": "9.99"
+        },
+        {
+          "path": "fees[0].type",
+          "value": "custom"
+        },
+        {
+          "path": "fees[0].label",
+          "value": "VAT (20%)"
+        },
+        {
+          "optional": true,
+          "path": "fees[0].description",
+          "value": "French VAT"
+        },
+        {
+          "path": "fees[0].amountUsd",
+          "value": "2.00"
+        },
+        {
+          "path": "fees[1].type",
+          "value": "processingFee"
+        },
+        {
+          "optional": true,
+          "path": "fees[1].description",
+          "value": ""
+        },
+        {
+          "path": "fees[1].amountUsd",
+          "value": "0.13"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"priceUsd\":\"9.99\",\"fees\":null}",
+      "expect": "ok",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription without fees",
+      "note": "absent fees: an empty list",
+      "probes": [
+        {
+          "optional": true,
+          "path": "fees",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"fees\":{\"type\":\"custom\"}}",
+      "expect": "serverError",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription fees as an object",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
       "body": "{\"priceUsd\":9.99}",
       "expect": "serverError",
       "method": "subscriptions.get",
@@ -2000,7 +2087,7 @@
         "from": "2026-07-01",
         "to": "2026-09-30"
       },
-      "body": "[{\"type\":\"payment\",\"txTimeUtc\":\"2026-09-01T14:00:00.123456+02:00\",\"chain\":\"BASE\",\"blockNumberOrSlot\":\"52468103\",\"tokenSymbol\":\"USDC\",\"currencyDecimals\":6,\"tokenContractOrMint\":\"0x8335\",\"grossAmount\":\"10.000000\",\"grossAmountUsd\":10,\"referralFee\":\"0\"},{\"type\":\"payout\",\"txTimeUtc\":\"2026-09-02T00:00:00Z\",\"chain\":\"SOLANA\"}]",
+      "body": "[{\"type\":\"payment\",\"txTimeUtc\":\"2026-09-01T14:00:00.123456+02:00\",\"chain\":\"BASE\",\"blockNumberOrSlot\":\"52468103\",\"currency\":\"USDC\",\"currencyDecimals\":6,\"tokenContractOrMint\":\"0x8335\",\"grossAmount\":\"10.000000\",\"grossAmountUsd\":10,\"referralFee\":\"0\"},{\"type\":\"payout\",\"txTimeUtc\":\"2026-09-02T00:00:00Z\",\"chain\":\"SOLANA\"}]",
       "expect": "ok",
       "method": "accounting.exportJson",
       "model": "AccountingEvent[]",
@@ -2039,6 +2126,121 @@
           "value": "SOLANA"
         }
       ],
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "body": "[{\"txTimeUtc\":\"2026-10-01T11:59:58Z\",\"type\":\"payment\",\"paymentReference\":\"order-1044\",\"grossAmountUsd\":10.0042,\"platformFeeUsd\":0.099,\"referralFeeUsd\":0,\"organizationFeeUsd\":0,\"netAmountUsd\":9.9052,\"chain\":\"BASE\",\"currency\":\"USDC\",\"currencyDecimals\":6,\"currencyPriceUsd\":1,\"grossAmount\":\"10.0042\",\"platformFee\":\"0.099\",\"referralFee\":\"0\",\"organizationFee\":\"0\",\"netAmount\":\"9.9052\",\"networkFeesPaidBy\":\"payer\",\"networkFees\":\"0.0042\",\"networkFeesCurrency\":\"USDC\",\"networkFeesCurrencyDecimals\":6,\"networkFeesCurrencyPriceUsd\":1,\"networkFeesUsd\":0.0042,\"platformFeePercent\":0.99,\"referralFeePercent\":0,\"organizationFeePercent\":0,\"blockNumberOrSlot\":\"52468103\",\"tokenContractOrMint\":\"0x8335\",\"paymentUuid\":\"pay@01a0f755-f200-7000-8000-000000000001\"},{\"txTimeUtc\":\"2026-10-02T09:00:00Z\",\"type\":\"refund\",\"grossAmountUsd\":-10.0042,\"netAmountUsd\":-10.0042,\"chain\":\"BASE\",\"currency\":\"USDC\",\"currencyDecimals\":6,\"currencyPriceUsd\":1,\"grossAmount\":\"-10.0042\",\"netAmount\":\"-10.0042\",\"referralFee\":\"0\",\"networkFeesPaidBy\":\"merchant\",\"networkFees\":\"0.0000012\",\"networkFeesCurrency\":\"ETH\",\"networkFeesCurrencyDecimals\":18,\"referralFeePercent\":0,\"blockNumberOrSlot\":\"52468200\",\"tokenContractOrMint\":\"0x8335\",\"paymentUuid\":\"refund@01a0f755-f200-7000-8000-000000000009\",\"relatedPaymentUuid\":\"pay@01a0f755-f200-7000-8000-000000000001\"},{\"type\":\"refund\",\"networkFeesPaidBy\":\"somebodyElse\"}]",
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "model": "AccountingEvent[]",
+      "name": "AccountingEvent[] amounts in units, network fees apart",
+      "note": "a payment (payer) and a refund (merchant, native currency); amounts stay decimal strings, unknown payer kept",
+      "probes": [
+        {
+          "path": "[0].currency",
+          "value": "USDC"
+        },
+        {
+          "optional": true,
+          "path": "[0].currencyPriceUsd",
+          "value": 1
+        },
+        {
+          "optional": true,
+          "path": "[0].grossAmount",
+          "value": "10.0042"
+        },
+        {
+          "optional": true,
+          "path": "[0].netAmount",
+          "value": "9.9052"
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesPaidBy",
+          "value": "payer"
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFees",
+          "value": "0.0042"
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesCurrency",
+          "value": "USDC"
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesCurrencyDecimals",
+          "value": 6
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesCurrencyPriceUsd",
+          "value": 1
+        },
+        {
+          "optional": true,
+          "path": "[1].netAmount",
+          "value": "-10.0042"
+        },
+        {
+          "optional": true,
+          "path": "[1].networkFeesPaidBy",
+          "value": "merchant"
+        },
+        {
+          "optional": true,
+          "path": "[1].networkFeesCurrency",
+          "value": "ETH"
+        },
+        {
+          "optional": true,
+          "path": "[1].networkFeesCurrencyDecimals",
+          "value": 18
+        },
+        {
+          "optional": true,
+          "path": "[1].networkFeesCurrencyPriceUsd",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "[1].networkFeesUsd",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "[1].relatedPaymentUuid",
+          "value": "pay@01a0f755-f200-7000-8000-000000000001"
+        },
+        {
+          "optional": true,
+          "path": "[2].networkFeesPaidBy",
+          "value": "somebodyElse"
+        },
+        {
+          "path": "[2].currency",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "body": "[{\"networkFeesCurrencyDecimals\":\"18\"}]",
+      "expect": "serverError",
+      "method": "accounting.exportJson",
+      "model": "AccountingEvent[]",
+      "name": "AccountingEvent[] networkFeesCurrencyDecimals as a string",
       "status": 200
     },
     {

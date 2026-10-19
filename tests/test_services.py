@@ -3,7 +3,6 @@ its client-side checks (Go services_test.go, services_check_test.go)."""
 
 from __future__ import annotations
 
-import inspect
 import json
 import re
 from dataclasses import dataclass, field
@@ -1042,6 +1041,12 @@ VALIDATION_CASES: Dict[str, Any] = {
         "productUuid",
         lambda c: c.checkout_sessions.create_payment(product_uuid=UUID_A, product_reference="pro"),
     ),
+    "checkout_sessions.create_subscription fee label": (
+        "fees.items[0].label",
+        lambda c: c.checkout_sessions.create_subscription(
+            product_uuid=UUID_A, fees=CheckoutFees(items=[FeeItem("", 2)])
+        ),
+    ),
     "checkout_sessions.create_subscription frequency": (
         "frequency.unit",
         lambda c: c.checkout_sessions.create_subscription(
@@ -1383,10 +1388,29 @@ def test_create_payment_fees_wire_numbers() -> None:
     assert '"amountUsd":"4.99"}' in raw
 
 
-def test_create_subscription_has_no_fees() -> None:
-    assert (
-        "fees"
-        not in inspect.signature(
-            QBitFlow("sk_test_x").checkout_sessions.create_subscription
-        ).parameters
+def test_create_subscription_fees_body() -> None:
+    # The same fees as a payment's, sent only when given.
+    client, server, _ = make_client(static(201, fx("CheckoutSession")))
+    client.checkout_sessions.create_subscription(
+        product_name="Pro",
+        price=9.99,
+        frequency=Duration(value=1, unit=DurationUnit.MONTHS),
+        fees=CheckoutFees(processing_fee=True, items=[FeeItem("VAT (20%)", 2, "French VAT")]),
     )
+    client.checkout_sessions.create_subscription(
+        product_uuid=UUID_A, fees=CheckoutFees(processing_fee=False)
+    )
+    client.checkout_sessions.create_subscription(product_uuid=UUID_A)
+    first, off, none = (r.json() for r in server.requests)
+    assert first == {
+        "productName": "Pro",
+        "price": 9.99,
+        "frequency": {"value": 1, "unit": "months"},
+        "fees": {
+            "processingFee": True,
+            "items": [{"label": "VAT (20%)", "description": "French VAT", "amountUsd": 2}],
+        },
+    }
+    assert off == {"productUuid": UUID_A, "fees": {"processingFee": False}}
+    assert none == {"productUuid": UUID_A}
+    assert {r.path for r in server.requests} == {"/transaction/session-checkout/new/subscription"}

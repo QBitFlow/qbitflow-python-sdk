@@ -17,6 +17,7 @@ from ._fields import (
     EventTypeT,
     InvitationStatusT,
     LedgerEntryTypeT,
+    NetworkFeesPayerT,
     RefundInitiatorT,
     RefundStatusT,
     RoleT,
@@ -328,56 +329,121 @@ class Wallet(Model):
 
 
 class AccountingEvent(Model):
-    """One row of the accounting export: a payment, a bill, a refund, or a fee."""
+    """One row of the accounting export: a payment, a bill, a refund, or a fee.
 
-    #: The event's transaction (prefixed); ``None`` on referralFee rows.
-    payment_uuid: Optional[Str] = Field(default=None, alias="paymentUuid")
-    payment_reference: Optional[Str] = Field(default=None, alias="paymentReference")
+    The fields are in the CSV's column order, laid out to be read left to right: what happened
+    and when, the USD amounts (gross, the fees, net), the same amounts in the currency paid, the
+    network fees, the rates, the on-chain proof, then the ids. Read CSV columns by header name,
+    not position. Amounts are in the currency's units (7.5 USDC, not 7500000), decimal strings,
+    with the currency's decimals beside them. A referralFee row only has ``type``,
+    ``tx_time_utc``, ``chain``, ``block_number_or_slot``, ``currency``, ``currency_decimals``,
+    ``currency_price_usd``, ``token_contract_or_mint`` and the referral fee: every other field is
+    empty.
+    """
+
+    #: When the transaction's block was mined (UTC): an event is in the export of that day.
+    tx_time_utc: Time = Field(default=ZERO_TIME, alias="txTimeUtc")
     #: payment, subscriptionHistory, refund, organizationFee or referralFee.
     type: AccountingEventTypeT = ""
-    #: The transaction's time (the API may send a local offset).
-    tx_time_utc: Time = Field(default=ZERO_TIME, alias="txTimeUtc")
-    receipt_url: Optional[Str] = Field(default=None, alias="receiptUrl")
-    #: For a refund, the refunded payment.
-    related_payment_uuid: Optional[Str] = Field(default=None, alias="relatedPaymentUuid")
+    #: The payment's reference, if any.
+    payment_reference: Optional[Str] = Field(default=None, alias="paymentReference")
+    #: For a refund of a payment, the payment's reference (a bill has none).
     related_payment_reference: Optional[Str] = Field(default=None, alias="relatedPaymentReference")
-    user_uuid: Optional[Str] = Field(default=None, alias="userUuid")
+    product_name: Optional[Str] = Field(default=None, alias="productName")
+    #: The merchant's reference of the customer.
+    customer_reference: Optional[Str] = Field(default=None, alias="customerReference")
+
+    #: The gross amount in USD: what was charged (a refund: what was sent back, negative).
+    gross_amount_usd: Optional[Float] = Field(default=None, alias="grossAmountUsd")
+    #: QBitFlow's fee in USD, the referrer's share included.
+    platform_fee_usd: Optional[Float] = Field(default=None, alias="platformFeeUsd")
+    referral_fee_usd: Float = Field(default=0.0, alias="referralFeeUsd")
+    organization_fee_usd: Optional[Float] = Field(default=None, alias="organizationFeeUsd")
+    #: What the merchant received (a payment or a bill: after the fees) or sent back (a refund:
+    #: the refunded amount, negative), in USD. Network fees are never part of it.
+    net_amount_usd: Optional[Float] = Field(default=None, alias="netAmountUsd")
+
+    chain: ChainT = ""
+    #: What was paid, as markets name it: the token (USDC) or the chain's native currency (ETH,
+    #: SOL; Base's is ETH). Always set.
+    currency: Str = ""
+    #: The currency's decimals: an amount × 10^decimals is its min units on-chain.
+    currency_decimals: UInt = Field(default=0, alias="currencyDecimals")
+    #: The currency's USD price the amounts were converted at (``gross_amount_usd`` /
+    #: ``gross_amount``; a refund: its refunded transaction's). ``None`` without a gross amount.
+    currency_price_usd: Optional[Float] = Field(default=None, alias="currencyPriceUsd")
+    #: The gross amount in the currency's units (a decimal string).
+    gross_amount: Optional[Str] = Field(default=None, alias="grossAmount")
+    #: QBitFlow's fee in the currency's units, the referrer's share included.
+    platform_fee: Optional[Str] = Field(default=None, alias="platformFee")
+    #: The referrer's share, paid out of the platform fee, in the currency's units: what a
+    #: referralFee event earned. ``"0"`` when no referral applied.
+    referral_fee: Str = Field(default="", alias="referralFee")
+    #: The organization's fee in the currency's units (``"0"`` when none).
+    organization_fee: Optional[Str] = Field(default=None, alias="organizationFee")
+    #: The net amount in the currency's units (a refund: the refunded amount, negative).
+    #: ``gross_amount = platform_fee + organization_fee + net_amount`` exactly.
+    net_amount: Optional[Str] = Field(default=None, alias="netAmount")
+
+    #: Whose wallet paid the transaction's network fees, never part of the net: payer (a payment
+    #: or a bill: on top of the amount), merchant (a refund the space sent: book it apart) or
+    #: organization (a refund of a payment the organization held for its member). ``None`` on
+    #: referralFee rows.
+    network_fees_paid_by: Optional[NetworkFeesPayerT] = Field(
+        default=None, alias="networkFeesPaidBy"
+    )
+    #: The network fees in ``network_fees_currency``'s units (a decimal string); ``None`` when
+    #: unknown (a refund recorded before they were).
+    network_fees: Optional[Str] = Field(default=None, alias="networkFees")
+    #: What paid them: the event's currency on a payment or a bill (the payer's gas refund, taken
+    #: in it), the chain's native currency (ETH, SOL) on a refund.
+    network_fees_currency: Optional[Str] = Field(default=None, alias="networkFeesCurrency")
+    #: ``network_fees_currency``'s decimals.
+    network_fees_currency_decimals: Optional[UInt] = Field(
+        default=None, alias="networkFeesCurrencyDecimals"
+    )
+    #: ``network_fees_currency``'s USD price ``network_fees_usd`` was converted at; ``None`` when
+    #: unknown (a refund recorded before it was).
+    network_fees_currency_price_usd: Optional[Float] = Field(
+        default=None, alias="networkFeesCurrencyPriceUsd"
+    )
+    #: The network fees in USD; ``None`` when unknown.
+    network_fees_usd: Optional[Float] = Field(default=None, alias="networkFeesUsd")
+
+    #: QBitFlow's fee rate on the event, in percent (0.99 = 0.99 %).
+    platform_fee_percent: Optional[Float] = Field(default=None, alias="platformFeePercent")
+    #: The referrer's share of the platform fee, in percent (20 = 20 % of it).
+    referral_fee_percent: Float = Field(default=0.0, alias="referralFeePercent")
+    #: The organization's fee rate on the event, in percent.
+    organization_fee_percent: Optional[Float] = Field(default=None, alias="organizationFeePercent")
+
+    #: The sender; ``None`` on referralFee rows.
+    from_address: Optional[Str] = Field(default=None, alias="fromAddress")
+    #: The receiver; ``None`` on referralFee rows.
+    to_address: Optional[Str] = Field(default=None, alias="toAddress")
+    #: The transaction's hash; ``None`` on referralFee rows.
+    tx_hash: Optional[Str] = Field(default=None, alias="txHash")
+    #: The block (or slot).
+    block_number_or_slot: Str = Field(default="", alias="blockNumberOrSlot")
+    #: The token's contract (EVM) or mint (Solana); ``""`` for a native currency.
+    token_contract_or_mint: Str = Field(default="", alias="tokenContractOrMint")
+    #: The transaction on the chain's explorer; ``None`` on referralFee rows.
+    explorer_url: Optional[Str] = Field(default=None, alias="explorerUrl")
+    #: The transaction's page for its customer; ``None`` on referralFee rows.
+    receipt_url: Optional[Str] = Field(default=None, alias="receiptUrl")
+
+    #: The event's transaction, prefixed by its type: ``pay@`` (a payment, an organization
+    #: fee's), ``sub-hist@`` (a bill), ``refund@`` (a refund); ``None`` on referralFee rows.
+    payment_uuid: Optional[Str] = Field(default=None, alias="paymentUuid")
+    #: For a refund, the refunded payment's (``pay@…``) or bill's (``sub-hist@…``) id.
+    related_payment_uuid: Optional[Str] = Field(default=None, alias="relatedPaymentUuid")
+    #: The product; ``None`` when none.
     product_uuid: Optional[Str] = Field(default=None, alias="productUuid")
     product_reference: Optional[Str] = Field(default=None, alias="productReference")
-    product_name: Optional[Str] = Field(default=None, alias="productName")
     product_description: Optional[Str] = Field(default=None, alias="productDescription")
     customer_uuid: Optional[Str] = Field(default=None, alias="customerUuid")
-    customer_reference: Optional[Str] = Field(default=None, alias="customerReference")
-    chain: ChainT = ""
-    block_number_or_slot: Str = Field(default="", alias="blockNumberOrSlot")
-    tx_hash: Optional[Str] = Field(default=None, alias="txHash")
-    from_address: Optional[Str] = Field(default=None, alias="fromAddress")
-    to_address: Optional[Str] = Field(default=None, alias="toAddress")
-    token_symbol: Str = Field(default="", alias="tokenSymbol")
-    currency_decimals: UInt = Field(default=0, alias="currencyDecimals")
-    token_contract_or_mint: Str = Field(default="", alias="tokenContractOrMint")
-    explorer_url: Optional[Str] = Field(default=None, alias="explorerUrl")
-    #: The gross amount in min units (a decimal string).
-    gross_amount: Optional[Str] = Field(default=None, alias="grossAmount")
-    gross_amount_usd: Optional[Float] = Field(default=None, alias="grossAmountUsd")
-    #: QBitFlow's fee rate, in percent (1.5 = 1.5 %).
-    platform_fee_percent: Optional[Float] = Field(default=None, alias="platformFeePercent")
-    platform_fee_usd: Optional[Float] = Field(default=None, alias="platformFeeUsd")
-    platform_fee: Optional[Str] = Field(default=None, alias="platformFee")
-    organization_fee_percent: Optional[Float] = Field(default=None, alias="organizationFeePercent")
-    organization_fee_usd: Optional[Float] = Field(default=None, alias="organizationFeeUsd")
-    organization_fee: Optional[Str] = Field(default=None, alias="organizationFee")
-    referral_fee_percent: Float = Field(default=0.0, alias="referralFeePercent")
-    referral_fee_usd: Float = Field(default=0.0, alias="referralFeeUsd")
-    referral_fee: Str = Field(default="", alias="referralFee")
-    network_fees_usd: Optional[Float] = Field(default=None, alias="networkFeesUsd")
-    network_fees: Optional[Str] = Field(default=None, alias="networkFees")
-    net_amount_usd: Optional[Float] = Field(default=None, alias="netAmountUsd")
-    net_amount: Optional[Str] = Field(default=None, alias="netAmount")
-    user_name: Optional[Str] = Field(default=None, alias="userName")
-    user_last_name: Optional[Str] = Field(default=None, alias="userLastName")
-    customer_name: Optional[Str] = Field(default=None, alias="customerName")
-    customer_last_name: Optional[Str] = Field(default=None, alias="customerLastName")
+    #: The member whose space the event is in; ``None`` for the organization's own.
+    user_uuid: Optional[Str] = Field(default=None, alias="userUuid")
 
 
 # ── Webhook endpoints and deliveries ─────────────────────────────────────────
@@ -402,8 +468,10 @@ class WebhookEndpoint(Model):
     rotated_at: Optional[Time] = Field(default=None, alias="rotatedAt")
     #: When it was disabled; ``None`` while enabled.
     disabled_at: Optional[Time] = Field(default=None, alias="disabledAt")
-    #: failing, owner or closed.
+    #: failing (live mode only: a test-mode endpoint is never disabled for failing), owner or
+    #: closed.
     disabled_reason: Optional[EndpointDisabledReasonT] = Field(default=None, alias="disabledReason")
+    #: When its deliveries started failing (live mode: failing for 3 days, it is disabled).
     failing_since: Optional[Time] = Field(default=None, alias="failingSince")
     last_delivered_at: Optional[Time] = Field(default=None, alias="lastDeliveredAt")
 

@@ -301,7 +301,9 @@ class AccountingService(Service):
         options: Optional[RequestOptions] = None,
     ) -> List[AccountingEvent]:
         """Every payment, bill, refund and fee between two dates, both included
-        (``GET /accounting/export?format=json``).
+        (``GET /accounting/export?format=json``). The dates are the transactions' (their
+        block's day, in UTC), so consecutive exports never miss nor repeat an event. Events are
+        ordered by ``tx_time_utc``, then ``type``, then ``payment_uuid``.
 
         Args:
             from_date: The first day, ``YYYY-MM-DD`` (or a ``datetime.date``).
@@ -319,8 +321,9 @@ class AccountingService(Service):
         *,
         options: Optional[RequestOptions] = None,
     ) -> str:
-        """The same export as CSV text (``GET /accounting/export?format=csv``). Errors are still
-        parsed as JSON errors."""
+        """The same export as CSV text (``GET /accounting/export?format=csv``): its columns
+        follow :class:`AccountingEvent`'s fields; read them by header name, not position. Errors
+        are still parsed as JSON errors."""
         query = _export_query(from_date, to_date, "csv")
         endpoint = Endpoint("GET", "/accounting/export", query, accept="text/csv, application/json")
         return self._send(endpoint, options).body.decode("utf-8", errors="replace")

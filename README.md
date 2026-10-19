@@ -226,7 +226,7 @@ knows its decimals: `payment.currency.format_amount(payment.amount_min_units)`.
 # Any range: the SDK splits it into the API's 95-day windows and joins the parts.
 events = client.accounting.export_json_range("2026-01-01", "2026-12-31")
 for event in events:
-    print(event.type, event.payment_uuid, event.token_symbol, event.net_amount)
+    print(event.type, event.payment_uuid, event.currency, event.net_amount)
 
 csv_text = client.accounting.export_csv_range("2026-01-01", "2026-12-31")
 with open("qbitflow-2026.csv", "w", encoding="utf-8") as file:
@@ -342,9 +342,9 @@ print("Send the customer to", session.link)  # sub@…: the subscription's id on
 
 ### Fees
 
-A one-time payment checkout can add amounts to its product's price: a tax, shipping, a service
-fee, and QBitFlow's processing fee when you have the customer pay it. The customer sees them line
-by line and pays them with the price.
+A checkout, a payment's or a subscription's, can add amounts to its product's price: a tax,
+shipping, a service fee, and QBitFlow's processing fee when you have the customer pay it. The
+customer sees them line by line and pays them with the price (a subscription: with every bill).
 
 <!-- docs:snippet checkout-create-payment-fees -->
 ```python
@@ -379,8 +379,10 @@ print("Send the customer to", session.link)
 - **The processing fee**: `processing_fee=True` adds a last line, `Processing fee`, computed by
   QBitFlow on the price and your lines at your platform fee. QBitFlow's fee is taken on
   everything charged, this line included, so the line is grossed up (and rounded up to the cent)
-  to leave you at least the price and your lines, as if no fee were taken: $100 + $20 VAT at 1.5 %
-  is a $1.83 processing fee, $121.83 charged, $120.00 kept. Left out (`None`), the space's
+  to leave you at least the price and your lines, as if no fee were taken: $100 + $20 VAT at
+  0.99 % is a $1.20 processing fee, $121.20 charged, $120.00 kept. The rate is the checkout's:
+  QBitFlow's fee for your space when the checkout is created (a schedule by volume, unless
+  QBitFlow set you a custom rate). Left out (`None`), the space's
   `checkout.customerPaysProcessingFee` setting decides (off by default; set it in the
   dashboard); `False` turns it off for one checkout. A product link's checkout follows the
   setting too.
@@ -389,8 +391,15 @@ print("Send the customer to", session.link)
   the payment's `amount`, with its `price` and `fees`. The network fee comes on top.
 - **Test mode** caps `amount`, fees included, at 5 USD: `400 validation_failed` on `fees`
   (`details["max"]`).
-- Payments only: `create_subscription` takes no `fees`. The lines are fixed when the session is
-  created; `checkout.expired` carries them (`PaymentSessionData.fees`, `amount`).
+- The lines are fixed when the session is created; `checkout.expired` carries them
+  (`PaymentSessionData.fees`, `amount`).
+- **Subscriptions** take the same `fees` (`create_subscription(..., fees=CheckoutFees(...))`,
+  the same rules), locked with the price: every bill, the first one and each next one, charges
+  the price plus every line, whatever the product's price or your fee becomes. The `Subscription`
+  keeps them as `fees` next to `price_usd` (which stays the price); a bill's `amount` and
+  `subscription.upcomingBill`'s `amount_usd` include them, and the maximum and allowance the
+  subscriber signs are sized on that amount. A trial's upgrade keeps the trial's lines.
+  `checkout.customerPaysProcessingFee` applies to subscription checkouts too.
 
 ### Status
 
@@ -465,7 +474,10 @@ for product in client.products.list():
 
 A subscription product carries its terms. `update` changes only the arguments given; a new price
 applies to new checkouts and subscribers only, and an inactive product is hidden from `list()`
-unless `include_hidden=True` (`subscription=True` lists the subscription products only):
+unless `include_hidden=True` (`subscription=True` lists the subscription products only). A
+member's key gives a product terms (on `create` or `update`) only while the organization's
+`members.subscriptions` policy allows it (`403 policy_disabled` otherwise); with the policy off,
+the links of the member's subscription products open nothing:
 
 ```python
 from qbitflow import Duration, DurationUnit, SubscriptionTermsParams
@@ -882,15 +894,32 @@ checkouts answer `409 merchant_not_ready`.
 Every payment, bill, refund and fee between two dates (`YYYY-MM-DD` strings or `datetime.date`s,
 both included), as models (`export_json`) or as CSV text (`export_csv`); the
 [recipe](#a-yearly-accounting-export) exports a year with their `_range` twins. Each row has its
-`type`, `payment_uuid`, `tx_time_utc`, `token_symbol`, `gross_amount`, `net_amount` and more.
+`type`, `payment_uuid`, `tx_time_utc`, `currency`, `gross_amount`, `net_amount` and more.
 
 The SDK checks the dates and `from <= to` before sending. **The API allows at most 95 days per
 export** and answers 400 beyond. `export_json_range` and `export_csv_range` take any range: they
 request consecutive windows of at most 95 days (`[from, from + 95 days]`, the next starting the
 day after), in order, and join them (one list; one CSV with the header line once). A range of
 95 days or less is one request. Rows are typed `payment`,
-`subscriptionHistory`, `refund`, `organizationFee` or `referralFee`; amounts in a token's
-smallest unit are decimal strings, and the empty fields of a row are `None`.
+`subscriptionHistory`, `refund`, `organizationFee` or `referralFee`, and the empty fields of a row
+are `None`.
+
+- **Dates** are the transactions' (the day their block was mined, in UTC: `tx_time_utc`), so
+  consecutive exports never miss nor repeat an event. Rows are ordered by `tx_time_utc`, `type`,
+  then `payment_uuid`.
+- **Amounts** are in the currency's units (`"7.5"` USDC, not `7500000`), as decimal strings, next
+  to `currency_decimals`. `currency` names what was paid as markets do (`USDC`, or the chain's
+  native currency: `ETH`, `SOL`), and `currency_price_usd` is the USD price the amounts were
+  converted at. `gross_amount = platform_fee + organization_fee + net_amount` exactly; a refund's
+  net is the refunded amount, negative.
+- **Network fees are never part of the net.** `network_fees_paid_by` (a `NetworkFeesPayer`) says
+  whose wallet paid them: `payer` (a payment or a bill: on top of the amount, in its currency),
+  `merchant` (a refund your space sent) or `organization` (a refund of a payment the organization
+  held for its member). Book `network_fees` (in `network_fees_currency`, the chain's native
+  currency on a refund) apart for `merchant` and `organization`.
+- **CSV columns** follow `AccountingEvent`'s field order (what happened, the USD amounts, the
+  same amounts in the currency, the network fees, the rates, the on-chain proof, the ids): read
+  them by header name, not position.
 
 ## Webhooks
 

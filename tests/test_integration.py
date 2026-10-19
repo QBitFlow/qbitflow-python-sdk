@@ -6,8 +6,9 @@
   by accident).
 * The read-only group only reads.
 * The write group also needs ``QBITFLOW_LIVE_WRITES=1`` and a test-mode key (per ``me()``), or
-  ``QBITFLOW_ALLOW_LIVE_MODE_WRITES=1``. It creates a product, a customer, two checkout sessions
-  (one with fees) and a webhook endpoint, and deletes (or expires) each of them.
+  ``QBITFLOW_ALLOW_LIVE_MODE_WRITES=1``. It creates a product, a customer, three checkout sessions
+  (a payment's and a subscription's with fees) and a webhook endpoint, and deletes (or expires)
+  each of them.
 """
 
 from __future__ import annotations
@@ -24,10 +25,13 @@ from qbitflow import (
     CheckoutFees,
     CheckoutSessionStatusValue,
     ConflictError,
+    Duration,
+    DurationUnit,
     EventType,
     FeeItem,
     Me,
     NotFoundError,
+    PermissionDeniedError,
     QBitFlow,
     Role,
     webhooks,
@@ -237,40 +241,63 @@ def test_live_writes_checkout(writer: QBitFlow) -> None:
 
 def test_live_writes_checkout_fees(writer: QBitFlow) -> None:
     # The snippets' feesCheckout: $3.99 + $0.75 shipping + the processing fee, under the
-    # test-mode $5 cap. The API answers no read of the session's fees (GET /:uuid is the checkout
-    # page's): the round trip is the check.
+    # test-mode $5 cap, then a subscription checkout with the same fees. The API answers no read
+    # of the session's fees (GET /:uuid is the checkout page's): the round trip is the check.
+    success_url = f"https://shop.example.com/orders/success?uuid={PLACEHOLDER_UUID}"
+    cancel_url = "https://shop.example.com/orders/cancel"
+    fees = CheckoutFees(
+        processing_fee=True,
+        items=[FeeItem(label="Shipping", description="Standard, 3 to 5 days", amount_usd=0.75)],
+    )
     try:
         session = writer.checkout_sessions.create_payment(
             product_name="T-shirt",
             description="Blue, size M",
             price=3.99,
             reference="order-1044-" + suffix(),
-            success_url=f"https://shop.example.com/orders/success?uuid={PLACEHOLDER_UUID}",
-            cancel_url="https://shop.example.com/orders/cancel",
-            fees=CheckoutFees(
-                processing_fee=True,
-                items=[
-                    FeeItem(label="Shipping", description="Standard, 3 to 5 days", amount_usd=0.75)
-                ],
-            ),
+            success_url=success_url,
+            cancel_url=cancel_url,
+            fees=fees,
         )
     except ConflictError as exc:
         if exc.code == "merchant_not_ready":
             pytest.skip("the space accepts no currency (merchant_not_ready)")
         raise
 
-    def expire() -> None:
-        try:
-            writer.checkout_sessions.expire(session.uuid)
-        except ConflictError:
-            pass  # already final
+    def expire(uuid: str) -> Callable[[], None]:
+        def run() -> None:
+            try:
+                writer.checkout_sessions.expire(uuid)
+            except ConflictError:
+                pass  # already final
 
-    cleanup(writer, expire)
+        return run
+
+    cleanup(writer, expire(session.uuid))
     assert session.uuid.startswith("pay@") and session.link and session.expires_at is not None
     assert (
         writer.checkout_sessions.get_status(session.uuid).status
         == CheckoutSessionStatusValue.CREATED
     )
+
+    # A subscription checkout takes the same fees, charged with every bill.
+    try:
+        sub = writer.checkout_sessions.create_subscription(
+            product_name="Pro",
+            description="Monthly plan",
+            price=3.99,
+            reference="sub-1044-" + suffix(),
+            frequency=Duration(value=1, unit=DurationUnit.MONTHS),
+            success_url=success_url,
+            cancel_url=cancel_url,
+            fees=fees,
+        )
+    except PermissionDeniedError as exc:
+        if exc.code == "policy_disabled":
+            pytest.skip("subscriptions are off for this member (members.subscriptions)")
+        raise
+    cleanup(writer, expire(sub.uuid))
+    assert sub.uuid.startswith("sub@") and sub.link
 
 
 def test_live_writes_webhook_endpoint(writer: QBitFlow) -> None:
