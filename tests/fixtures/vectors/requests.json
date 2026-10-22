@@ -2928,6 +2928,40 @@
     {
       "args": {
         "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "sendEmail": false
+        }
+      },
+      "method": "invitations.create",
+      "name": "body: invitation without its email (sendEmail false is sent)",
+      "request": {
+        "body": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "role": "user",
+          "sendEmail": false
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/invitations",
+        "pathSegments": [
+          "invitations"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
           "organizationFeePercent": "0"
         },
         "userUuid": "019eca82-5680-7b00-8000-0000000000b1"

@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.0] - 2026-10-19
 
 The SDK for **QBitFlow API v2**, aligned with the final API v2 contract (api-hub `docs/api` @
-`fab875c`) and with the behaviour contract the Go, JavaScript, Python and PHP SDKs 3.0.0 share
+`b97ca6c`) and with the behaviour contract the Go, JavaScript, Python and PHP SDKs 3.0.0 share
 (same services, methods, errors, retries, validation and webhook verification; checked against the
 shared conformance vectors). A major release: the client, the routes, the services and most names
 change. [MIGRATION-v3.md](MIGRATION-v3.md) maps every 2.x method and type to its replacement.
@@ -116,8 +116,9 @@ never published; its changes are part of 3.0.0).
 -   **Enum values** follow the API's lowerCamelCase (`pastDue`, `trialExpired`);
     `TransactionType.ONE_TIME_PAYMENT` → `PAYMENT`, `EXECUTE_SUBSCRIPTION_PAYMENT` →
     `EXECUTE_SUBSCRIPTION`, the PAYG values are `createPaygSubscription` /
-    `cancelPaygSubscription`. `LedgerEntryType` and `AccountingEventType` `subscriptionHistory` →
-    `bill` (`LedgerEntryType.BILL`, `AccountingEventType.BILL`). `RefundStatus` adds `FAILED`
+    `cancelPaygSubscription`. `AccountingEventType` `subscriptionHistory` → `bill`
+    (`AccountingEventType.BILL`); `LedgerEntryType` is `payment` or `refund` only (a held seller
+    sells no subscription, so no bill is ever a held-funds line). `RefundStatus` adds `FAILED`
     (declared, never set). `WebhookPayloadVersion` has `V2` only: v2 is the only payload.
 -   **Pagination**: `get_all(limit, cursor)` → `list(limit=…, cursor=…, filters…)` returning a
     `Page[T]` (`items`, `has_more`, `next_cursor`): `has_more` is a field (it was a property),
@@ -238,7 +239,12 @@ never published; its changes are part of 3.0.0).
     `settlement`.
 -   `members` (`list`, `iterate`, `get`, `update`, `remove`, `trust`, `list_held_funds`,
     `get_held_funds`, `get_own_held_funds`) and `invitations` (`create`, `list`, `iterate`,
-    `revoke`) for marketplaces.
+    `revoke`) for marketplaces. `invitations.create(send_email=False)` (`None`: emailed) creates
+    the invitation without emailing it, to share its `link` yourself.
+-   `MerchantNotReadyReason` (`details["reason"]` of a `409 merchant_not_ready`): `NO_WALLET`,
+    `ORGANIZATION_NO_WALLET`, `NO_TOKEN_WALLET`, and `FUNDS_HELD` (`fundsHeld`), a subscription
+    checkout of a member whose funds the organization holds (a held member sells one-time
+    payments only, until `members.trust`).
 -   `wallets` (`list(with_balances=…)`, `list_for_member`, `list_accepted_currencies`),
     `accounting.export_csv`, `currencies.list(test=…, main=…)`, `currencies.get(id)`.
 -   `TokenAmount` (`amount`, `amount_min_units`, `amount_usd`), the shape of every token amount.

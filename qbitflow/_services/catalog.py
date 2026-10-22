@@ -900,7 +900,9 @@ class CheckoutSessionsService(Service):
                 ``priceUsd`` for a live subscription at ``"0.25"`` or less (``details["min"]``).
             PermissionDeniedError: a member's key needs the ``members.subscriptions`` policy
                 (403 ``policy_disabled``).
-            ConflictError: as :meth:`create_payment`.
+            ConflictError: as :meth:`create_payment`, plus 409 ``merchant_not_ready`` with
+                ``details["reason"]`` ``fundsHeld`` for a member whose funds the organization
+                holds (a held member sells one-time payments only, until ``members.trust``).
         """
         v = Validator()
         _validate_session(

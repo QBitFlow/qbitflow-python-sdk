@@ -253,7 +253,7 @@ def test_model_values() -> None:
     rel = HeldFundsReleased.model_validate_json(fx("HeldFundsReleased"))
     assert rel.amount_usd == "10" and rel.received and rel.type == "heldFundsRelease"
     assert isinstance(rel.settlement, TransferSettlement)
-    assert rel.ledgers[0].type == LedgerEntryType.BILL and rel.ledgers[0].owed == "9.901"
+    assert rel.ledgers[0].type == LedgerEntryType.PAYMENT and rel.ledgers[0].owed == "9.901"
 
     mj = MemberJoined.model_validate_json(fx("MemberJoined"))
     assert mj.invitation_uuid == "i-1" and mj.accepted_currencies == [] and mj.last_name is None

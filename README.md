@@ -361,11 +361,11 @@ print("Send the customer to", session.link)  # sub@…: the subscription's id on
   both URLs must be `https`. A redirect proves nothing (anyone can open the URL): fulfil on the
   webhook, or on `checkout_sessions.get`.
 - **Errors to expect:** `409 merchant_not_ready` (`details["reason"]`) when the space's wallets
-  accept no currency; `409 unique_violation` when another payment or open session holds the
-  `reference`; `400 validation_failed` above `"5"` USD in test mode, fees included
-  (`details["max"]`, a string), and at `"0.25"` or less for a live subscription
-  (`details["min"]`); `404` for an unknown product or customer; `410 merchant_closed` for a removed
-  member's space.
+  accept no currency, or for a subscription of a member whose funds you hold (`fundsHeld`);
+  `409 unique_violation` when another payment or open session holds the `reference`;
+  `400 validation_failed` above `"5"` USD in test mode, fees included (`details["max"]`, a
+  string), and at `"0.25"` or less for a live subscription (`details["min"]`); `404` for an
+  unknown product or customer; `410 merchant_closed` for a removed member's space.
 
 ### Fees
 
@@ -839,8 +839,10 @@ print("invitation", created.uuid, "link:", created.link)  # also emailed
 
 `hold_funds` is required (always sent); the commission is a percent string from `"0"` to `"50"`
 with at most 2 decimals. The answer is a `CreatedInvitation`: the invitation's fields and its
-`link` (only here). Inviting a member is a `ConflictError` (409 `already_joined`), and more than 50
-invitations an hour a `RateLimitError` (raised at once).
+`link` (only here). `send_email=False` creates the invitation without emailing it: share `link`
+in your own onboarding (signing up through it still emails the person a confirmation). Inviting a
+member is a `ConflictError` (409 `already_joined`), and more than 50 invitations an hour, emailed
+or not, a `RateLimitError` (raised at once).
 
 **2. Wait for `member.joined`.** The seller exists once they accepted: store the event's
 `user_uuid` and match `invitation_uuid` to your invitation. Never trust the redirect's
@@ -866,6 +868,11 @@ Then act in their space with `seller = client.on_behalf_of(member_uuid)`
 ([On-Behalf-Of](#on-behalf-of-acting-in-a-members-space)): `seller.checkout_sessions` and
 `seller.products` create the seller's checkouts and products. Your policies may not let members
 do this: a `PermissionDeniedError` (403 `policy_disabled`).
+
+While you hold a seller's funds (`Member.trusted_at` None), they sell **one-time payments only**: a
+subscription checkout in their space answers `409 merchant_not_ready` with `details["reason"]`
+`fundsHeld` (`qbitflow.MerchantNotReadyReason.FUNDS_HELD`) until you trust them
+(`members.trust`), and their subscription products' links open nothing.
 
 **4. Hear of every sale.** An organization webhook endpoint receives every seller's events by
 default; the event's `user_uuid` names the seller. Use it as `on_behalf_of` for follow-up reads.

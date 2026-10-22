@@ -1084,6 +1084,21 @@ def test_invitation_hold_funds(client: QBitFlow) -> None:
     ]
 
 
+def test_invitation_send_email(client: QBitFlow) -> None:
+    for send_email in (None, True, False):
+        assert (
+            fields(
+                lambda: client.invitations.create(
+                    email="a@b.co", hold_funds=True, send_email=send_email
+                )
+            )
+            == []
+        )
+    assert fields(
+        lambda: client.invitations.create(email="a@b.co", hold_funds=True, send_email="no")
+    ) == ["sendEmail"]
+
+
 def test_headers_rules() -> None:
     for key in ("a", "order-1042", "~!@#$%^&*()_+{}|:<>?", "k" * 255):
         assert is_idempotency_key(key)
@@ -1198,6 +1213,16 @@ UPDATE_CASES: List[Tuple[str, Callable[[QBitFlow], Any], dict]] = [
             "organizationFeePercent": "2.5",
             "redirectUrl": "https://x.io",
         },
+    ),
+    (
+        "invitation without its email",
+        lambda c: c.invitations.create(email="a@b.co", hold_funds=False, send_email=False),
+        {"email": "a@b.co", "role": "user", "holdFunds": False, "sendEmail": False},
+    ),
+    (
+        "invitation emailed explicitly",
+        lambda c: c.invitations.create(email="a@b.co", hold_funds=False, send_email=True),
+        {"email": "a@b.co", "role": "user", "holdFunds": False, "sendEmail": True},
     ),
     (
         "product create minimal",

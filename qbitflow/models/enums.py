@@ -213,11 +213,11 @@ class TransferType(StrEnum):
 
 
 class LedgerEntryType(StrEnum):
-    """A held-funds line's kind."""
+    """A held-funds line's kind. A held member sells no subscription, so no bill is ever a
+    line."""
 
     #: A payment made to the member while the organization held their funds.
     PAYMENT = "payment"
-    BILL = "bill"  #: A subscription bill paid to the member while held.
     REFUND = "refund"  #: A refund the organization sent of one of them.
 
 
@@ -325,6 +325,9 @@ class MerchantNotReadyReason(StrEnum):
     NO_WALLET = "noWallet"
     ORGANIZATION_NO_WALLET = "organizationNoWallet"
     NO_TOKEN_WALLET = "noTokenWallet"
+    #: A subscription checkout of a member whose funds the organization holds: one-time payments
+    #: only until ``members.trust``.
+    FUNDS_HELD = "fundsHeld"
 
 
 class FeeLineType(StrEnum):

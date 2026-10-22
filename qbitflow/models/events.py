@@ -182,7 +182,7 @@ class HeldFundsReleased(Transfer):
     type: TransferTypeT = ""
     #: The transfer's transaction: its block and what it cost its sender.
     settlement: TransferSettlement = Field(default_factory=TransferSettlement)
-    #: The lines it settled, oldest first: the payments and bills it paid (positive) and the
+    #: The lines it settled, oldest first: the payments it paid (positive) and the
     #: refunds of them it took off (negative, type refund), each with what it counted for
     #: (``owed``, ``owed_min_units``, ``owed_usd``).
     ledgers: List[LedgerEntry] = Field(default_factory=list)

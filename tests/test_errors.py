@@ -17,6 +17,7 @@ from qbitflow import (
     FieldError,
     GoneError,
     IdempotencyError,
+    MerchantNotReadyReason,
     NetworkError,
     NotFoundError,
     PermissionDeniedError,
@@ -231,6 +232,31 @@ def test_details_are_raw() -> None:
         '[{"field":"to","message":"to must be at most 92 days after from"}]}}',
     )
     assert window.details["max"] == 92 and window.field_errors[0].field == "to"
+
+
+@pytest.mark.parametrize("reason", list(MerchantNotReadyReason))
+def test_merchant_not_ready_reasons(reason: MerchantNotReadyReason) -> None:
+    # fundsHeld: a subscription checkout of a member whose funds the organization holds.
+    err = mapped(
+        409,
+        json.dumps(
+            {
+                "error": "not ready",
+                "code": "merchant_not_ready",
+                "details": {"reason": reason.value},
+            }
+        ),
+    )
+    assert isinstance(err, ConflictError) and err.details["reason"] == reason
+
+
+def test_merchant_not_ready_reason_values() -> None:
+    assert [str(r) for r in MerchantNotReadyReason] == [
+        "noWallet",
+        "organizationNoWallet",
+        "noTokenWallet",
+        "fundsHeld",
+    ]
 
 
 def test_get_by_reference_not_found_is_a_404() -> None:

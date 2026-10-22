@@ -152,14 +152,15 @@ class InvitationsService(Service):
         hold_funds: bool,
         organization_fee_percent: Optional[Money] = None,
         redirect_url: Optional[str] = None,
+        send_email: Optional[bool] = None,
         options: Optional[RequestOptions] = None,
     ) -> CreatedInvitation:
         """Invite someone to join the organization as a member in the key's mode
-        (``POST /invitations``, 201) and return the invitation with its ``link`` (also emailed).
-        The SDK always sends ``role: user``: the team is invited from the dashboard. Sends an
-        ``Idempotency-Key``; retried on transient failures. Rate limited (50 an hour per
-        organization: beyond, a :class:`~qbitflow.RateLimitError` at once, the wait being over the
-        SDK's 60 s retry cap).
+        (``POST /invitations``, 201) and return the invitation with its ``link`` (also emailed,
+        unless ``send_email`` is False). The SDK always sends ``role: user``: the team is invited
+        from the dashboard. Sends an ``Idempotency-Key``; retried on transient failures. Rate
+        limited (50 an hour per organization, emailed or not: beyond, a
+        :class:`~qbitflow.RateLimitError` at once, the wait being over the SDK's 60 s retry cap).
 
         The person exists in the organization once they accepted: act on the ``member.joined``
         webhook (:attr:`MemberJoined.invitation_uuid`).
@@ -173,10 +174,13 @@ class InvitationsService(Service):
             redirect_url: Where the person goes once they accepted (with
                 ``?invitationUuid=<uuid>``): a convenience, confirm with the ``member.joined``
                 event.
+            send_email: Whether QBitFlow emails the link to the person (``None``: True). False
+                sends no invitation email: share the returned ``link`` yourself. Signing up
+                through the link still emails the person a confirmation.
 
         Raises:
             ConflictError: 409 ``already_joined`` for someone already a member in that mode.
-            RateLimitError: beyond 50 invitations an hour.
+            RateLimitError: beyond 50 invitations an hour, emailed or not.
         """
         v = Validator()
         if v.required("email", email):
@@ -189,6 +193,7 @@ class InvitationsService(Service):
         if organization_fee_percent is not None and organization_fee_percent != "":
             v.percent("organizationFeePercent", organization_fee_percent, 50)
         v.url("redirectUrl", redirect_url)
+        v.boolean("sendEmail", send_email)
         v.check()
         body: Dict[str, Any] = {"email": email, "role": str(Role.USER), "holdFunds": hold_funds}
         fee = money(organization_fee_percent)
@@ -196,6 +201,8 @@ class InvitationsService(Service):
             body["organizationFeePercent"] = fee
         if redirect_url:
             body["redirectUrl"] = redirect_url
+        if send_email is not None:
+            body["sendEmail"] = send_email
         endpoint = Endpoint("POST", "/invitations", body=body, idempotent=True)
         return self._call(CreatedInvitation, endpoint, options)
 

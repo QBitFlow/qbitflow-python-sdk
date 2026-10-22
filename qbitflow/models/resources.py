@@ -107,7 +107,7 @@ class Refund(Model):
     #: ``customer`` (requested by the customer, the merchant answers) or ``merchant`` (sent by the
     #: merchant without a request, from the dashboard: recorded once confirmed, approved).
     initiated_by: RefundInitiatorT = Field(default="", alias="initiatedBy")
-    #: True when the refunded payment or bill was paid to the organization's wallet, which holds
+    #: True when the refunded payment was paid to the organization's wallet, which holds
     #: the seller's funds: the organization decides the refund and sends it from its wallet. Once
     #: sent, it is a negative line of the seller's held funds.
     held: Bool = False
@@ -319,29 +319,28 @@ class Member(Model):
 
 
 class LedgerEntry(Model):
-    """A line of a member's held funds: a payment or a bill made to them while the organization
-    held their funds (it adds what the organization owes them), or a refund of one of them (it
-    takes off what the refund sent back to the customer)."""
+    """A line of a member's held funds: a payment made to them while the organization held their
+    funds (it adds what the organization owes them), or a refund of one (it takes off what the
+    refund sent back to the customer)."""
 
-    #: The line's transaction: the payment (``pay@…``), the bill (``sub-hist@…``) or the refund
-    #: (``refund@…``).
+    #: The line's transaction: the payment (``pay@…``) or the refund (``refund@…``).
     tx_uuid: Str = Field(default="", alias="txUuid")
-    #: payment, bill or refund.
+    #: payment or refund.
     type: LedgerEntryTypeT = ""
     #: What the line is, in words (``"Payment pay@…"``).
     description: Str = ""
-    #: On a refund line, the payment or bill it refunds; ``None`` on the others.
+    #: On a refund line, the payment it refunds; ``None`` on the others.
     refunded_tx_uuid: Optional[Str] = Field(default=None, alias="refundedTxUuid")
-    #: What the customer paid (a payment or bill), or what a refund sent back (positive:
+    #: What the customer paid (a payment), or what a refund sent back (positive:
     #: ``owed_usd`` is its negative), in USD, a decimal string.
     amount_usd: Str = Field(default="", alias="amountUsd")
-    #: A payment's or bill's fees and split (the member was owed ``settlement.split.merchant``);
+    #: A payment's fees and split (the member was owed ``settlement.split.merchant``);
     #: ``None`` on a refund line.
     settlement: Optional[Settlement] = None
     #: The currency paid (and refunded).
     currency: Currency = Field(default_factory=Currency)
-    #: What the line counts for in a release, in the currency's units, exact: a payment's or
-    #: bill's merchant share, or minus what a refund sent back (negative). In
+    #: What the line counts for in a release, in the currency's units, exact: a payment's
+    #: merchant share, or minus what a refund sent back (negative). In
     #: ``heldFunds.released``: what it counted for in that release.
     owed: Str = ""
     #: The same in the currency's smallest unit (negative for a refund).
@@ -355,8 +354,8 @@ class LedgerEntry(Model):
 class HeldFunds(Model):
     """What the organization holds for a member in one mode (held funds)."""
 
-    #: The lines not settled yet, oldest first: the payments and bills held (positive), and the
-    #: refunds sent of them (negative, type refund). Empty when nothing is held.
+    #: The lines not settled yet, oldest first: the payments held (positive), and the refunds
+    #: sent of them (negative, type refund). Empty when nothing is held.
     ledgers: List[LedgerEntry] = Field(default_factory=list)
     #: What the organization owes the member, in USD, a decimal string: the sum of the lines'
     #: ``owed_usd``. A release pays it, converted at the release's price. ``"0"`` or negative when
@@ -372,7 +371,7 @@ class MemberHeldFunds(Model):
     #: What the organization owes them, in USD, a decimal string (``"0"`` or negative when refunds
     #: cancel out the payments).
     total_usd: Str = Field(default="", alias="totalUsd")
-    #: Their lines not settled: payments and bills held, refunds of them.
+    #: Their lines not settled: payments held, refunds of them.
     count: Int = 0
     #: Their oldest line not settled: how long the organization has held funds for them.
     oldest_at: Time = Field(default=ZERO_TIME, alias="oldestAt")
@@ -418,8 +417,8 @@ class CreatedInvitation(Invitation):
     """An invitation just created (``invitations.create``): the invitation's fields and its
     ``link``, only returned here."""
 
-    #: The link to accept it, also emailed to the person: share it in your own onboarding if you
-    #: prefer.
+    #: The link to accept it, also emailed to the person unless ``send_email`` was False: share it
+    #: in your own onboarding if you prefer.
     link: Str = ""
 
 

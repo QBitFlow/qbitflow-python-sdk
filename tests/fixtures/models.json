@@ -999,9 +999,9 @@
     },
     "ledgers": [
       {
-        "txUuid": "sub-hist@1",
-        "type": "bill",
-        "description": "Subscription bill sub-hist@1",
+        "txUuid": "pay@1",
+        "type": "payment",
+        "description": "Payment pay@1",
         "amountUsd": "10",
         "currency": {
           "id": 8,

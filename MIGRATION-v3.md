@@ -349,7 +349,7 @@ never cancel an order on it.
 | `RefundStatus` (`dto.transaction`) | `RefundStatus`: `PENDING` (a customer's request), `APPROVED`, `REJECTED`; `FAILED` is declared, never set |
 | `CombinedPaymentItem.source` `"subscription_history"` | `Transaction.type` `TransactionKind.BILL` (`bill`) |
 | `AccountingEvent.type` (a `str`) | `AccountingEventType` (`subscription_history` → `AccountingEventType.BILL`, `bill`) |
-| ledger lines `subscription_history` | `LedgerEntryType.BILL` (`bill`) |
+| — | `LedgerEntryType` (held-funds lines): `LedgerEntryType.PAYMENT`, `LedgerEntryType.REFUND` (a held seller sells no subscription: no bill line) |
 
 ## 10. Errors
 
