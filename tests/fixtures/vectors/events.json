@@ -1633,7 +1633,7 @@
       "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":[],\"id\":\"evt_x\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}"
     }
   ],
-  "comment": "Webhook event parsing (behaviour.md §7, types.md §4): parseEvent(rawBody), then the typed data of its type.",
+  "comment": "Webhook event parsing: parseEvent(rawBody), then the typed data of its type.",
   "generator": "qbitflow-conformance",
   "sdk": "qbitflow-go-sdk 3.0.0"
 }

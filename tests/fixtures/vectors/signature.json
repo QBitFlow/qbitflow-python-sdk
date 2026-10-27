@@ -615,7 +615,7 @@
       "tolerance": 300
     }
   ],
-  "comment": "Local webhook verification (behaviour.md §7, §10): verify(rawBody, header, secret, {tolerance, now}) must give expect.",
+  "comment": "Local webhook verification: verify(rawBody, header, secret, {tolerance, now}) must give expect.",
   "generator": "qbitflow-conformance",
   "sdk": "qbitflow-go-sdk 3.0.0"
 }

@@ -3897,7 +3897,7 @@
       }
     }
   ],
-  "comment": "Request building (behaviour.md §1, §3, surface.md §2): each call must send exactly request.",
+  "comment": "Request building: each call must send exactly request.",
   "generator": "qbitflow-conformance",
   "sdk": "qbitflow-go-sdk 3.0.0"
 }
