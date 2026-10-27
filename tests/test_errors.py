@@ -52,7 +52,7 @@ def mapped(status: int, body: str, headers: Optional[Dict[str, str]] = None) -> 
         (401, "unauthorized", AuthenticationError),
         (403, "forbidden", PermissionDeniedError),
         (403, "policy_disabled", PermissionDeniedError),
-        (403, "plan_required", PermissionDeniedError),
+        (403, "a_future_code", PermissionDeniedError),  # any 403, whatever its code
         (404, "not_found", NotFoundError),
         (409, "unique_violation", ConflictError),
         (409, "tx_already_sent", ConflictError),
@@ -64,6 +64,8 @@ def mapped(status: int, body: str, headers: Optional[Dict[str, str]] = None) -> 
         (422, "something_else", ApiError),
         (413, "request_too_large", ApiError),
         (405, "", ApiError),
+        (405, "method_not_allowed", ApiError),
+        (409, "subscription_already_stopped_or_inactive", ConflictError),
         (429, "rate_limit_exceeded", RateLimitError),
         (500, "internal", ServerError),
         (503, "network_unavailable", ServerError),
@@ -80,6 +82,54 @@ def test_error_mapping(status: int, code: str, cls: Type[ApiError]) -> None:
     assert err.status == status and err.code == code
     assert err.message == "the message" and err.request_id == "req-body"
     assert err.details == {}
+
+
+def test_method_not_allowed_is_a_generic_api_error() -> None:
+    # The API answers 405 (with an Allow header) to a path called with the wrong method: a client
+    # bug the SDK never makes, mapped to the generic ApiError, never retried.
+    body = '{"error":"method not allowed","code":"method_not_allowed","requestId":"r-405"}'
+    err = mapped(405, body, {"Allow": "POST"})
+    assert type(err) is ApiError and err.code == "method_not_allowed" and err.status == 405
+    assert not is_retryable(err)
+    assert str(err) == "method not allowed (status 405, code method_not_allowed, request r-405)"
+
+
+def test_policy_disabled_details() -> None:
+    # A member's own key sending a checkout's successUrl / cancelUrl while its organization's
+    # members.checkoutRedirects policy is off: 403 policy_disabled naming the policy and the field.
+    body = (
+        '{"error":"your organization does not let members set redirect URLs",'
+        '"code":"policy_disabled",'
+        '"details":{"policy":"members.checkoutRedirects","field":"successUrl"},"requestId":"r-1"}'
+    )
+    err = mapped(403, body)
+    assert type(err) is PermissionDeniedError and err.code == "policy_disabled"
+    assert err.details == {"policy": "members.checkoutRedirects", "field": "successUrl"}
+    assert err.field_errors == [] and err.request_id == "r-1"
+
+
+def test_forbidden_has_no_details() -> None:
+    err = mapped(
+        403,
+        '{"error":"Only your organization\'s owner and admins can do this",'
+        '"code":"forbidden","requestId":"r-2"}',
+    )
+    assert type(err) is PermissionDeniedError and err.code == "forbidden"
+    assert err.details == {} and err.field_errors == []
+
+
+def test_field_error_reason_is_ignored() -> None:
+    # Some routes add a ``reason`` to a field error (off the SDK's surface today): not modelled,
+    # the entry still parses into its field and message.
+    body = (
+        '{"error":"taken","code":"validation_failed","details":{"errors":['
+        '{"field":"email","message":"email is reserved","reason":"reserved"}]}}'
+    )
+    err = mapped(400, body)
+    assert isinstance(err, ValidationError)
+    assert err.field_errors == [FieldError("email", "email is reserved")]
+    assert not hasattr(err.field_errors[0], "reason")
+    assert err.details["errors"][0]["reason"] == "reserved"  # still in the raw details
 
 
 def test_details_and_field_errors() -> None:

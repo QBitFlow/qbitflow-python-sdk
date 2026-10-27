@@ -7,14 +7,12 @@ from ._base import open_enum
 from .enums import (
     AccountingEventType,
     ActionRequired,
-    AttemptStatus,
     BillingFailureReason,
     BillingOutcome,
     BillingStage,
     CancellationReason,
     Chain,
     CheckoutSessionStatusValue,
-    Credential,
     DurationUnit,
     EndpointDisabledReason,
     EventType,
@@ -31,13 +29,10 @@ from .enums import (
     SubscriptionStatus,
     TransactionKind,
     TransactionType,
-    TransferType,
-    WebhookPayloadVersion,
 )
 
 AccountingEventTypeT = Annotated[Union[AccountingEventType, str], open_enum(AccountingEventType)]
 ActionRequiredT = Annotated[Union[ActionRequired, str], open_enum(ActionRequired)]
-AttemptStatusT = Annotated[Union[AttemptStatus, str], open_enum(AttemptStatus)]
 BillingFailureReasonT = Annotated[Union[BillingFailureReason, str], open_enum(BillingFailureReason)]
 BillingOutcomeT = Annotated[Union[BillingOutcome, str], open_enum(BillingOutcome)]
 BillingStageT = Annotated[Union[BillingStage, str], open_enum(BillingStage)]
@@ -46,7 +41,6 @@ ChainT = Annotated[Union[Chain, str], open_enum(Chain)]
 CheckoutSessionStatusValueT = Annotated[
     Union[CheckoutSessionStatusValue, str], open_enum(CheckoutSessionStatusValue)
 ]
-CredentialT = Annotated[Union[Credential, str], open_enum(Credential)]
 DurationUnitT = Annotated[Union[DurationUnit, str], open_enum(DurationUnit)]
 EndpointDisabledReasonT = Annotated[
     Union[EndpointDisabledReason, str], open_enum(EndpointDisabledReason)
@@ -65,7 +59,3 @@ RoleT = Annotated[Union[Role, str], open_enum(Role)]
 SubscriptionStatusT = Annotated[Union[SubscriptionStatus, str], open_enum(SubscriptionStatus)]
 TransactionKindT = Annotated[Union[TransactionKind, str], open_enum(TransactionKind)]
 TransactionTypeT = Annotated[Union[TransactionType, str], open_enum(TransactionType)]
-TransferTypeT = Annotated[Union[TransferType, str], open_enum(TransferType)]
-WebhookPayloadVersionT = Annotated[
-    Union[WebhookPayloadVersion, str], open_enum(WebhookPayloadVersion)
-]

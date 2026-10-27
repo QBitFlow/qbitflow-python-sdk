@@ -1,8 +1,9 @@
-"""The website snippets: the hub's ``scripts/embed-snippets.mjs --check`` passes for this SDK
-(regions in examples/, examples/snippets.manifest.json, README blocks). See CONTRIBUTING.md.
+"""The website snippets: ``scripts/embed-snippets.mjs --check`` passes for this SDK (regions in
+examples/, examples/snippets.manifest.json, README blocks). See CONTRIBUTING.md.
 
-The hub is ``QBITFLOW_HUB_DIR``, or two directories up (this SDK's place in the hub). A standalone
-clone, or a machine without ``node``, skips the test; an invalid ``QBITFLOW_HUB_DIR`` fails it."""
+The script and the snippet catalog live in the QBitFlow maintainers' documentation workspace, not
+in this repository: it is found at ``QBITFLOW_HUB_DIR``, or two directories up. A standalone clone,
+or a machine without ``node``, skips the test; an invalid ``QBITFLOW_HUB_DIR`` fails it."""
 
 from __future__ import annotations
 
@@ -22,7 +23,7 @@ def _is_hub(path: Path) -> bool:
     return (path / SCRIPT).is_file() and (path / CATALOG).is_file()
 
 
-def test_snippets_match_the_hub_catalog() -> None:
+def test_snippets_match_the_catalog() -> None:
     configured = os.environ.get("QBITFLOW_HUB_DIR", "")
     if configured:
         hub = Path(configured).resolve()
@@ -30,7 +31,7 @@ def test_snippets_match_the_hub_catalog() -> None:
     else:
         hub = SDK_ROOT.parent.parent
         if not _is_hub(hub):
-            pytest.skip(f"no hub checkout at {hub}: set QBITFLOW_HUB_DIR to run the snippet check")
+            pytest.skip("the snippet tooling is not available (maintainers only): skipped")
     node = shutil.which("node")
     if node is None:
         pytest.skip("node is not installed: the snippet check needs Node 18+")

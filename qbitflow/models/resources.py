@@ -12,7 +12,6 @@ from ._fields import (
     AccountingEventTypeT,
     ChainT,
     CheckoutSessionStatusValueT,
-    CredentialT,
     EndpointDisabledReasonT,
     EventTypeT,
     InvitationStatusT,
@@ -21,7 +20,6 @@ from ._fields import (
     RefundInitiatorT,
     RefundStatusT,
     RoleT,
-    WebhookPayloadVersionT,
 )
 from .common import (
     Attempt,
@@ -89,7 +87,7 @@ class Refund(Model):
     #: ``None`` when it gave none.
     reason: Optional[Str] = None
     #: pending (a customer's request not answered yet), approved (its transfer confirmed) or
-    #: rejected. ``failed`` is declared but never set.
+    #: rejected.
     status: RefundStatusT = ""
     #: When it was requested (or prepared by the merchant).
     created_at: Time = Field(default=ZERO_TIME, alias="createdAt")
@@ -164,13 +162,8 @@ class Customer(Model):
     #: The last name; ``None`` when not given.
     last_name: Optional[Str] = Field(default=None, alias="lastName")
     #: The email address, lowercase (matched case-insensitively). Several customers of a space may
-    #: share one (see ``verified``).
+    #: share one: ``customers.list(email=...)`` returns them all.
     email: Str = ""
-    #: True for a customer the merchant created (the API, the dashboard), who vouches for its
-    #: details; False for one QBitFlow created from the email a payer typed at a checkout that
-    #: named no customer (nobody proved the payer owns that address). A checkout never links a
-    #: typed email to a verified customer.
-    verified: Bool = False
     #: The phone number; ``None`` when not given.
     phone_number: Optional[Str] = Field(default=None, alias="phoneNumber")
     #: The physical address; ``None`` when not given.
@@ -253,7 +246,8 @@ class MeSpace(Model):
     user_uuid: Optional[Str] = Field(default=None, alias="userUuid")
     #: The space's mode: True for test, False for live.
     test: Bool = False
-    #: The caller's own role in the organization: owner, admin, user or handle.
+    #: The key's role in the organization: ``admin`` (an organization key) or ``user`` (a
+    #: member's key).
     role: RoleT = ""
     #: Names the member whose space it is; ``None`` for the organization's own space.
     member: Optional[MeMember] = None
@@ -270,13 +264,8 @@ class MeSpace(Model):
 class Me(Model):
     """What the API key is, and where the request acts (``client.me()``)."""
 
-    #: ``apiKey`` for an API key.
-    credential: CredentialT = ""
     #: The key's id.
     api_key_uuid: Optional[Str] = Field(default=None, alias="apiKeyUuid")
-    #: Who signed in, for a session; ``None`` for an API key (a key acts for its space, not for
-    #: the person who created it).
-    user_uuid: Optional[Str] = Field(default=None, alias="userUuid")
     #: What the request may do in the space: ``admin`` (an organization key) or ``user`` (a
     #: member's key, or an organization key acting ``On-Behalf-Of`` a member).
     role: Optional[RoleT] = None
@@ -640,14 +629,10 @@ class WebhookEndpoint(Model):
     events: List[EventTypeT] = Field(default_factory=list)
     #: True for an organization endpoint that also receives its members' events.
     include_members: Bool = Field(default=False, alias="includeMembers")
-    #: The payload it receives: ``v2`` (the event envelope), the only version.
-    payload_version: WebhookPayloadVersionT = Field(default="", alias="payloadVersion")
     #: A note for the dashboard; ``None`` when none.
     description: Optional[Str] = None
     #: When it was created.
     created_at: Time = Field(default=ZERO_TIME, alias="createdAt")
-    #: When its secret last changed.
-    rotated_at: Optional[Time] = Field(default=None, alias="rotatedAt")
     #: When it was disabled (it receives nothing): after 3 days without a successful delivery
     #: (live mode only), or by its owner; ``None`` while enabled. ``update(enabled=True)`` enables
     #: it again.
@@ -665,8 +650,8 @@ class WebhookEndpointCreated(WebhookEndpoint):
     """``webhooks.endpoints.create``'s answer: the endpoint and its secret."""
 
     #: The secret (``whsec_…``) that verifies the signature of its deliveries. Shown once: store
-    #: it.
-    secret: Str = ""
+    #: it. Left out of ``repr()`` (and so of logs that print the model).
+    secret: Str = Field(default="", repr=False)
 
 
 class DeliveryAttempt(Model):
@@ -688,9 +673,9 @@ class DeliveryAttempt(Model):
     #: ``members.webhooks`` policy was off for them (never retried; not counted against the
     #: endpoint's health). The API leaves it out when false.
     skipped: Bool = False
-    #: The endpoint's answer; ``None`` when it didn't answer.
+    #: The endpoint's answer; ``None`` when it didn't answer, or when the attempt was skipped.
     status_code: Optional[Int] = Field(default=None, alias="statusCode")
-    #: Why it wasn't delivered.
+    #: Why it wasn't delivered (a skipped attempt's says the policy is off).
     error: Optional[Str] = None
     #: How long it took, in milliseconds.
     duration_ms: Int = Field(default=0, alias="durationMs")

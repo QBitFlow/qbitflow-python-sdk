@@ -39,24 +39,10 @@
           "value": "019cadfd-8900-7c00-8000-0000000000c1"
         },
         {
-          "path": "data.availableCurrencies[0].code",
-          "value": "BASE"
-        },
-        {
-          "optional": true,
-          "path": "data.availableCurrencies[1].address",
-          "value": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
-        },
-        {
           "kind": "time",
           "optional": true,
           "path": "data.expiresAt",
           "value": "2026-10-01T12:00:00Z"
-        },
-        {
-          "optional": true,
-          "path": "data.userName",
-          "value": ""
         },
         {
           "path": "data.fees",
@@ -86,10 +72,6 @@
         {
           "path": "data.uuid",
           "value": "transfer@01a0f755-f200-7000-8000-000000000007"
-        },
-        {
-          "path": "data.type",
-          "value": "heldFundsRelease"
         },
         {
           "path": "data.received",
@@ -1109,10 +1091,6 @@
           "value": false
         },
         {
-          "path": "data.availableCurrencies[0].code",
-          "value": "BASE:USDC"
-        },
-        {
           "path": "data.metadata",
           "value": {}
         }
@@ -1143,10 +1121,6 @@
         {
           "path": "data.priceUsd",
           "value": "5"
-        },
-        {
-          "path": "data.availableCurrencies",
-          "value": []
         },
         {
           "optional": true,
@@ -1660,6 +1634,6 @@
     }
   ],
   "comment": "Webhook event parsing (behaviour.md §7, types.md §4): parseEvent(rawBody), then the typed data of its type.",
-  "generator": ".claude/cross-sdk-checks/v3/gen (cd gen && go run .)",
+  "generator": "qbitflow-conformance",
   "sdk": "qbitflow-go-sdk 3.0.0"
 }

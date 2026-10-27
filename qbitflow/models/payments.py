@@ -83,8 +83,6 @@ class Payment(Transfer):
     #: Your reference of the customer, as the checkout was given it, whether or not QBitFlow has
     #: a customer with it.
     customer_reference: Optional[Str] = Field(default=None, alias="customerReference")
-    #: A qbf.cash tipper's message to the handle's owner.
-    note: Optional[Str] = None
     #: Names the customer, even once deleted (API reads only, never in webhooks).
     customer: Optional[CustomerSummary] = None
     #: How it settled: its fees, its split and its transaction.
@@ -145,7 +143,8 @@ class Bill(Transfer):
     #: The end of the period the bill paid (the subscription's next bill): paid until then;
     #: ``None`` on bills recorded before it was.
     period_end: Optional[Time] = Field(default=None, alias="periodEnd")
-    #: When the chain confirmed it (its block's time).
+    #: When the chain confirmed it (its block's time); ``None`` only on records made before it
+    #: was recorded.
     confirmed_at: Optional[Time] = Field(default=None, alias="confirmedAt")
     #: Everything the customer's wallet sent, in the currency's units (``amount`` plus the network
     #: fee): a refund's base.
@@ -231,7 +230,8 @@ class Transaction(Model):
     user_uuid: Optional[Str] = Field(default=None, alias="userUuid")
     #: Its fees, split and transaction, as on the :class:`Payment` or the :class:`Bill`.
     settlement: Settlement = Field(default_factory=Settlement)
-    #: When the chain confirmed it.
+    #: When the chain confirmed it (its block's time); ``None`` only on records made before it
+    #: was recorded.
     confirmed_at: Optional[Time] = Field(default=None, alias="confirmedAt")
     #: Everything the customer's wallet sent, in the currency's units.
     paid: Optional[Str] = None

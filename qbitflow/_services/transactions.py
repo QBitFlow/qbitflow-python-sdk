@@ -600,7 +600,8 @@ class SubscriptionsService(Service):
             immediate: ``None`` or True (the default) cancels it at once (status ``cancelled``,
                 ``cancellation_reason`` ``merchant``); False stops it now (status ``stopped``,
                 never billed again) and cancels it when its paid period ends
-                (``next_billing_at``). A trial is cancelled immediately only (False: 400).
+                (``next_billing_at``). A trial is cancelled immediately only (False: 400
+                ``validation_failed`` on ``immediate``).
 
         Returns:
             The subscription as the cancellation left it, and ``pending`` True when the API
@@ -612,7 +613,8 @@ class SubscriptionsService(Service):
             NotFoundError: a cancelled or another space's subscription.
             ConflictError: 409 ``subscription_already_stopped_or_inactive`` (``immediate=False``
                 on a stopped one); 409 ``tx_already_sent`` while a cancellation runs.
-            BadRequestError: ``immediate=False`` on a trial.
+            ValidationError: ``immediate=False`` on a trial (400 ``validation_failed``, field
+                ``immediate``).
         """
         check_path_tx_id("uuid", uuid)
         v = Validator()
@@ -682,8 +684,8 @@ class RefundsService(Service):
         Args:
             limit: The page size (the API's default 20 when ``None``, at most 100).
             cursor: The previous page's ``next_cursor``, verbatim; ``None`` for the first page.
-            status: Keep only the refunds in one of these statuses (at most 5 of pending,
-                approved, rejected, failed; sent as repeated ``?status=``); ``None`` or
+            status: Keep only the refunds in one of these statuses (at most 5 entries among
+                pending, approved and rejected; sent as repeated ``?status=``); ``None`` or
                 empty: every status. ``[RefundStatus.PENDING]`` lists the ones awaiting an
                 answer.
             tx_uuid: Keep only the refund of this transaction (``pay@…``, ``sub-hist@…``, or the

@@ -46,14 +46,13 @@ from .errors import (
     field_error,
     signature_error,
 )
-from .models.enums import EventType, WebhookPayloadVersion
+from .models.enums import EventType
 from .models.events import Event, UnknownEvent
 
 __all__ = [
     "SIGNATURE_HEADER",
     "EVENT_ID_HEADER",
     "EVENT_TYPE_HEADER",
-    "WEBHOOK_VERSION_HEADER",
     "DEFAULT_TOLERANCE",
     "MAX_BODY_BYTES",
     "verify",
@@ -70,17 +69,18 @@ SIGNATURE_HEADER = "QBitFlow-Signature"
 EVENT_ID_HEADER = "QBitFlow-Event-Id"
 #: Carries the event's type.
 EVENT_TYPE_HEADER = "QBitFlow-Event-Type"
-#: Carries the payload version (``v2``, the only one).
-WEBHOOK_VERSION_HEADER = "QBitFlow-Webhook-Version"
 #: How far a signature's timestamp may be from now, in seconds.
 DEFAULT_TOLERANCE = 300
 #: The largest webhook body the SDK accepts (the API's own limit): 1 MiB.
 MAX_BODY_BYTES = 1 << 20
 
 RawBody = Union[bytes, bytearray, memoryview, str]
-#: A point in time (an aware ``datetime`` or unix seconds), or a callable returning one.
+#: A point in time (a ``datetime``, naive taken as UTC, or unix seconds), or a callable returning
+#: one.
 Clock = Union[datetime, float, int, Callable[[], Union[datetime, float, int]]]
 
+# The only event envelope the API sends; parse_event refuses any other (v1 is retired).
+_ENVELOPE_VERSION = "v2"
 _DIGITS = re.compile(r"[0-9]+")
 _MAX_INT64 = 2**63 - 1
 
@@ -101,7 +101,9 @@ def _now_seconds(now: Optional[Clock]) -> float:
     if value is None:
         return time.time()
     if isinstance(value, datetime):
-        return value.timestamp()
+        # A naive datetime is UTC, as in sign() (never the machine's local time zone).
+        aware = value if value.tzinfo is not None else value.replace(tzinfo=timezone.utc)
+        return aware.timestamp()
     if isinstance(value, (int, float)) and not isinstance(value, bool):
         return float(value)
     raise field_error("now", "must be a datetime, unix seconds, or a callable returning one")
@@ -150,7 +152,8 @@ def verify(
         signature_header: The ``QBitFlow-Signature`` header.
         secret: The endpoint's ``whsec_…`` secret (the whole string is the key).
         tolerance: Seconds the timestamp may be from now (default 300; 0 or less keeps it).
-        now: The clock (tests, replays): an aware datetime, unix seconds, or a callable.
+        now: The clock (tests, replays): a datetime (naive is taken as UTC), unix seconds, or
+            a callable returning one.
 
     Raises:
         WebhookSignatureError: with ``reason`` ``missingHeader``, ``malformedHeader``,
@@ -213,20 +216,20 @@ def parse_event(raw_body: RawBody) -> Event:
         does not know: never an error).
 
     Raises:
-        ValidationError: a body that is not a JSON object, whose ``version`` is not ``v2``
-            (unsupported payload version: v1 is retired), or that does not match its event type
-            (a wrong JSON type in the envelope or in ``data``).
+        ValidationError: a body that is not a JSON object, that is not a v2 event envelope (the
+            only one the API sends: v1 is retired), or that does not match its event type (a
+            wrong JSON type in the envelope or in ``data``).
     """
     body = _body_bytes(raw_body).strip()
     if not body or not body.startswith(b"{"):
         raise field_error("body", "must be a JSON object (a webhook event)")
     try:
         data = json.loads(body)
-    except ValueError:
+    except (ValueError, RecursionError):  # RecursionError: nested too deep (Python < 3.14)
         raise field_error("body", "is not a valid webhook event") from None
     if not isinstance(data, dict):  # pragma: no cover - guarded by the "{" check
         raise field_error("body", "must be a JSON object (a webhook event)")
-    if data.get("version") != WebhookPayloadVersion.V2:
+    if data.get("version") != _ENVELOPE_VERSION:
         raise field_error("version", "must be v2 (unsupported payload version)")
     try:
         event: Event = adapter(Event).validate_python(data)

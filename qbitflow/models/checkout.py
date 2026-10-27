@@ -8,7 +8,7 @@ from pydantic import Field
 
 from ._base import ZERO_TIME, Bool, Model, Str, Time, UInt
 from ._fields import CheckoutSessionStatusValueT, TransactionTypeT
-from .common import Attempt, Currency, Duration, FeeLine, Metadata
+from .common import Attempt, Duration, FeeLine, Metadata
 
 __all__ = [
     "CreatedCheckoutSession",
@@ -88,20 +88,10 @@ class PaymentSessionData(Model):
     success_url: Optional[Str] = Field(default=None, alias="successUrl")
     #: The merchant's page for a customer who leaves the checkout (placeholders filled).
     cancel_url: Optional[Str] = Field(default=None, alias="cancelUrl")
-    #: The merchant's success page on the hosted page's copy only: absent from
-    #: ``checkout.expired``.
-    redirect_url: Optional[Str] = Field(default=None, alias="redirectUrl")
-    #: The merchant's organization, as the checkout shows it.
-    organization_name: Str = Field(default="", alias="organizationName")
-    #: The member the checkout pays (a marketplace's seller), by name; ``None`` on the
-    #: organization's own checkouts.
-    user_name: Optional[Str] = Field(default=None, alias="userName")
     #: True for a checkout paid on test networks.
     test: Bool = False
     #: The session's kind: ``payment`` or ``createSubscription``.
     tx_type: TransactionTypeT = Field(default="", alias="txType")
-    #: The currencies the customer could pay with.
-    available_currencies: List[Currency] = Field(default_factory=list, alias="availableCurrencies")
     #: The merchant's own data on the checkout; ``{}`` without any.
     metadata: Metadata = Field(default_factory=dict)
     #: When the session was opened.

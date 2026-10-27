@@ -25,8 +25,6 @@ from ._fields import (
     ActionRequiredT,
     BillingFailureReasonT,
     SubscriptionStatusT,
-    TransferTypeT,
-    WebhookPayloadVersionT,
 )
 from .checkout import PaymentSessionData, SubscriptionSessionData
 from .common import TransferSettlement
@@ -178,8 +176,6 @@ class HeldFundsReleased(Transfer):
 
     #: True once the recipient received it.
     received: Bool = False
-    #: ``heldFundsRelease``.
-    type: TransferTypeT = ""
     #: The transfer's transaction: its block and what it cost its sender.
     settlement: TransferSettlement = Field(default_factory=TransferSettlement)
     #: The lines it settled, oldest first: the payments it paid (positive) and the
@@ -227,8 +223,6 @@ class BaseEvent(Model):
 
     #: The event's id (``evt_…``): the same on every retry, deduplicate on it.
     id: Str = ""
-    #: The payload version: ``v2``, the only one.
-    version: WebhookPayloadVersionT = ""
     #: When it happened (at most millisecond precision).
     created_at: Time = Field(default=ZERO_TIME, alias="createdAt")
     #: True when it happened in test mode.

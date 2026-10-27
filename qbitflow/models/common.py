@@ -19,7 +19,6 @@ from pydantic import Field
 from .._helpers import format_amount
 from ._base import ZERO_TIME, Bool, Model, Str, Time, UInt
 from ._fields import (
-    AttemptStatusT,
     ChainT,
     DurationUnitT,
     FeeLineTypeT,
@@ -169,8 +168,6 @@ class Attempt(Model):
     """How a session's (or a refund approval's) last attempt failed, while it waits for another:
     never final."""
 
-    #: ``failed``.
-    status: AttemptStatusT = ""
     #: The error code (e.g. ``insufficient_funds``, ``token_not_approved``): what to do about it.
     code: Optional[Str] = None
     #: The reason, for the customer.
@@ -197,8 +194,6 @@ class ReferralFee(Model):
     address: Str = ""
     #: The referrer's share of the platform fee, a percent string (``"20"`` = 20 % of it).
     fee_percent: Str = Field(default="", alias="feePercent")
-    #: Until when the referrer earns its share.
-    deadline: Time = ZERO_TIME
 
 
 class Split(Model):

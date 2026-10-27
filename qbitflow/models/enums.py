@@ -16,7 +16,6 @@ __all__ = [
     "BillingStage",
     "BillingOutcome",
     "CheckoutSessionStatusValue",
-    "AttemptStatus",
     "RefundStatus",
     "RefundInitiator",
     "NotRefundableReason",
@@ -25,17 +24,14 @@ __all__ = [
     "FailureCategory",
     "Chain",
     "TransactionType",
-    "TransferType",
     "LedgerEntryType",
     "AccountingEventType",
     "NetworkFeesPayer",
     "InvitationStatus",
     "EventType",
-    "WebhookPayloadVersion",
     "EndpointDisabledReason",
     "DurationUnit",
     "Role",
-    "Credential",
     "MerchantNotReadyReason",
     "FeeLineType",
 ]
@@ -113,12 +109,6 @@ class CheckoutSessionStatusValue(StrEnum):
     EXPIRED = "expired"
 
 
-class AttemptStatus(StrEnum):
-    """A failed attempt's status."""
-
-    FAILED = "failed"  #: Not sent, not confirmed, or failed on the network: nothing was paid.
-
-
 class RefundStatus(StrEnum):
     """Where a refund stands. An approval and a rejection are final: the transaction never gets
     another refund."""
@@ -128,7 +118,6 @@ class RefundStatus(StrEnum):
     #: recorded only then.
     APPROVED = "approved"
     REJECTED = "rejected"  #: Rejected by whoever decides it (``refund.rejected``).
-    FAILED = "failed"  #: Declared, never set: a failed approval leaves the request pending.
 
 
 class RefundInitiator(StrEnum):
@@ -184,32 +173,10 @@ class Chain(StrEnum):
 
 
 class TransactionType(StrEnum):
-    """A transaction's kind (``checkout.expired``'s ``txType``: payment or createSubscription)."""
+    """A checkout's kind (``checkout.expired``'s ``txType``)."""
 
-    PAYMENT = "payment"
-    TRANSFER = "transfer"
-    TOKEN_TRANSFER = "tokenTransfer"
-    CREATE_SUBSCRIPTION = "createSubscription"
-    CANCEL_SUBSCRIPTION = "cancelSubscription"
-    FORCE_CANCEL_SUBSCRIPTION = "forceCancelSubscription"
-    EXECUTE_SUBSCRIPTION = "executeSubscription"
-    CREATE_PAYG_SUBSCRIPTION = "createPaygSubscription"
-    CANCEL_PAYG_SUBSCRIPTION = "cancelPaygSubscription"
-    INCREASE_ALLOWANCE = "increaseAllowance"
-    UPDATE_MAX_AMOUNT = "updateMaxAmount"
-    REFUND = "refund"
-    FAUCET = "faucet"
-    CLAIM_FUNDS = "claimFunds"
-    RELEASE_HELD_FUNDS = "releaseHeldFunds"
-
-
-class TransferType(StrEnum):
-    """A transfer's kind (:attr:`HeldFundsReleased.type`: ``heldFundsRelease``)."""
-
-    ACCOUNT_CLAIM = "accountClaim"  #: v1: funds held for a user, paid when they claimed.
-    HELD_FUNDS_RELEASE = "heldFundsRelease"  #: Funds an organization held for a member, paid out.
-    INTERNAL = "internal"
-    EXTERNAL = "external"
+    PAYMENT = "payment"  #: A one-time payment's checkout.
+    CREATE_SUBSCRIPTION = "createSubscription"  #: A subscription's checkout.
 
 
 class LedgerEntryType(StrEnum):
@@ -274,14 +241,6 @@ class EventType(StrEnum):
     WEBHOOK_TEST = "webhook.test"
 
 
-class WebhookPayloadVersion(StrEnum):
-    """A webhook endpoint's (and an event's) payload version."""
-
-    #: The event envelope ``{id, type, version, createdAt, test, userUuid, data}``: the only
-    #: version.
-    V2 = "v2"
-
-
 class EndpointDisabledReason(StrEnum):
     """Why a webhook endpoint is disabled."""
 
@@ -303,20 +262,12 @@ class DurationUnit(StrEnum):
 
 
 class Role(StrEnum):
-    """What a credential (or an invitation) may do in a space. An API key is ``admin`` (an
-    organization key) or ``user`` (a member's key, or ``On-Behalf-Of``)."""
+    """What a credential (or an invitation) may do in a space. An API key is at most ``admin``:
+    ``admin`` (an organization key) or ``user`` (a member's key, or ``On-Behalf-Of``). The SDK's
+    invitations are ``user``; the team's (from the dashboard) ``admin``."""
 
-    OWNER = "owner"
-    ADMIN = "admin"
-    USER = "user"
-    HANDLE = "handle"
-
-
-class Credential(StrEnum):
-    """What authenticated a request (:attr:`Me.credential`)."""
-
-    API_KEY = "apiKey"  #: An API key (``X-API-Key``).
-    SESSION = "session"  #: A signed-in person's access token.
+    ADMIN = "admin"  #: An organization key; a team invitation.
+    USER = "user"  #: A member's key, or ``On-Behalf-Of`` a member; a member invitation.
 
 
 class MerchantNotReadyReason(StrEnum):

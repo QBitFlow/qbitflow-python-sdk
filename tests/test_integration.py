@@ -1,4 +1,4 @@
-"""Live checks against a QBitFlow API (Go integration_test.go). They never run by default:
+"""Live checks against a QBitFlow API. They never run by default:
 
     QBITFLOW_API_KEY=sk_… QBITFLOW_BASE_URL=https://… pytest tests/test_integration.py -v
 
@@ -36,7 +36,6 @@ from qbitflow import (
     RefundStatus,
     Role,
     TransactionKind,
-    WebhookPayloadVersion,
     webhooks,
 )
 
@@ -234,7 +233,7 @@ def test_live_writes_customer(writer: QBitFlow) -> None:
         metadata={"crm": "42"},
     )
     cleanup(writer, lambda: writer.customers.delete(customer.uuid))
-    assert customer.phone_number and customer.first_name == "Ada" and customer.verified
+    assert customer.phone_number and customer.first_name == "Ada"
     assert customer.metadata["crm"] == "42"
     assert writer.customers.get_by_reference("sdk-python-" + s).uuid == customer.uuid
     by_email = writer.customers.list(email=customer.email)
@@ -352,7 +351,7 @@ def test_live_writes_webhook_endpoint(writer: QBitFlow) -> None:
     cleanup(writer, lambda: writer.webhooks.endpoints.delete(created.uuid))
     assert created.secret
     got = writer.webhooks.endpoints.get(created.uuid)
-    assert got.url == created.url and got.payload_version == WebhookPayloadVersion.V2
+    assert got.url == created.url and got.events == [EventType.PAYMENT_COMPLETED]
     assert created.uuid in {e.uuid for e in writer.webhooks.endpoints.iterate(limit=1)}
     # The router accepts a delivery signed with the endpoint's real secret (local check).
     seen: List[str] = []

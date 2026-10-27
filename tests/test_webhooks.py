@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import json
+import time
 from datetime import datetime, timezone
 from typing import Optional, Union
 
@@ -97,6 +99,27 @@ def test_clocks() -> None:
         webhooks.verify(BODY, header, "whsec_new_secret", now="later")
 
 
+def test_naive_datetime_is_utc_in_verify_and_sign(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A naive datetime is UTC for verify(now=…) as for sign(timestamp=…): it used to be read
+    # in the machine's local time zone by verify, so a signature sign() made at a naive time
+    # failed verify() at the same naive time on any machine not set to UTC.
+    monkeypatch.setenv("TZ", "Pacific/Kiritimati")  # UTC+14: far outside the 300 s tolerance
+    if hasattr(time, "tzset"):
+        time.tzset()
+    try:
+        naive = datetime(2026, 10, 1, 12, 0, 0)  # == T, read as UTC
+        header = webhooks.sign(BODY, "whsec_new_secret", naive)
+        assert header == f"t={T},v1={NEW}"
+        webhooks.verify(BODY, header, "whsec_new_secret", now=naive)
+        webhooks.verify(BODY, header, "whsec_new_secret", now=lambda: naive)
+        with pytest.raises(WebhookSignatureError):
+            webhooks.verify(BODY, header, "whsec_new_secret", now=datetime(2026, 10, 1, 12, 6))
+    finally:
+        monkeypatch.delenv("TZ")
+        if hasattr(time, "tzset"):
+            time.tzset()
+
+
 TS = str(T)
 
 
@@ -181,11 +204,7 @@ def test_raw_body() -> None:
 def test_construct_event() -> None:
     event = webhooks.construct_event(BODY, HEADER, "whsec_new_secret", now=T + 60)
     assert isinstance(event, WebhookTestEvent)
-    assert (
-        event.id == "evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f"
-        and event.version == "v2"
-        and not event.test
-    )
+    assert event.id == "evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f" and not event.test
     assert (
         event.created_at == datetime(2026, 10, 1, 12, tzinfo=timezone.utc)
         and event.user_uuid is None
@@ -217,3 +236,17 @@ def test_headers_constants() -> None:
     assert webhooks.EVENT_ID_HEADER == "QBitFlow-Event-Id"
     assert webhooks.EVENT_TYPE_HEADER == "QBitFlow-Event-Type"
     assert webhooks.MAX_BODY_BYTES == 1 << 20
+
+
+def test_deeply_nested_body_is_a_validation_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    # json.loads raises RecursionError (not a ValueError) on deeply nested input on Python 3.10
+    # to 3.13: parse_event must still answer a ValidationError, and the router a 400.
+    def loads(*_a: object, **_k: object) -> object:
+        raise RecursionError("maximum recursion depth exceeded while decoding a JSON array")
+
+    monkeypatch.setattr(json, "loads", loads)
+    with pytest.raises(ValidationError):
+        webhooks.parse_event(BODY)
+    router = webhooks.WebhookRouter("whsec_new_secret")
+    result = router.handle(BODY, webhooks.sign(BODY, "whsec_new_secret"))
+    assert result.status == 400 and isinstance(result.error, ValidationError)

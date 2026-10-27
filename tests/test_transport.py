@@ -3,6 +3,7 @@ transport_test.go)."""
 
 from __future__ import annotations
 
+import json
 import math
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
@@ -14,6 +15,7 @@ from pydantic import Field
 
 from qbitflow import (
     BadRequestError,
+    NotFoundError,
     Page,
     Product,
     RequestOptions,
@@ -113,8 +115,8 @@ def test_naive_datetime_refused() -> None:
         ),
         (Query().flag("includeHidden", False).boolean("subscription", None), ""),
         (
-            Query().page(5, None).string("email", "a+b@x.io").boolean("verified", False),
-            "email=a%2Bb%40x.io&limit=5&verified=false",
+            Query().page(5, None).string("email", "a+b@x.io").boolean("held", False),
+            "email=a%2Bb%40x.io&held=false&limit=5",
         ),
         (
             Query().string("type", "bill").string("subscriptionUuid", "sub@x"),
@@ -268,6 +270,33 @@ def test_decoding_failures_are_server_errors(body: str) -> None:
         _decode(body, 201, {"X-Request-Id": "rid"})
     assert info.value.status == 201 and info.value.request_id == "rid"
     assert not is_retryable(info.value)
+
+
+def _deep_json_overflows(monkeypatch: pytest.MonkeyPatch) -> None:
+    """json.loads raises RecursionError (not a ValueError) on deeply nested input on Python
+    3.10 to 3.13 ('{"a":[[[[…' 100000 deep); simulated here, whatever the interpreter."""
+
+    def loads(*_a: Any, **_k: Any) -> Any:
+        raise RecursionError("maximum recursion depth exceeded while decoding a JSON array")
+
+    monkeypatch.setattr(json, "loads", loads)
+
+
+def test_deeply_nested_response_is_a_server_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    _deep_json_overflows(monkeypatch)
+    with pytest.raises(ServerError) as info:
+        _decode('{"a":[[[]]]}', 200, {"X-Request-Id": "rid"})
+    assert info.value.status == 200 and info.value.request_id == "rid"
+
+
+def test_deeply_nested_error_body_keeps_the_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    _deep_json_overflows(monkeypatch)
+    client, _, _ = make_client(
+        lambda _r, _n: reply(404, '{"a":[[[]]]}', {"X-Request-Id": "rid-404"})
+    )
+    with pytest.raises(NotFoundError) as info:
+        client.me()
+    assert info.value.status == 404 and info.value.request_id == "rid-404"
 
 
 @pytest.mark.parametrize("tp", [Product, Page[Product], List[Product]])

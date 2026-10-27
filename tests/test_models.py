@@ -14,13 +14,13 @@ import qbitflow.models
 from qbitflow import (
     AccountingEvent,
     AccountingEventType,
+    Attempt,
     Balance,
     Bill,
     Chain,
     CheckoutSessionStatus,
     CreatedCheckoutSession,
     CreatedInvitation,
-    Credential,
     Currency,
     Customer,
     CustomerSummary,
@@ -41,7 +41,9 @@ from qbitflow import (
     Page,
     Payment,
     PaymentCompleted,
+    PaymentSessionData,
     Product,
+    ReferralFee,
     Refund,
     RefundStatus,
     Role,
@@ -56,11 +58,12 @@ from qbitflow import (
     TransactionType,
     TransferSettlement,
     Wallet,
+    WebhookEndpoint,
     WebhookEndpointCreated,
 )
 from qbitflow.models import Model
 
-from .conftest import FIXTURES
+from .conftest import FIXTURES, drop_ignored_keys
 
 #: Fixtures with every wire key of each response model, all non-empty, shaped like the docs'
 #: examples (a 10 USD price paid in BASE:USDC, 0.99 % fee): tests/fixtures/models.json, built
@@ -129,7 +132,7 @@ def _dump(value: Model) -> Any:
 def test_models_match_the_wire(name: str) -> None:
     model, raw = MODEL_FIXTURES[name]
     value = model.model_validate(json.loads(raw))
-    got, want = _dump(value), json.loads(raw)
+    got, want = _dump(value), drop_ignored_keys(json.loads(raw))
     if isinstance(value, EventDetail):
         # Python decodes an event's data eagerly (Go keeps it raw): the typed data writes back
         # its zero-valued fields too, so its keys are a superset of the fixture's.
@@ -181,7 +184,7 @@ def test_model_values() -> None:
     ss = SubscriptionSessionData.model_validate_json(fx("SubscriptionSessionData"))
     assert ss.amount_usd == "4.81" and ss.price_usd == "3.99" and len(ss.fees) == 2
     assert ss.tx_type == TransactionType.CREATE_SUBSCRIPTION
-    assert [c.code for c in ss.available_currencies] == ["BASE:USDC", "ETH"]
+    assert not hasattr(ss, "available_currencies")  # the hosted page's copy: ignored
     assert ss.metadata["orderId"] == "order-1044" and ss.min_periods == 3
     assert ss.frequency.value == 1 and ss.frequency.unit == "months" and ss.upgrading_from_trial
 
@@ -246,12 +249,17 @@ def test_model_values() -> None:
     assert me.space.member is not None and me.space.member.first_name == "Ada"
     assert me.space.trusted_at is not None
     assert me.space.created_at == datetime(2026, 9, 1, 12, tzinfo=timezone.utc)
-    # The session-only fields (user, spaces, reauthenticatedUntil) are not modelled: ignored.
-    me2 = Me.model_validate_json('{"credential":"apiKey","spaces":[],"user":{"uuid":"u"}}')
-    assert me2.credential == Credential.API_KEY and "spaces" not in me2.to_dict()
+    # The fields no API key needs (a session's user, spaces, reauthenticatedUntil; the internal
+    # space.staffView) are not modelled: ignored.
+    me2 = Me.model_validate_json(
+        '{"credential":"apiKey","spaces":[],"user":{"uuid":"u"},'
+        '"space":{"uuid":"s","staffView":false}}'
+    )
+    assert "credential" not in me2.to_dict() and "spaces" not in me2.to_dict()
+    assert me2.space is not None and "staffView" not in me2.to_dict()["space"]
 
     rel = HeldFundsReleased.model_validate_json(fx("HeldFundsReleased"))
-    assert rel.amount_usd == "10" and rel.received and rel.type == "heldFundsRelease"
+    assert rel.amount_usd == "10" and rel.received and not hasattr(rel, "type")
     assert isinstance(rel.settlement, TransferSettlement)
     assert rel.ledgers[0].type == LedgerEntryType.PAYMENT and rel.ledgers[0].owed == "9.901"
 
@@ -294,7 +302,7 @@ def test_accounting_event_rows() -> None:
 
 def test_optional_fields() -> None:
     """The minimal shapes the docs allow: every O field absent is None, every L field [], every
-    metadata {} (types.md §1)."""
+    metadata {}."""
     sub = Subscription.model_validate_json(
         '{"uuid":"sub@1","to":"0xt","status":"trial","priceUsd":"9.99","fees":[],"metadata":{},'
         '"currency":' + fx("Currency") + ',"frequency":{"value":1,"unit":"months"},'
@@ -385,7 +393,6 @@ def test_models_build_by_field_name() -> None:
         "firstName": "Ada",
         "lastName": "Lovelace",
         "email": "",
-        "verified": False,
         "metadata": {},
         "createdAt": "0001-01-01T00:00:00Z",
         "test": False,
@@ -407,6 +414,116 @@ def test_fees() -> None:
     assert p.fees[1].type == FeeLineType.PROCESSING_FEE
     assert FeeLine().type == "" and FeeLine().amount_usd == ""
     assert Subscription.model_validate_json('{"priceUsd":"9.99","fees":null}').fees == []
+
+
+def test_out_of_scope_wire_values_are_ignored() -> None:
+    """What the server may send but an API key never needs decodes fine: an unmodelled key is
+    ignored, an unknown enum value stays its raw string."""
+    # A session's top-level userUuid, credential "session", the qbf.cash role "handle".
+    me = Me.model_validate_json(
+        '{"credential":"session","userUuid":"u-1","role":"handle",'
+        '"space":{"uuid":"s","userUuid":"m-1","role":"handle"}}'
+    )
+    assert "credential" not in me.to_dict() and not hasattr(me, "credential")
+    assert me.role == "handle" and not isinstance(me.role, Role)
+    assert "userUuid" not in me.to_dict() and not hasattr(me, "user_uuid")
+    assert me.space is not None and me.space.user_uuid == "m-1"
+    assert me.space.role == "handle" and not isinstance(me.space.role, Role)
+    assert not hasattr(qbitflow, "Credential")
+    assert [r.value for r in Role] == ["admin", "user"]
+
+    # "owner": an API key is at most admin (SDK invitations are user, team ones admin). A server
+    # that still sends it decodes it as a raw string, like any unknown enum value.
+    owner = Me.model_validate_json('{"role":"owner","space":{"uuid":"s","role":"owner"}}')
+    assert owner.role == "owner" and not isinstance(owner.role, Role)
+    assert owner.space is not None and owner.space.role == "owner"
+    assert not isinstance(owner.space.role, Role) and not hasattr(Role, "OWNER")
+    invitation = Invitation.model_validate_json('{"uuid":"i-1","role":"owner"}')
+    assert invitation.role == "owner" and not isinstance(invitation.role, Role)
+
+    # A qbf.cash tipper's note, on a payment and on payment.completed's data.
+    for model in (Payment, PaymentCompleted):
+        p = model.model_validate_json('{"uuid":"pay@1","note":"thanks"}')
+        assert p.uuid == "pay@1" and "note" not in p.to_dict() and not hasattr(p, "note")
+
+    # The hosted page's redirectUrl, and a txType other than a checkout's.
+    for session_model in (PaymentSessionData, SubscriptionSessionData):
+        s = session_model.model_validate_json(
+            '{"uuid":"pay@1","redirectUrl":"https://x/thanks","txType":"refund"}'
+        )
+        assert "redirectUrl" not in s.to_dict() and not hasattr(s, "redirect_url")
+        assert s.tx_type == "refund" and not isinstance(s.tx_type, TransactionType)
+    assert [t.value for t in TransactionType] == ["payment", "createSubscription"]
+
+    # The transfer type of heldFunds.released (always heldFundsRelease): not modelled.
+    rel = HeldFundsReleased.model_validate_json('{"type":"heldFundsRelease","received":true}')
+    assert rel.received and not hasattr(rel, "type") and "type" not in rel.to_dict()
+
+    # A failed attempt's status (always failed): not modelled.
+    attempt = Attempt.model_validate_json('{"status":"failed","code":"insufficient_funds"}')
+    assert attempt.code == "insufficient_funds" and not hasattr(attempt, "status")
+
+    # A refund status the SDK leaves out (failed: declared, never sent) stays a raw string.
+    failed = Refund.model_validate_json('{"uuid":"refund@1","status":"failed"}')
+    assert failed.status == "failed" and not isinstance(failed.status, RefundStatus)
+    assert [r.value for r in RefundStatus] == ["pending", "approved", "rejected"]
+
+    # A customer's verified flag (the dashboard's concern): not modelled.
+    customer = Customer.model_validate_json('{"uuid":"c-1","verified":true}')
+    assert "verified" not in customer.to_dict() and not hasattr(customer, "verified")
+
+    # An endpoint's payloadVersion (always v2) and rotatedAt (rotation is the dashboard's).
+    endpoint = WebhookEndpoint.model_validate_json(
+        '{"uuid":"e-1","payloadVersion":"v2","rotatedAt":"2026-09-01T12:00:00Z"}'
+    )
+    assert endpoint.uuid == "e-1"
+    assert not {"payloadVersion", "rotatedAt"} & set(endpoint.to_dict())
+    assert not hasattr(endpoint, "payload_version") and not hasattr(endpoint, "rotated_at")
+
+    # The hosted page's copy on checkout.expired's data.
+    for session_model in (PaymentSessionData, SubscriptionSessionData):
+        s = session_model.model_validate_json(
+            '{"uuid":"pay@1","availableCurrencies":[{"id":1}],"userName":"Ada",'
+            '"organizationName":"Shop"}'
+        )
+        assert not {"availableCurrencies", "userName", "organizationName"} & set(s.to_dict())
+
+    # The removed names are not exported.
+    for gone in (
+        "AttemptStatus",
+        "TransferType",
+        "WebhookPayloadVersion",
+        "SettingDefinition",
+        "SettingValue",
+        "SettingKind",
+        "SettingSource",
+    ):
+        assert not hasattr(qbitflow, gone) and not hasattr(qbitflow.models, gone), gone
+    assert not hasattr(qbitflow.webhooks, "WEBHOOK_VERSION_HEADER")
+
+
+def test_referral_fee_deadline_is_ignored() -> None:
+    """``settlement.referralFee`` is ``{address, feePercent}``: its ``deadline`` is internal
+    (API 2.0.0), so a ``deadline`` sent anyway is ignored, never modelled."""
+    st = Settlement.model_validate_json(
+        '{"feePercent":"0.99","referralFee":{"address":"0xref","feePercent":"20",'
+        '"deadline":"2027-01-01T00:00:00Z"}}'
+    )
+    assert st.referral_fee is not None
+    assert st.referral_fee.address == "0xref" and st.referral_fee.fee_percent == "20"
+    assert not hasattr(st.referral_fee, "deadline")
+    assert st.to_dict()["referralFee"] == {"address": "0xref", "feePercent": "20"}
+    assert set(ReferralFee.model_fields) == {"address", "fee_percent"}
+
+
+def test_webhook_secret_is_not_in_repr() -> None:
+    created = WebhookEndpointCreated.model_validate_json(
+        '{"uuid":"e-1","url":"https://example.com/hook","secret":"whsec_top_secret"}'
+    )
+    assert created.secret == "whsec_top_secret"  # readable, and dumped by to_dict()
+    assert created.to_dict()["secret"] == "whsec_top_secret"
+    assert "whsec_top_secret" not in repr(created) and "whsec_top_secret" not in str(created)
+    assert "e-1" in repr(created)
 
 
 def test_test_bill_is_not_collected_by_pytest() -> None:

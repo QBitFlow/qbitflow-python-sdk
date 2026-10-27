@@ -92,8 +92,9 @@ class CheckoutFees:
             line, so this gross-up leaves you at least the price and your lines, as if no fee
             were taken ($100 + $20 VAT at 0.99 % → a $1.20 fee, $121.20 charged, $120.00 kept).
             A marketplace's organization fee is not passed on. ``None``: the space's
-            ``checkout.customerPaysProcessingFee`` setting decides (off by default; set in the
-            dashboard). ``False`` turns it off for this checkout.
+            ``checkout.customerPaysProcessingFee`` setting decides (off by default; set by the
+            organization's team in the dashboard, a member's space included: a member doesn't
+            set it). ``False`` turns it off for this checkout.
         items: Up to 10 lines of your own, shown in this order, before the processing fee.
     """
 
@@ -450,7 +451,6 @@ class CustomersService(Service):
         cursor: Optional[str] = None,
         email: Optional[str] = None,
         reference: Optional[str] = None,
-        verified: Optional[bool] = None,
         options: Optional[RequestOptions] = None,
     ) -> Page[Customer]:
         """One page of the space's customers (``GET /customers``; newest first, page size 20 by
@@ -463,22 +463,13 @@ class CustomersService(Service):
                 share one: this is how to find customers by email).
             reference: Keep only the customer with this reference (a page of 0 or 1 customer;
                 :meth:`get_by_reference` reads it).
-            verified: Keep only the customers the merchant created (True) or those created from
-                an email a payer typed at checkout (False).
         """
         v = Validator()
         v.page(limit, cursor)
         v.email("email", email)
         v.reference("reference", reference)
-        v.boolean("verified", verified)
         v.check()
-        query = (
-            Query()
-            .page(limit, cursor)
-            .string("email", email)
-            .string("reference", reference)
-            .boolean("verified", verified)
-        )
+        query = Query().page(limit, cursor).string("email", email).string("reference", reference)
         return self._call(Page[Customer], Endpoint("GET", "/customers", query), options)
 
     def iterate(
@@ -488,7 +479,6 @@ class CustomersService(Service):
         cursor: Optional[str] = None,
         email: Optional[str] = None,
         reference: Optional[str] = None,
-        verified: Optional[bool] = None,
         options: Optional[RequestOptions] = None,
     ) -> Iterator[Customer]:
         """Every customer :meth:`list` returns, fetching the pages lazily from ``cursor`` (or the
@@ -499,7 +489,6 @@ class CustomersService(Service):
                 cursor=c,
                 email=email,
                 reference=reference,
-                verified=verified,
                 options=options,
             ),
             cursor,
@@ -517,7 +506,7 @@ class CustomersService(Service):
         metadata: Optional[Mapping[str, str]] = None,
         options: Optional[RequestOptions] = None,
     ) -> Customer:
-        """Create a customer (``POST /customers``, 201; verified). Sends an
+        """Create a customer (``POST /customers``, 201). Sends an
         ``Idempotency-Key``; retried on transient failures. The email is stored lowercase and is
         not unique: several customers of a space may share one.
 
@@ -763,10 +752,16 @@ class CheckoutSessionsService(Service):
             success_url: Where the customer goes after paying, through QBitFlow's page for the
                 payment (:data:`~qbitflow.PLACEHOLDER_UUID`: the session's id;
                 :data:`~qbitflow.PLACEHOLDER_TRANSACTION_TYPE`: payment or createSubscription).
-                Default: the space's ``checkout.defaults`` setting. https only in live mode.
-                Reaching it is no proof of payment: fulfil on ``payment.completed``.
+                Default: the space's ``checkout.defaults`` setting (set in the dashboard).
+                https only in live mode. Reaching it is no proof of payment: fulfil on
+                ``payment.completed``. A member's own key may send it while its organization's
+                ``members.checkoutRedirects`` policy allows it (on by default; off: 403
+                ``policy_disabled``, ``details["policy"]`` ``"members.checkoutRedirects"`` and
+                ``details["field"]`` ``"successUrl"``). The organization's key acting for the
+                member (``on_behalf_of``) always may.
             cancel_url: Where the customer goes after a cancelled or failed payment (same
-                placeholders).
+                placeholders, same rule for a member's own key: ``details["field"]``
+                ``"cancelUrl"``).
             customer_uuid: One of the space's customers (unknown: 404); the checkout then asks
                 the customer nothing.
             customer_reference: Your own reference of the customer, kept on the payment: the
@@ -796,6 +791,10 @@ class CheckoutSessionsService(Service):
                 (``details["reason"]``) when the space's wallets accept no currency.
             GoneError: 410 ``merchant_closed`` for a removed member's or a closed
                 organization's space.
+            PermissionDeniedError: 403 ``policy_disabled`` when a member's own key sends
+                ``success_url`` or ``cancel_url`` while its organization's
+                ``members.checkoutRedirects`` policy is off (``details["policy"]`` names the
+                policy, ``details["field"]`` the field, ``successUrl`` first).
         """
         v = Validator()
         _validate_session(
@@ -899,7 +898,9 @@ class CheckoutSessionsService(Service):
                 ``trialPeriod`` (the frequency minimum is 1 hour live, 5 minutes test) and on
                 ``priceUsd`` for a live subscription at ``"0.25"`` or less (``details["min"]``).
             PermissionDeniedError: a member's key needs the ``members.subscriptions`` policy
-                (403 ``policy_disabled``).
+                (403 ``policy_disabled``, ``details["policy"]``); a member's own key sending
+                ``success_url`` or ``cancel_url`` needs ``members.checkoutRedirects`` (403
+                ``policy_disabled`` with ``details["field"]`` too), as :meth:`create_payment`.
             ConflictError: as :meth:`create_payment`, plus 409 ``merchant_not_ready`` with
                 ``details["reason"]`` ``fundsHeld`` for a member whose funds the organization
                 holds (a held member sells one-time payments only, until ``members.trust``).

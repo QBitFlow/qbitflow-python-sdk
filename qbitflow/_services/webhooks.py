@@ -9,7 +9,7 @@ from .._transport import Endpoint, Query, RequestOptions, as_webhook_signature_e
 from .._validation import Validator, check_path_required, check_path_uuid
 from ..errors import BadRequestError, WebhookSignatureReason, field_error, signature_error
 from ..models.common import Page
-from ..models.enums import EventType, WebhookPayloadVersion
+from ..models.enums import EventType
 from ..models.events import Event, EventDetail
 from ..models.resources import WebhookEndpoint, WebhookEndpointCreated
 from ._base import NOT_GIVEN, NotGiven, Service, compact, iterate_pages
@@ -113,7 +113,6 @@ class WebhookEndpointsService(Service):
         events: Optional[Sequence[Union[EventType, str]]] = None,
         include_members: Optional[bool] = None,
         description: Union[str, None, NotGiven] = NOT_GIVEN,
-        payload_version: Union[WebhookPayloadVersion, str, None] = None,
         enabled: Optional[bool] = None,
         options: Optional[RequestOptions] = None,
     ) -> WebhookEndpoint:
@@ -126,8 +125,6 @@ class WebhookEndpointsService(Service):
                 every type, ``None`` keeps them.
             include_members: Whether an organization endpoint receives its members' events.
             description: The new note; ``""`` (or ``None``) clears it, left out keeps it.
-            payload_version: ``v2``, the only version today (anything else is refused);
-                ``None`` leaves it unchanged.
             enabled: False pauses the endpoint (it receives nothing, deliveries in progress
                 stop); True enables it again, also after it was disabled for failing.
         """
@@ -138,10 +135,9 @@ class WebhookEndpointsService(Service):
         v.endpoint_events("events", events)
         v.boolean("includeMembers", include_members)
         v.text("description", clear_description, 0, 200)
-        v.one_of("payloadVersion", payload_version, [str(WebhookPayloadVersion.V2)])
         v.boolean("enabled", enabled)
         v.check()
-        body = compact(url=url, payloadVersion=payload_version)
+        body = compact(url=url)
         if events is not None:
             body["events"] = [str(e) for e in events]
         if include_members is not None:

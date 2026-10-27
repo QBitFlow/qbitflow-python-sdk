@@ -266,11 +266,15 @@ class Validator:
             )
 
     def reference(self, field: str, value: Any) -> None:
-        """A merchant reference when set: 1 to 100 of ``A-Z a-z 0-9 . _ : @ -``."""
+        """A merchant reference when set: 1 to 100 of ``A-Z a-z 0-9 . _ : @ -``, and never
+        ``.`` or ``..`` alone (URL dot-segments, which a path resolves away: a URL built on such
+        a reference could never name it). ``...`` and ``.a`` pass."""
         if not self.string(field, value) or not self.length(field, value, 1, 100):
             return
         if _REFERENCE.fullmatch(value) is None:
             self.add(field, "must contain only letters, digits and . _ : @ -")
+        elif value in (".", ".."):
+            self.add(field, 'cannot be "." or ".."')
 
     def phone(self, field: str, value: Any) -> None:
         """A phone number when set: at most 32 characters, an optional +, digits and the

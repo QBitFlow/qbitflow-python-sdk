@@ -31,7 +31,9 @@ def describe(what: str, error: Optional[Exception]) -> None:
     elif isinstance(error, qbitflow.AuthenticationError):
         print("bad API key")
     elif isinstance(error, qbitflow.PermissionDeniedError):
-        print("not allowed:", error.code)  # forbidden, policy_disabled, plan_required
+        # forbidden, or policy_disabled (details["policy"], and details["field"] when the
+        # policy governs a field, e.g. a member's successUrl under members.checkoutRedirects).
+        print("not allowed:", error.code, error.details)
     elif isinstance(error, (qbitflow.NetworkError, qbitflow.ServerError)):
         print(f"transient (retryable: {qbitflow.is_retryable(error)}): {error}")
     elif isinstance(error, qbitflow.ApiError):

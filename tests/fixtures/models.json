@@ -67,7 +67,6 @@
     "productUuid": "p-1",
     "customerUuid": "c-1",
     "customerReference": "crm-1",
-    "note": "thanks",
     "customer": {
       "uuid": "c-1",
       "firstName": "Ada",
@@ -84,8 +83,7 @@
       },
       "referralFee": {
         "address": "0xref",
-        "feePercent": "20",
-        "deadline": "2027-01-01T00:00:00Z"
+        "feePercent": "20"
       },
       "split": {
         "platform": {
@@ -186,8 +184,7 @@
       },
       "referralFee": {
         "address": "0xref",
-        "feePercent": "20",
-        "deadline": "2027-01-01T00:00:00Z"
+        "feePercent": "20"
       },
       "split": {
         "platform": {
@@ -259,7 +256,6 @@
     "amountUsd": "4.81",
     "successUrl": "https://x/ok",
     "cancelUrl": "https://x/ko",
-    "redirectUrl": "https://x/thanks",
     "organizationName": "Shop",
     "userName": "Ada",
     "test": true,
@@ -348,8 +344,7 @@
       },
       "referralFee": {
         "address": "0xref",
-        "feePercent": "20",
-        "deadline": "2027-01-01T00:00:00Z"
+        "feePercent": "20"
       },
       "split": {
         "platform": {
@@ -483,8 +478,7 @@
       },
       "referralFee": {
         "address": "0xref",
-        "feePercent": "20",
-        "deadline": "2027-01-01T00:00:00Z"
+        "feePercent": "20"
       },
       "split": {
         "platform": {
@@ -859,8 +853,7 @@
           },
           "referralFee": {
             "address": "0xref",
-            "feePercent": "20",
-            "deadline": "2027-01-01T00:00:00Z"
+            "feePercent": "20"
           },
           "split": {
             "platform": {
@@ -1207,7 +1200,6 @@
   "Me": {
     "credential": "apiKey",
     "apiKeyUuid": "k-1",
-    "userUuid": "u-1",
     "role": "user",
     "onBehalfOfUserUuid": "m-1",
     "space": {

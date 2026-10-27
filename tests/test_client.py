@@ -10,7 +10,6 @@ import pytest
 import qbitflow
 from qbitflow import (
     DEFAULT_BASE_URL,
-    Credential,
     QBitFlow,
     RequestOptions,
     Role,
@@ -36,6 +35,22 @@ def test_api_key_refused(key: object) -> None:
 )
 def test_api_key_accepted(key: str) -> None:
     QBitFlow(key).close()
+
+
+@pytest.mark.parametrize(
+    "key",
+    ["sk_live_abc\u2026", "sk_live_abc\r\nX-Evil: 1", "sk_live_a b", "sk_live\x00abc", "sk_ab\tc"],
+    ids=repr,
+)
+def test_api_key_not_a_header_value_refused(key: str) -> None:
+    # A key that cannot be an HTTP header value is refused at construction: it used to raise a
+    # raw UnicodeEncodeError per request (non-ASCII), or a retried NetworkError whose message
+    # echoed the whole key (CR/LF). The error never echoes the key.
+    with pytest.raises(ValidationError) as info:
+        QBitFlow(key)
+    err = info.value
+    assert err.status is None and [f.field for f in err.field_errors] == ["apiKey"]
+    assert "abc" not in str(err) and "abc" not in repr(err)
 
 
 def test_defaults() -> None:
@@ -73,6 +88,10 @@ def test_defaults() -> None:
         ({"timeout": 0}, "timeout"),
         ({"timeout": -1}, "timeout"),
         ({"timeout": True}, "timeout"),
+        # NaN and infinity were accepted, then failed every request with a raw ValueError /
+        # OverflowError from the socket layer (not a QBitFlowError).
+        ({"timeout": float("nan")}, "timeout"),
+        ({"timeout": float("inf")}, "timeout"),
         ({"max_retries": -1}, "maxRetries"),
         ({"max_retries": 1.5}, "maxRetries"),
         ({"on_behalf_of": "42"}, "onBehalfOf"),
@@ -85,6 +104,46 @@ def test_bad_options(kwargs: dict, field: str) -> None:
     with pytest.raises(ValidationError) as info:
         QBitFlow("sk_x", **kwargs)
     assert info.value.field_errors[0].field == field
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://user:hunter2@api.example.com/v2",
+        "https://hunter2@api.example.com/v2",
+        "https://@api.example.com/v2",
+        "https://api.example.com/v2?token=hunter2",
+        "https://api.example.com/v2?",
+        "https://api.example.com/v2#hunter2",
+        "https://api.example.com/v2#",
+        "https://api.example.com?hunter2/v2",
+        "http://",
+        "https:///v2",
+        "mailto:hunter2@example.com",
+        "https://api.example.com/v2\r\nX-Hunter2: 1",
+    ],
+)
+def test_base_url_refused(url: str) -> None:
+    # An http(s) URL with a host and no credentials, query or fragment: a
+    # credential would be sent to the server, a query or fragment would swallow every path.
+    # The message never quotes the URL.
+    with pytest.raises(ValidationError) as info:
+        QBitFlow("sk_x", base_url=url)
+    assert [f.field for f in info.value.field_errors] == ["baseUrl"]
+    assert "hunter2" not in str(info.value) and "hunter2" not in repr(info.value)
+
+
+@pytest.mark.parametrize(
+    "url, want",
+    [
+        ("https://api.example.com/v2", "https://api.example.com/v2"),
+        ("HTTP://localhost:8080/v2/", "HTTP://localhost:8080/v2"),
+        ("https://api.example.com", "https://api.example.com"),
+        ("  https://[::1]:8443/v2  ", "https://[::1]:8443/v2"),
+    ],
+)
+def test_base_url_accepted(url: str, want: str) -> None:
+    assert QBitFlow("sk_x", base_url=url)._transport.base_url == want
 
 
 def test_options_applied() -> None:
@@ -207,6 +266,7 @@ def test_me() -> None:
     body = """{
         "credential": "apiKey",
         "apiKeyUuid": "019cadfd-8900-7b00-8000-0000000000f1",
+        "userUuid": "019cadfd-8900-7b00-8000-0000000000f9",
         "role": "user",
         "onBehalfOfUserUuid": "019eca82-5680-7b00-8000-0000000000b1",
         "space": {
@@ -225,13 +285,18 @@ def test_me() -> None:
     }"""
     client, _, _ = make_client(lambda _r, _n: reply(200, body))
     me = client.me()
-    assert me.credential == Credential.API_KEY and me.role == Role.USER
-    assert me.on_behalf_of_user_uuid == MEMBER_UUID and me.user_uuid is None
+    assert me.role == Role.USER
+    assert me.on_behalf_of_user_uuid == MEMBER_UUID
     assert me.space is not None and me.space.test and me.space.organization_name == "Example Shop"
     assert me.space.member is not None and me.space.member.first_name == "Ada"
-    assert me.space.role == Role.OWNER and me.space.organization_fee_percent == "7.5"
+    assert me.space.role == "owner" and not isinstance(me.space.role, Role)  # not modelled: raw
+    assert me.space.organization_fee_percent == "7.5"
     assert me.space.trusted_at is None and me.space.created_at.year == 2026
-    assert "user" not in me.to_dict()
+    # A session's top-level ``userUuid`` (never sent for an API key) and ``credential`` (always
+    # apiKey for a key) are ignored, not modelled.
+    assert "user" not in me.to_dict() and "userUuid" not in me.to_dict()
+    assert "credential" not in me.to_dict()
+    assert not hasattr(me, "user_uuid") and not hasattr(me, "credential")
 
 
 def test_services() -> None:
@@ -262,6 +327,8 @@ def test_services() -> None:
         for service in (client.checkout_sessions, client.customers, client.subscriptions):
             assert not hasattr(service, gone)
     assert not hasattr(client.payments, "list_combined")
+    # The dashboard's Settings service is not part of the SDK.
+    assert not hasattr(client, "settings") and not hasattr(qbitflow, "SettingsService")
     assert not hasattr(client.refunds, "initiate") and not hasattr(client.refunds, "list_inactive")
     assert not hasattr(client.subscriptions, "execute_test_billing")
     assert not hasattr(client.wallets, "list_supported_currencies")
@@ -272,3 +339,4 @@ def test_repr() -> None:
     client = QBitFlow("sk_secret_value")
     assert "sk_secret" not in repr(client)
     assert "on_behalf_of" in repr(client.on_behalf_of(MEMBER_UUID))
+    assert repr(client) == "QBitFlow(base_url='https://api.qbitflow.app/v2')"

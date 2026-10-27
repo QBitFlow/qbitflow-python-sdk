@@ -52,7 +52,6 @@ from qbitflow import (
     SubscriptionUpcomingBillEvent,
     TransactionType,
     TransferSettlement,
-    TransferType,
     UnknownEvent,
     ValidationError,
     WebhookTest,
@@ -61,7 +60,7 @@ from qbitflow import (
 )
 from qbitflow._transport import Response, decode
 
-from .conftest import FIXTURES
+from .conftest import FIXTURES, drop_ignored_keys
 
 CLASSES: Dict[str, Type[Any]] = {
     "payment.completed": PaymentCompletedEvent,
@@ -81,7 +80,7 @@ CLASSES: Dict[str, Type[Any]] = {
     "webhook.test": WebhookTestEvent,
 }
 
-#: The data model of each type (types.md §4).
+#: The data model of each type.
 DATA: Dict[str, Type[Any]] = {
     "payment.completed": PaymentCompleted,
     "subscription.created": Subscription,
@@ -107,7 +106,9 @@ def raw(event_type: str) -> str:
 
 def load(event_type: str) -> Any:
     event = webhooks.parse_event(raw(event_type))
-    assert event.type == event_type and event.version == "v2" and event.id.startswith("evt_")
+    assert event.type == event_type and event.id.startswith("evt_")
+    # The envelope's version (always v2) is checked on parse but not modelled.
+    assert not hasattr(event, "version") and "version" not in event.to_dict()
     assert event.created_at.tzinfo is not None and event.created_at.year > 1
     return event
 
@@ -143,7 +144,7 @@ def test_fixtures_are_fully_modelled(event_type: str) -> None:
     assert type(event) is CLASSES[event_type]
     assert type(event.data) is DATA[event_type]
     # Every key of the docs' example data is modelled (written back by the model).
-    data = json.loads(raw(event_type))["data"]
+    data = drop_ignored_keys(json.loads(raw(event_type))["data"])
     dumped = event.data.model_dump(mode="json", by_alias=True, exclude_none=True)
     assert _covers(data, dumped), (_keys(data), _keys(dumped))
 
@@ -279,7 +280,10 @@ def test_members_and_funds() -> None:
     event = load("heldFunds.released")
     assert event.user_uuid == "019eca82-5680-7b00-8000-0000000000b1"
     released = event.data
-    assert released.received and released.type == TransferType.HELD_FUNDS_RELEASE
+    assert released.received
+    # The transfer's type (always heldFundsRelease) is sent but not modelled.
+    assert "type" in json.loads(raw("heldFunds.released"))["data"]
+    assert not hasattr(released, "type") and "type" not in released.to_dict()
     assert len(released.ledgers) == 3 and released.uuid.startswith("transfer@")
     assert released.amount == "98.9068" and released.amount_usd == "98.9068"
     assert isinstance(released.settlement, TransferSettlement)
@@ -303,11 +307,16 @@ def test_checkout_expired() -> None:
     assert not isinstance(event.data, SubscriptionSessionData)
     p = event.data
     assert p.tx_type == TransactionType.PAYMENT and p.price_usd == "10" and p.amount_usd == "10"
-    assert len(p.available_currencies) == 2 and p.available_currencies[0].address is None
-    assert p.available_currencies[1].code == "BASE:USDC"
-    assert p.metadata["orderId"] == "order-1043" and p.organization_name == "Example Shop"
+    assert p.metadata["orderId"] == "order-1043"
+    # The hosted page's copy (availableCurrencies, userName, organizationName) is sent but not
+    # modelled.
+    sent = json.loads(raw("checkout.expired"))["data"]
+    assert "availableCurrencies" in sent and "organizationName" in sent
+    for gone in ("available_currencies", "user_name", "organization_name"):
+        assert not hasattr(p, gone)
+    assert not {"availableCurrencies", "userName", "organizationName"} & set(p.to_dict())
     assert p.expires_at is not None and p.created_at is not None
-    assert p.reference == "order-1043" and p.redirect_url is None
+    assert p.reference == "order-1043" and not hasattr(p, "redirect_url")
     assert p.fees == []  # the docs' session has no fees
 
     with_fees = json.loads(raw("checkout.expired"))
@@ -361,7 +370,7 @@ def test_checkout_expired() -> None:
     s = sub.data
     assert s.uuid == "sub@1" and s.frequency == Duration(value=1, unit="weeks")
     assert s.trial_period is not None and s.min_periods == 3 and s.upgrading_from_trial is False
-    assert s.metadata == {"plan": "pro"} and s.available_currencies[0].code == "BASE:USDC"
+    assert s.metadata == {"plan": "pro"} and not hasattr(s, "available_currencies")
 
     unknown = webhooks.parse_event(
         '{"id":"e","type":"checkout.expired","version":"v2",'

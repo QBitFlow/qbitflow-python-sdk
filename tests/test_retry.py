@@ -391,6 +391,48 @@ def test_per_attempt_timeout() -> None:
     )
 
 
+class _DripStream(httpx.SyncByteStream):
+    """A body sent in chunks, each "taking" ``step`` seconds on the client's attempt clock:
+    every read stays under httpx's read timeout, but the whole body does not."""
+
+    def __init__(self, clock: List[float], chunks: int, step: float) -> None:
+        self.clock, self.chunks, self.step = clock, chunks, step
+
+    def __iter__(self) -> Any:
+        for _ in range(self.chunks):
+            self.clock[0] += self.step
+            yield b" "
+        yield b"{}"
+
+
+def test_timeout_bounds_the_whole_attempt() -> None:
+    # httpx's timeout bounds each socket operation, not the attempt: a server dripping its body
+    # kept a call alive for ever. The SDK's timeout bounds the whole attempt, body included.
+    clock = [0.0]
+
+    def handler(_req: httpx.Request, n: int) -> httpx.Response:
+        if n == 0:
+            return httpx.Response(200, stream=_DripStream(clock, 5, 10.0))  # 50 s > 30 s
+        return httpx.Response(200, stream=_DripStream(clock, 2, 10.0))  # 20 s
+
+    client, server, slept = make_client(handler, timeout=30)
+    client._transport.clock = lambda: clock[0]
+    client._send(get(), None)  # the first attempt timed out, the retry made it
+    assert len(server.requests) == 2 and slept == [1.0]
+
+    clock[0] = 0.0
+    slow, _, _ = make_client(
+        lambda _r, _n: httpx.Response(200, stream=_DripStream(clock, 4, 10.0)),
+        timeout=30,
+        max_retries=0,
+    )
+    slow._transport.clock = lambda: clock[0]
+    with pytest.raises(NetworkError) as info:
+        slow._send(get(), None)
+    assert "timed out after 30s" in str(info.value) and info.value.status is None
+    assert is_retryable(info.value)
+
+
 def test_timeout_passed_per_request() -> None:
     seen: List[Any] = []
 

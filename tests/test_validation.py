@@ -140,7 +140,9 @@ def test_text_bounds(client: QBitFlow) -> None:
     ) == ["description"]
 
 
-@pytest.mark.parametrize("ref", ["order-1042", "INV_2026.10:01@shop", "a", "r" * 100])
+@pytest.mark.parametrize(
+    "ref", ["order-1042", "INV_2026.10:01@shop", "a", "r" * 100, "...", ".a", "a."]
+)
 def test_reference_good(client: QBitFlow, ref: str) -> None:
     assert (
         fields(lambda: client.customers.create(first_name="Ada", email="a@b.co", reference=ref))
@@ -148,7 +150,7 @@ def test_reference_good(client: QBitFlow, ref: str) -> None:
     )
 
 
-@pytest.mark.parametrize("ref", ["has space", "slash/x", "é", "#1", "r" * 101])
+@pytest.mark.parametrize("ref", ["has space", "slash/x", "é", "#1", "r" * 101, ".", ".."])
 def test_reference_bad(client: QBitFlow, ref: str) -> None:
     assert fields(
         lambda: client.customers.create(first_name="Ada", email="a@b.co", reference=ref)
@@ -169,13 +171,26 @@ def test_reference_session_and_filter(client: QBitFlow) -> None:
         client.payments.list,
     ):
         assert fields(lambda: lister(reference="bad ref")) == ["reference"]
+        assert fields(lambda: lister(reference=".")) == ["reference"]
+        assert fields(lambda: lister(reference="..")) == ["reference"]
         assert fields(lambda: lister(reference="crm:42@shop.v1")) == []
+    # The dot-segment rule applies to every reference input, the session's included.
+    got = fields(
+        lambda: client.checkout_sessions.create_payment(
+            product_reference=".", reference="..", customer_reference="."
+        )
+    )
+    assert got == ["reference", "productReference", "customerReference"]
+    got = fields(lambda: client.products.create(name="Pro plan", price_usd="10", reference="."))
+    assert got == ["reference"]
 
 
 @pytest.mark.parametrize(
     "lookup", ["products", "customers", "payments", "subscriptions"], ids=lambda n: n
 )
-@pytest.mark.parametrize("ref", ["bad ref", "", " ", "r" * 101, "a/b", None, 42], ids=repr)
+@pytest.mark.parametrize(
+    "ref", ["bad ref", "", " ", "r" * 101, "a/b", ".", "..", None, 42], ids=repr
+)
 def test_get_by_reference_checks_the_reference(lookup: str, ref: Any) -> None:
     client, server, _ = make_client(static(200, '{"items":[],"hasMore":false}'))
     service = getattr(client, lookup)
@@ -183,7 +198,7 @@ def test_get_by_reference_checks_the_reference(lookup: str, ref: Any) -> None:
     assert server.requests == []
 
 
-@pytest.mark.parametrize("ref", [".", "..", "...", "r" * 100, "INV_2026.10:01@shop"])
+@pytest.mark.parametrize("ref", ["...", ".a", "r" * 100, "INV_2026.10:01@shop"])
 def test_get_by_reference_valid_references_are_sent(ref: str) -> None:
     client, server, _ = make_client(static(200, '{"items":[],"hasMore":false}'))
     with pytest.raises(NotFoundError):
@@ -987,7 +1002,9 @@ def test_filters(client: QBitFlow) -> None:
     assert fields(lambda: client.refunds.list(include_members=False, user_uuid=MEMBER_UUID)) == []
     assert fields(lambda: client.wallets.list_accepted_currencies(user_uuid="x")) == ["userUuid"]
     assert fields(lambda: client.customers.list(limit=2.5)) == ["limit"]
-    assert fields(lambda: client.customers.list(verified="yes")) == ["verified"]
+    list_customers: Any = client.customers.list
+    with pytest.raises(TypeError):  # the dashboard's verified filter is not part of the SDK
+        list_customers(verified=True)
     assert fields(lambda: client.products.list(include_hidden="yes")) == ["includeHidden"]
     assert fields(lambda: client.currencies.list(main="yes")) == ["main"]
 
@@ -998,8 +1015,9 @@ def test_filters(client: QBitFlow) -> None:
         (None, []),
         ([], []),
         (["pending"], []),
-        ([RefundStatus.REJECTED, RefundStatus.FAILED], []),
-        (["pending", "approved", "rejected", "failed", "pending"], []),  # duplicates allowed
+        ([RefundStatus.REJECTED, RefundStatus.APPROVED], []),
+        (["pending", "approved", "rejected", "pending"], []),  # duplicates allowed
+        (["pending", "failed"], ["status[1]"]),  # declared by the API, never sent: not a filter
         (["approved", "cancelled"], ["status[1]"]),  # no longer a refund status
         (["pending"] * 6, ["status"]),
         (["pending", "", "nope"], ["status[1]", "status[2]"]),
@@ -1063,10 +1081,9 @@ def test_endpoint_events(client: QBitFlow) -> None:
     assert fields(lambda: client.webhooks.endpoints.create(url="https://x.io", events=[""])) == [
         "events[0]"
     ]
-    assert fields(lambda: client.webhooks.endpoints.update(MEMBER_UUID, payload_version="v1")) == [
-        "payloadVersion"
-    ]
-    assert fields(lambda: client.webhooks.endpoints.update(MEMBER_UUID, payload_version="v2")) == []
+    update: Any = client.webhooks.endpoints.update
+    with pytest.raises(TypeError):  # always v2: not a parameter
+        update(MEMBER_UUID, payload_version="v2")
 
 
 def test_invitation_hold_funds(client: QBitFlow) -> None:
@@ -1180,8 +1197,8 @@ UPDATE_CASES: List[Tuple[str, Callable[[QBitFlow], Any], dict]] = [
     ),
     (
         "endpoint sets",
-        lambda c: c.webhooks.endpoints.update(MEMBER_UUID, enabled=False, payload_version="v2"),
-        {"payloadVersion": "v2", "enabled": False},
+        lambda c: c.webhooks.endpoints.update(MEMBER_UUID, enabled=False),
+        {"enabled": False},
     ),
     (
         "member fee 0",

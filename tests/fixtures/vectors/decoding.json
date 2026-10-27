@@ -854,8 +854,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "body": "{\"items\":[{\"uuid\":\"01a05cd7-2a00-7d00-8000-0000000000d1\",\"firstName\":\"Alice\",\"lastName\":\"Martin\",\"email\":\"alice@example.com\",\"verified\":true,\"phoneNumber\":\"+33 6 12 34 56 78\",\"reference\":\"crm-5521\",\"metadata\":{\"crm:id\":\"C-5521\"},\"createdAt\":\"2026-06-01T09:00:00Z\",\"test\":false}],\"hasMore\":false}",
@@ -886,8 +885,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "body": "{\"items\":null,\"hasMore\":false}",
@@ -919,8 +917,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "body": "{}",
@@ -951,8 +948,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "body": "{\"items\":[{\"uuid\":\"01a05cd7-2a00-7d00-8000-0000000000d1\",\"firstName\":\"Alice\",\"lastName\":\"Martin\",\"email\":\"alice@example.com\",\"verified\":true,\"phoneNumber\":\"+33 6 12 34 56 78\",\"reference\":\"crm-5521\",\"metadata\":{\"crm:id\":\"C-5521\"},\"createdAt\":\"2026-06-01T09:00:00Z\",\"test\":false},{\"uuid\":\"01a05cd7-2a00-7d00-8000-0000000000d2\",\"firstName\":\"Bob\",\"email\":\"bob@example.com\",\"verified\":false,\"metadata\":{},\"createdAt\":\"2026-06-02T09:00:00Z\",\"extra\":{\"x\":1}}],\"hasMore\":true,\"nextCursor\":\"djF8MDFhMDVjZDc\"}",
@@ -987,10 +983,6 @@
           "value": ""
         },
         {
-          "path": "items[1].verified",
-          "value": false
-        },
-        {
           "kind": "time",
           "path": "items[1].createdAt",
           "value": "2026-06-02T09:00:00Z"
@@ -1018,8 +1010,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "body": "{\"items\":[],\"hasMore\":true}",
@@ -1047,8 +1038,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "body": "{\"items\":[],\"hasMore\":false,\"nextCursor\":\"djF8eA\"}",
@@ -1076,8 +1066,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "body": "{\"items\":[],\"hasMore\":\"true\"}",
@@ -1093,8 +1082,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "body": "{\"items\":{},\"hasMore\":false}",
@@ -1110,8 +1098,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "body": "{\"items\":[],\"hasMore\":true,\"nextCursor\":5}",
@@ -1207,10 +1194,6 @@
           "optional": true,
           "path": "userUuid",
           "value": ""
-        },
-        {
-          "path": "verified",
-          "value": false
         }
       ],
       "status": 200
@@ -1231,17 +1214,6 @@
           "value": ""
         }
       ],
-      "status": 200
-    },
-    {
-      "args": {
-        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
-      },
-      "body": "{\"firstName\":\"Alice\",\"verified\":\"true\"}",
-      "expect": "serverError",
-      "method": "customers.get",
-      "model": "Customer",
-      "name": "Customer verified as a string",
       "status": 200
     },
     {
@@ -2345,9 +2317,8 @@
           "value": "20"
         },
         {
-          "kind": "time",
-          "path": "settlement.referralFee.deadline",
-          "value": "2027-01-01T00:00:00Z"
+          "path": "settlement.referralFee.address",
+          "value": "0xref"
         },
         {
           "optional": true,
@@ -3919,16 +3890,6 @@
           "optional": true,
           "path": "disabledAt",
           "value": "2026-10-02T12:00:00Z"
-        },
-        {
-          "kind": "time",
-          "optional": true,
-          "path": "rotatedAt",
-          "value": null
-        },
-        {
-          "path": "payloadVersion",
-          "value": "v2"
         }
       ],
       "status": 200
@@ -4096,10 +4057,6 @@
       "name": "Me unknown role kept, space absent",
       "probes": [
         {
-          "path": "credential",
-          "value": "apiKey"
-        },
-        {
           "optional": true,
           "path": "role",
           "value": "superAdmin"
@@ -4119,7 +4076,7 @@
     },
     {
       "args": {},
-      "body": "{\"credential\":\"apiKey\",\"apiKeyUuid\":\"k1\",\"role\":\"user\",\"onBehalfOfUserUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"space\":{\"uuid\":\"s1\",\"organizationUuid\":\"o1\",\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"test\":true,\"trustedAt\":\"2026-07-01T00:00:00Z\",\"createdAt\":\"2026-06-15T09:00:00Z\",\"organizationName\":\"Example Shop\",\"role\":\"owner\",\"member\":{\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"firstName\":\"Alice\",\"email\":\"alice@example.com\"},\"organizationFeePercent\":\"5\"},\"spaces\":[],\"user\":{\"ignored\":true}}",
+      "body": "{\"credential\":\"apiKey\",\"apiKeyUuid\":\"k1\",\"role\":\"user\",\"onBehalfOfUserUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"space\":{\"uuid\":\"s1\",\"organizationUuid\":\"o1\",\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"test\":true,\"trustedAt\":\"2026-07-01T00:00:00Z\",\"createdAt\":\"2026-06-15T09:00:00Z\",\"organizationName\":\"Example Shop\",\"role\":\"owner\",\"member\":{\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"firstName\":\"Alice\",\"email\":\"alice@example.com\"},\"organizationFeePercent\":\"5\",\"staffView\":true},\"spaces\":[],\"user\":{\"ignored\":true}}",
       "expect": "ok",
       "method": "me",
       "model": "Me",
@@ -4307,10 +4264,6 @@
           "value": "refunded"
         },
         {
-          "path": "lastAttempt.status",
-          "value": "failed"
-        },
-        {
           "kind": "time",
           "path": "lastAttempt.at",
           "value": "2026-10-01T12:00:00Z"
@@ -4479,6 +4432,6 @@
     }
   ],
   "comment": "Response decoding (behaviour.md §6, types.md §1): calling method with args against a server answering status + body must decode (\"ok\", each probe matching), raise a ServerError (\"serverError\"), or, for a getByReference on an empty page, a NotFoundError with status 404 and code not_found (\"notFound\").",
-  "generator": ".claude/cross-sdk-checks/v3/gen (cd gen && go run .)",
+  "generator": "qbitflow-conformance",
   "sdk": "qbitflow-go-sdk 3.0.0"
 }

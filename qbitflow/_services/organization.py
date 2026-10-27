@@ -6,7 +6,12 @@ from datetime import date, timedelta
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from .._transport import Endpoint, Query, RequestOptions, pathf
-from .._validation import Money, Validator, check_path_uuid, known
+from .._validation import (
+    Money,
+    Validator,
+    check_path_uuid,
+    known,
+)
 from ..errors import field_error
 from ..models.common import Currency, Page
 from ..models.enums import InvitationStatus, Role

@@ -29,14 +29,12 @@ from .common import (
 from .enums import (
     AccountingEventType,
     ActionRequired,
-    AttemptStatus,
     BillingFailureReason,
     BillingOutcome,
     BillingStage,
     CancellationReason,
     Chain,
     CheckoutSessionStatusValue,
-    Credential,
     DurationUnit,
     EndpointDisabledReason,
     EventType,
@@ -54,8 +52,6 @@ from .enums import (
     SubscriptionStatus,
     TransactionKind,
     TransactionType,
-    TransferType,
-    WebhookPayloadVersion,
 )
 from .events import (
     BaseEvent,
@@ -208,14 +204,12 @@ __all__ = [
     # enums
     "AccountingEventType",
     "ActionRequired",
-    "AttemptStatus",
     "BillingFailureReason",
     "BillingOutcome",
     "BillingStage",
     "CancellationReason",
     "Chain",
     "CheckoutSessionStatusValue",
-    "Credential",
     "DurationUnit",
     "EndpointDisabledReason",
     "EventType",
@@ -233,6 +227,4 @@ __all__ = [
     "SubscriptionStatus",
     "TransactionKind",
     "TransactionType",
-    "TransferType",
-    "WebhookPayloadVersion",
 ]

@@ -139,7 +139,11 @@ class AuthenticationError(ApiError):
 
 
 class PermissionDeniedError(ApiError):
-    """A 403 (``forbidden``, ``policy_disabled`` with ``details["policy"]``, ``plan_required``)."""
+    """A 403: ``forbidden`` (the key may not do this: a role or another space's resource; no
+    details), or ``policy_disabled`` (a member's key doing what its organization's policy doesn't
+    allow members: ``details["policy"]`` names the policy, and ``details["field"]`` the request
+    field it governs, e.g. a checkout's ``successUrl`` or ``cancelUrl`` while
+    ``members.checkoutRedirects`` is off)."""
 
 
 class NotFoundError(ApiError):

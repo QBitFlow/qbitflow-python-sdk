@@ -273,8 +273,7 @@
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
           "email": "alice@example.com",
           "limit": 50,
-          "reference": "crm-5521",
-          "verified": true
+          "reference": "crm-5521"
         }
       },
       "method": "customers.list",
@@ -309,13 +308,9 @@
           [
             "reference",
             "crm-5521"
-          ],
-          [
-            "verified",
-            "true"
           ]
         ],
-        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&email=alice%40example.com&limit=50&reference=crm-5521&verified=true",
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&email=alice%40example.com&limit=50&reference=crm-5521",
         "verb": "GET"
       }
     },
@@ -1915,8 +1910,7 @@
         "params": {
           "description": "",
           "enabled": false,
-          "events": [],
-          "payloadVersion": "v2"
+          "events": []
         },
         "uuid": "019eca82-5680-7b00-8000-0000000000e1"
       },
@@ -1926,8 +1920,7 @@
         "body": {
           "description": "",
           "enabled": false,
-          "events": [],
-          "payloadVersion": "v2"
+          "events": []
         },
         "headers": {
           "Accept": "application/json",
@@ -2219,11 +2212,11 @@
     },
     {
       "args": {
-        "reference": ".."
+        "reference": "..."
       },
       "method": "subscriptions.getByReference",
-      "name": "query: getByReference of two dots",
-      "note": "\"..\" matches the reference rule and is harmless in a query",
+      "name": "query: getByReference of three dots",
+      "note": "an ordinary reference, sent in the query; only exactly . and .. are refused (validation.json)",
       "request": {
         "body": null,
         "headers": {
@@ -2241,10 +2234,10 @@
         "query": [
           [
             "reference",
-            ".."
+            "..."
           ]
         ],
-        "rawQuery": "reference=..",
+        "rawQuery": "reference=...",
         "verb": "GET"
       }
     },
@@ -2326,10 +2319,10 @@
     {
       "args": {
         "params": {
-          "verified": false
+          "refunded": false
         }
       },
-      "method": "customers.list",
+      "method": "payments.list",
       "name": "query: false booleans are sent",
       "request": {
         "body": null,
@@ -2341,17 +2334,17 @@
           "X-API-Key": "sk_test_conformance",
           "X-Request-Id": null
         },
-        "path": "/customers",
+        "path": "/payments",
         "pathSegments": [
-          "customers"
+          "payments"
         ],
         "query": [
           [
-            "verified",
+            "refunded",
             "false"
           ]
         ],
-        "rawQuery": "verified=false",
+        "rawQuery": "refunded=false",
         "verb": "GET"
       }
     },
@@ -3905,6 +3898,6 @@
     }
   ],
   "comment": "Request building (behaviour.md §1, §3, surface.md §2): each call must send exactly request.",
-  "generator": ".claude/cross-sdk-checks/v3/gen (cd gen && go run .)",
+  "generator": "qbitflow-conformance",
   "sdk": "qbitflow-go-sdk 3.0.0"
 }

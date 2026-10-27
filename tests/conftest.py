@@ -85,6 +85,40 @@ def make_client(handler: Handler, **kwargs: Any) -> Tuple[QBitFlow, StubServer, 
     return client, server, sleeps
 
 
+# Keys the API sends that the SDK deliberately leaves out (the dashboard's, or constant for an API
+# key): the models ignore them. Recorded fixtures keep them, to prove decoding tolerates them.
+_IGNORED_ANYWHERE = {
+    "credential",  # Me: always apiKey for a key
+    "verified",  # Customer: the dashboard's concern
+    "payloadVersion",  # WebhookEndpoint: always v2
+    "rotatedAt",  # WebhookEndpoint: rotation is the dashboard's
+    "availableCurrencies",  # checkout.expired session data: the hosted page's copy
+    "userName",  # idem
+}
+
+
+def drop_ignored_keys(value: Any) -> Any:
+    """``value`` (decoded wire JSON) without the keys the SDK deliberately ignores."""
+    if isinstance(value, list):
+        return [drop_ignored_keys(v) for v in value]
+    if not isinstance(value, dict):
+        return value
+    out = {}
+    for key, item in value.items():
+        if key in _IGNORED_ANYWHERE:
+            continue
+        if key == "organizationName" and "txType" in value:
+            continue  # the session data's copy (MeSpace.organizationName is modelled)
+        if key == "type" and item == "heldFundsRelease":
+            continue  # heldFunds.released's transfer type: always heldFundsRelease
+        if key == "version" and item == "v2" and "type" in value and "createdAt" in value:
+            continue  # the event envelope's version: always v2
+        if key == "lastAttempt" and isinstance(item, dict):
+            item = {k: v for k, v in item.items() if k != "status"}  # always failed
+        out[key] = drop_ignored_keys(item)
+    return out
+
+
 @pytest.fixture
 def load_fixture() -> Callable[[str], str]:
     return lambda name: (FIXTURES / name).read_text()

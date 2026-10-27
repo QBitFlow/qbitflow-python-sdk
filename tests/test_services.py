@@ -38,7 +38,6 @@ from qbitflow import (
     SubscriptionTermsParams,
     TransactionKind,
     ValidationError,
-    WebhookPayloadVersion,
     WebhookSignatureError,
     WebhookSignatureReason,
     WebhookTestEvent,
@@ -434,7 +433,7 @@ ROUTES: List[Route] = [
         reply=fx("Customer"),
         check=lambda v: v.uuid == "c-1"
         and v.first_name == "Ada"
-        and v.verified
+        and not hasattr(v, "verified")
         and v.user_uuid == "m-1",
     ),
     Route(
@@ -454,12 +453,11 @@ ROUTES: List[Route] = [
             cursor=CURSOR,
             email="ada+1@example.com",
             reference=REF,
-            verified=True,
             options=o,
         ),
         "GET",
         "/customers",
-        "cursor=" + CURSOR + "&email=ada%2B1%40example.com&limit=5&" + REF_Q + "&verified=true",
+        "cursor=" + CURSOR + "&email=ada%2B1%40example.com&limit=5&" + REF_Q,
         reply=page(fx("Customer")),
         check=lambda v: len(v.items) == 1 and v.has_more and v.next_cursor == NEXT,
     ),
@@ -1046,13 +1044,12 @@ ROUTES: List[Route] = [
             UUID_A,
             events=[],
             description="",
-            payload_version=WebhookPayloadVersion.V2,
             enabled=True,
             options=o,
         ),
         "PATCH",
         "/webhooks/endpoints/" + UUID_A,
-        body={"events": [], "description": "", "payloadVersion": "v2", "enabled": True},
+        body={"events": [], "description": "", "enabled": True},
         reply=fx("WebhookEndpointCreated"),
     ),
     Route(
@@ -1762,10 +1759,6 @@ VALIDATION_CASES: Dict[str, Any] = {
         "events[0]",
         lambda c: c.webhooks.endpoints.update(UUID_A, events=[EventType.WEBHOOK_TEST]),
     ),
-    "webhooks.endpoints.update payload v1": (
-        "payloadVersion",
-        lambda c: c.webhooks.endpoints.update(UUID_A, payload_version="v1"),
-    ),
     "webhooks.endpoints.list cursor": (
         "cursor",
         lambda c: c.webhooks.endpoints.list(cursor="e" * 201),
@@ -1876,9 +1869,9 @@ ITER_CASES = [
     (
         "customers.iterate",
         "/customers",
-        "email=a%40b.co&limit=2&verified=false",
+        "email=a%40b.co&limit=2",
         uuid_item,
-        lambda c: c.customers.iterate(limit=2, email="a@b.co", verified=False),
+        lambda c: c.customers.iterate(limit=2, email="a@b.co"),
         lambda v: v.uuid,
     ),
     (

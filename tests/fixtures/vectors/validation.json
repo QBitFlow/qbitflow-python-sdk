@@ -3204,17 +3204,124 @@
       "args": {
         "reference": "."
       },
-      "expect": "ok",
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
       "method": "products.getByReference",
-      "name": "products.getByReference: single dot (a valid reference, sent in the query)"
+      "name": "products.getByReference: single dot (refused: never a reference)"
     },
     {
       "args": {
         "reference": ".."
       },
-      "expect": "ok",
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
       "method": "subscriptions.getByReference",
-      "name": "subscriptions.getByReference: two dots (a valid reference, sent in the query)"
+      "name": "subscriptions.getByReference: two dots (refused: never a reference)"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "10",
+          "reference": "."
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "products.create",
+      "name": "products.create: reference single dot (refused: never a reference)"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "10",
+          "reference": "..."
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: reference three dots"
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "10",
+          "reference": ".a"
+        }
+      },
+      "expect": "ok",
+      "method": "products.create",
+      "name": "products.create: reference dot then letter"
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "firstName": "Alice",
+          "reference": ".."
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "customers.create",
+      "name": "customers.create: reference two dots (refused: never a reference)"
+    },
+    {
+      "args": {
+        "params": {
+          "productReference": "."
+        }
+      },
+      "expect": {
+        "fields": [
+          "productReference"
+        ]
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment: productReference single dot (refused: never a reference)"
+    },
+    {
+      "args": {
+        "params": {
+          "customerReference": "..",
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "expect": {
+        "fields": [
+          "customerReference"
+        ]
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription: customerReference two dots (refused: never a reference)"
+    },
+    {
+      "args": {
+        "params": {
+          "reference": ".."
+        }
+      },
+      "expect": {
+        "fields": [
+          "reference"
+        ]
+      },
+      "method": "payments.list",
+      "name": "payments.list: reference filter two dots (refused: never a reference)"
     },
     {
       "args": {
@@ -4099,13 +4206,12 @@
       "args": {
         "params": {
           "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
-          "limit": 10,
-          "verified": false
+          "limit": 10
         }
       },
       "expect": "ok",
       "method": "customers.list",
-      "name": "customers.list: verified false, limit and cursor"
+      "name": "customers.list: limit and cursor"
     },
     {
       "args": {
@@ -7355,8 +7461,7 @@
           "status": [
             "pending",
             "approved",
-            "rejected",
-            "failed"
+            "rejected"
           ]
         }
       },
@@ -7371,8 +7476,8 @@
             "pending",
             "approved",
             "rejected",
-            "failed",
-            "pending"
+            "pending",
+            "approved"
           ]
         }
       },
@@ -7387,9 +7492,9 @@
             "pending",
             "approved",
             "rejected",
-            "failed",
             "pending",
-            "approved"
+            "approved",
+            "rejected"
           ]
         }
       },
@@ -8718,32 +8823,6 @@
     {
       "args": {
         "params": {
-          "payloadVersion": "v2"
-        },
-        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
-      },
-      "expect": "ok",
-      "method": "webhooks.endpoints.update",
-      "name": "webhooks.endpoints.update: payloadVersion v2"
-    },
-    {
-      "args": {
-        "params": {
-          "payloadVersion": "v1"
-        },
-        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
-      },
-      "expect": {
-        "fields": [
-          "payloadVersion"
-        ]
-      },
-      "method": "webhooks.endpoints.update",
-      "name": "webhooks.endpoints.update: payloadVersion v1 (retired)"
-    },
-    {
-      "args": {
-        "params": {
           "events": [
             "custom.event0",
             "custom.event1",
@@ -9477,6 +9556,6 @@
     }
   ],
   "comment": "Client-side validation (behaviour.md §8, §10): each call must be sent (\"ok\") or fail locally with a ValidationError naming exactly expect.fields (wire names, compared as a set of distinct names), without sending anything.",
-  "generator": ".claude/cross-sdk-checks/v3/gen (cd gen && go run .)",
+  "generator": "qbitflow-conformance",
   "sdk": "qbitflow-go-sdk 3.0.0"
 }

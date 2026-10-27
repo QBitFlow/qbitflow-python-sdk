@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import math
 import os
+import unicodedata
 from types import TracebackType
 from typing import Any, Optional, Type
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -39,7 +42,6 @@ from ._validation import (
     check_idempotency_key,
     check_on_behalf_of,
     check_request_id,
-    is_http_url,
     trim_space,
 )
 from .errors import field_error
@@ -65,11 +67,13 @@ class QBitFlow:
             print(session.link)  # send the customer there; fulfil on payment.completed
 
     Args:
-        api_key: Your API key (sent as ``X-API-Key``): non-blank, starting with ``sk_``.
-        base_url: The API root (default ``https://api.qbitflow.app/v2``); an absolute http(s)
-            URL, a trailing ``/`` is stripped.
-        timeout: Bounds each HTTP attempt, in seconds (default 30); a retried call may take
-            longer in total.
+        api_key: Your API key (sent as ``X-API-Key``): non-blank, starting with ``sk_``,
+            printable ASCII without spaces (surrounding white space is trimmed).
+        base_url: The API root (default ``https://api.qbitflow.app/v2``): an absolute http(s)
+            URL with a host, without credentials (``user:pass@``), query or fragment; a
+            trailing ``/`` is stripped.
+        timeout: Bounds each HTTP attempt, in seconds (default 30): connecting, sending and
+            reading the whole answer. A retried call may take longer in total.
         max_retries: How many times a retryable call (a read, or one of the 6 idempotent
             creates) is re-sent after a transient failure (default 3; 0 disables retries).
         on_behalf_of: Act in this member's space on every request (a member's ``userUuid``;
@@ -81,7 +85,8 @@ class QBitFlow:
 
     Raises:
         ValidationError: a missing or malformed key, or an invalid option (nothing is sent:
-            call :meth:`me` to check the key online).
+            call :meth:`me` to check the key online). Its message never quotes the key or the
+            base URL.
     """
 
     def __init__(
@@ -99,17 +104,31 @@ class QBitFlow:
         api_key = trim_space(api_key)
         if not api_key.startswith("sk_"):
             raise field_error("apiKey", "must be a QBitFlow API key (sk_…)")
+        if not all(0x21 <= ord(c) <= 0x7E for c in api_key):
+            # Sent as a header: a space, a control character (CR/LF) or a non-ASCII character
+            # could never be sent. The key itself is never echoed.
+            raise field_error("apiKey", "must be printable ASCII without spaces")
 
         if base_url is None:
             url = DEFAULT_BASE_URL
         else:
             url = trim_space(base_url).rstrip("/") if isinstance(base_url, str) else ""
-            if not is_http_url(url):
-                raise field_error("baseUrl", "must be an absolute http or https URL")
+            if not _is_base_url(url):
+                # Never quotes the URL: it may carry a secret.
+                raise field_error(
+                    "baseUrl",
+                    "must be an absolute http or https URL with a host, without credentials, "
+                    "query or fragment",
+                )
 
         if timeout is None:
             seconds = DEFAULT_TIMEOUT
-        elif isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0:
+        elif (
+            isinstance(timeout, bool)
+            or not isinstance(timeout, (int, float))
+            or not math.isfinite(timeout)
+            or timeout <= 0
+        ):
             raise field_error("timeout", "must be a positive number of seconds")
         else:
             seconds = float(timeout)
@@ -227,6 +246,7 @@ class QBitFlow:
         self.close()
 
     def __repr__(self) -> str:
+        """``QBitFlow(base_url=…)``: never the API key (the base URL carries no credentials)."""
         scope = f", on_behalf_of={self._on_behalf_of!r}" if self._on_behalf_of else ""
         return f"QBitFlow(base_url={self._transport.base_url!r}{scope})"
 
@@ -244,3 +264,18 @@ class QBitFlow:
         if endpoint.idempotent and opts.idempotency_key is not None and opts.idempotency_key != "":
             check_idempotency_key(opts.idempotency_key)
         return self._transport.send(endpoint, on_behalf_of, opts)
+
+
+def _is_base_url(url: str) -> bool:
+    """An ``http``/``https`` URL with a host, and no credentials (``user:pass@``, a ``@`` in the
+    authority), query or fragment (no ``?`` or ``#`` at all): the path of every request is
+    appended to it."""
+    if "?" in url or "#" in url or any(unicodedata.category(c) == "Cc" for c in url):
+        return False
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return False
+    return (
+        parts.scheme.lower() in ("http", "https") and parts.netloc != "" and "@" not in parts.netloc
+    )

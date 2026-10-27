@@ -331,7 +331,7 @@ def parse_error_fields(resp: Response) -> Dict[str, Any]:
     message, code, details, request_id = "", "", {}, ""
     try:
         data = json.loads(resp.body)
-    except (ValueError, UnicodeDecodeError):
+    except (ValueError, RecursionError):  # RecursionError: nested too deep (Python < 3.14)
         data = None
     if isinstance(data, dict):
         if isinstance(data.get("error"), str):
@@ -450,7 +450,7 @@ def decode(tp: Type[T], resp: Response) -> T:
         raise _server_error("empty response body where JSON was expected", resp)
     try:
         data = json.loads(resp.body)
-    except (ValueError, UnicodeDecodeError) as exc:
+    except (ValueError, RecursionError) as exc:  # RecursionError: nested too deep (Python < 3.14)
         raise _server_error("unexpected response body", resp) from exc
     if data is None:
         # Every answer is a JSON object (lists are pages): null is no answer at all.
@@ -502,6 +502,8 @@ class Transport:
         # Test hooks.
         self.sleep: Callable[[float], None] = time.sleep
         self.monotonic: Callable[[], float] = time.monotonic
+        #: The clock bounding one attempt (headers and body) by ``timeout``.
+        self.clock: Callable[[], float] = time.monotonic
         self.now: Callable[[], datetime] = lambda: datetime.now(timezone.utc)
         self.new_key: Callable[[], str] = lambda: str(uuid.uuid4())
 
@@ -559,21 +561,31 @@ class Transport:
     def _round_trip(
         self, method: str, url: str, payload: Optional[bytes], headers: Dict[str, str]
     ) -> Response:
-        """One HTTP attempt, bounded by the per-attempt timeout; redirects are not followed."""
+        """One HTTP attempt; redirects are not followed. ``timeout`` bounds the whole attempt,
+        the body included: httpx's own timeout bounds each socket operation only, so a server
+        sending its body slowly is cut once the attempt's time is up (checked as the body
+        arrives, so at most one socket timeout later)."""
+        deadline = self.clock() + self.timeout
+        timed_out = f"request timed out after {self.timeout:g}s"
         try:
-            res = self.http.request(
+            with self.http.stream(
                 method,
                 url,
                 content=payload,
                 headers=headers,
                 timeout=self.timeout,
                 follow_redirects=False,
-            )
+            ) as res:
+                chunks = []
+                for chunk in res.iter_bytes():
+                    chunks.append(chunk)
+                    if self.clock() > deadline:
+                        raise NetworkError(timed_out)
+                return Response(status=res.status_code, headers=res.headers, body=b"".join(chunks))
         except httpx.TimeoutException as exc:
-            raise NetworkError(f"request timed out after {self.timeout:g}s") from exc
+            raise NetworkError(timed_out) from exc
         except httpx.HTTPError as exc:
             raise NetworkError("request failed") from exc
-        return Response(status=res.status_code, headers=res.headers, body=res.content)
 
 
 def split_options(options: Optional[RequestOptions]) -> RequestOptions:
