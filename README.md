@@ -9,7 +9,7 @@ checkouts, one-time payments, subscriptions, refunds, marketplaces with commissi
 funds, accounting exports and signed webhooks. Customers pay from their own wallets, on Ethereum,
 Base and Solana, straight to yours.
 
-- **API v2**, every integrator route: 14 services, 54 routes, one `QBitFlow` client.
+- **API v2**, every integrator route: 14 services, 53 public routes, one `QBitFlow` client.
 - **Typed**: pydantic v2 models with snake_case attributes, enums, `py.typed`; keyword-only
   arguments checked before anything is sent.
 - **Typed errors**, one class per condition, each carrying the API's code, request id and field
@@ -23,7 +23,7 @@ Base and Solana, straight to yours.
 - **Integration helpers**: `wait_for_completion` for scripts, `subscription.has_access()`, exact
   `format_amount`/`parse_amount`, accounting exports over any range, `QBitFlow.from_env()`.
 
-> Coming from 2.x? Read [MIGRATION-v3.md](MIGRATION-v3.md): 3.0.0 targets API v2 and changes the
+> Coming from 2.x? Read [MIGRATION-v3.md](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/MIGRATION-v3.md): 3.0.0 targets API v2 and changes the
 > client and most names.
 
 ## Contents
@@ -52,10 +52,27 @@ Base and Solana, straight to yours.
 ## Installation
 
 ```bash
-pip install qbitflow
+pip install "qbitflow>=3,<4"
 ```
 
-**Requires Python 3.10 or later.** Dependencies: `httpx` and `pydantic` (v2).
+**Requires Python 3.10 or later** (tested on 3.10 to 3.14). Runtime dependencies: `httpx` (0.24 or
+later, below 1.0) and `pydantic` (2.5 or later, below 3). The SDK is synchronous and needs nothing
+else.
+
+The webhook router's framework adapters import their framework only when you call them, so no
+web framework is a dependency. The optional extras only install a supported version of one next
+to the SDK:
+
+| Extra | Installs | For |
+|---|---|---|
+| `qbitflow[flask]` | `flask>=2.2` | `router.flask_view()` |
+| `qbitflow[django]` | `django>=4.2` | `router.django_view()` |
+| `qbitflow[fastapi]` | `fastapi>=0.100` | `router.fastapi_endpoint()` |
+| `qbitflow[starlette]` | `starlette>=0.27` | `router.fastapi_endpoint()` in a Starlette route, `router.handle_asgi()` |
+
+```bash
+pip install "qbitflow[fastapi]>=3,<4"
+```
 
 ## Quick start
 
@@ -264,14 +281,15 @@ client = qbitflow.QBitFlow.from_env(timeout=10)  # explicit options override the
 
 Every request sends your API key in `X-API-Key`. Keys are created in the QBitFlow dashboard; each
 belongs to one **space** (your organization's, or one of its members') and one **mode** (test or
-live). `QBitFlow(...)` only checks the key's shape (non-blank, starting with `sk_`) and sends
-nothing: call `me()` to check it online ([quick start](#quick-start)). `me.role` is `admin` for
+live). `QBitFlow(...)` only checks the key's shape (non-blank, starting with `sk_`, printable
+ASCII without spaces) and sends nothing: call `me()` to check it online ([quick start](#quick-start)). `me.role` is `admin` for
 an organization key, and `me.space.test` tells test mode from live (a job that must only run in
 test mode checks it first).
 
-Keep the key in a secret store or an environment variable, never in code. The SDK only checks the
-`sk_` prefix; keys issued before API v2 (`sk_<digits>_…`) are refused by the API (`401`): create a
-new one in the dashboard.
+Keep the key in a secret store or an environment variable, never in code. The SDK never shows it
+(`repr(client)`, errors). API v2 issues keys shaped `sk_<test|live>_<uuid>_<secret>`; the SDK
+never parses a key, it only checks its shape. Keys in an earlier format (v1's `sk_<digits>_…`,
+and `sk_<uuid>_<test|live>_…`) are refused by the API (`401`): create a new one in the dashboard.
 
 ### `On-Behalf-Of`: acting in a member's space
 
@@ -359,7 +377,15 @@ print("Send the customer to", session.link)  # sub@…: the subscription's id on
   (`qbitflow.PLACEHOLDER_UUID`, `qbitflow.PLACEHOLDER_TRANSACTION_TYPE`; the SDK sends them as
   is, never URL-encoded). In live mode
   both URLs must be `https`. A redirect proves nothing (anyone can open the URL): fulfil on the
-  webhook, or on `checkout_sessions.get`.
+  webhook, or on `checkout_sessions.get`. Left out, the space's `checkout.defaults` setting
+  applies (set in the dashboard).
+- **A member's own key** sends `success_url` and `cancel_url` while its organization's
+  `members.checkoutRedirects` policy allows it (on by default: a seller's shop sends its
+  customers back to its own site). With the policy off for the member, sending either is a
+  `PermissionDeniedError` (403 `policy_disabled`, `details["policy"]` `"members.checkoutRedirects"`
+  and `details["field"]` naming the field, `successUrl` first), nothing is created, and the
+  member's checkouts go where the organization's `checkout.defaults` says. The organization's key
+  acting for the member (`on_behalf_of`) may always send them.
 - **Errors to expect:** `409 merchant_not_ready` (`details["reason"]`) when the space's wallets
   accept no currency, or for a subscription of a member whose funds you hold (`fundsHeld`);
   `409 unique_violation` when another payment or open session holds the `reference`;
@@ -410,8 +436,9 @@ print("Send the customer to", session.link)
   0.99 % is a $1.20 processing fee, $121.20 charged, $120.00 kept. The rate is the checkout's:
   QBitFlow's fee for your space when the checkout is created (a schedule by volume, unless
   QBitFlow set you a custom rate). Left out (`None`), the space's
-  `checkout.customerPaysProcessingFee` setting decides (off by default; set it in the
-  dashboard); `False` turns it off for one checkout. A product link's checkout follows the
+  `checkout.customerPaysProcessingFee` setting decides (off by default; the organization's team
+  sets it in the dashboard, for a member's space too: a member doesn't); `False` turns it off for
+  one checkout. A product link's checkout follows the
   setting too.
 - **What the customer pays** is the price plus every line: the payment's `amount_usd`. It is
   what is charged and split (QBitFlow's fee, and an organization's, are taken on it) and recorded
@@ -553,10 +580,8 @@ by_reference = client.customers.get_by_reference("crm-42")  # NotFoundError when
 print(customer.uuid == by_reference.uuid)
 ```
 
-`customers.get`, `list` / `iterate` (by `email`, `reference` or `verified`) and `delete` (`204`)
-complete the set. A customer you create is `verified`; one QBitFlow created from the email a payer
-typed at checkout is not, and a checkout never links a typed email to a verified customer. A
-checkout given `customer_uuid` or `customer_reference` asks the customer
+`customers.get`, `list` / `iterate` (by `email` or `reference`) and `delete` (`204`) complete
+the set. A checkout given `customer_uuid` or `customer_reference` asks the customer
 nothing (`customer_reference` is kept on the payment, and links your customer with that reference
 if there is one); without either, the checkout asks what your `checkout.customerDetails` setting
 says (the full details by default).
@@ -742,7 +767,8 @@ else:
 updated yet, but the cancellation goes on regardless. It is never retried automatically. A
 subscription already stopped is a `ConflictError` (409
 `subscription_already_stopped_or_inactive`); a cancelled one a `NotFoundError`. A trial is
-cancelled immediately only (`immediate=False`: `400`).
+cancelled immediately only (`immediate=False` on a trial: a `ValidationError`, 400
+`validation_failed` on `immediate`).
 
 ### Test billing
 
@@ -811,7 +837,7 @@ is one refund per transaction, whatever it became: `Payment.refundable` / `not_r
 say whether one would be accepted now.
 
 A refund is `pending` (a customer's request waiting for your answer), `approved` or `rejected`
-(both final); `failed` is declared but never set. `initiated_by` is `customer` or `merchant`.
+(both final). `initiated_by` is `customer` or `merchant`.
 
 ## Marketplaces
 
@@ -867,7 +893,8 @@ if not client.wallets.list_accepted_currencies(user_uuid=member_uuid):
 Then act in their space with `seller = client.on_behalf_of(member_uuid)`
 ([On-Behalf-Of](#on-behalf-of-acting-in-a-members-space)): `seller.checkout_sessions` and
 `seller.products` create the seller's checkouts and products. Your policies may not let members
-do this: a `PermissionDeniedError` (403 `policy_disabled`).
+do this: a `PermissionDeniedError` (403 `policy_disabled`). Policies (`members.*`) are changed
+from the dashboard only: no API key can write them.
 
 While you hold a seller's funds (`Member.trusted_at` None), they sell **one-time payments only**: a
 subscription checkout in their space answers `409 merchant_not_ready` with `details["reason"]`
@@ -1182,8 +1209,8 @@ for every 400 and 500 (`event` is `None` when the body could not be parsed), to 
 - **Members' events** carry the member in `event.user_uuid`: read their resources with
   `client.on_behalf_of(event.user_uuid)`.
 - **No fixed source IPs**: verify the signature, never allow-list addresses.
-- **v2 only.** Every endpoint receives the v2 envelope (`QBitFlow-Webhook-Version: v2`); a body
-  of another version is refused (a `ValidationError` on `version`, a 400 from the router).
+- **v2 events only.** Every endpoint receives the v2 event envelope; a body that is not one is
+  refused (a `ValidationError`, a 400 from the router).
 - **Headers:** `QBitFlow-Signature`, `QBitFlow-Event-Id` and `QBitFlow-Event-Type`
   (`webhooks.SIGNATURE_HEADER`, `EVENT_ID_HEADER`, `EVENT_TYPE_HEADER`).
 
@@ -1237,8 +1264,8 @@ return 200  # acknowledge every other type too, or QBitFlow retries it
 ```
 <!-- /docs:snippet -->
 
-`now=` sets their clock in tests (a `datetime`, unix seconds, or a callable). Not holding the
-secret? `client.webhooks.verify_remote(endpoint_uuid, raw_body, header)` has the API check it,
+`now=` sets their clock in tests (a `datetime`, naive taken as UTC as in `sign`, unix seconds,
+or a callable). Not holding the secret? `client.webhooks.verify_remote(endpoint_uuid, raw_body, header)` has the API check it,
 then `client.webhooks.parse_event(raw_body)` parses the body. `client.webhooks.verify`,
 `construct_event` and `parse_event` are the same functions on the client.
 
@@ -1262,7 +1289,7 @@ then `client.webhooks.parse_event(raw_body)` parses the body. `client.webhooks.v
 | any other | `UnknownEvent` | the raw JSON value |
 
 `qbitflow.Event` is the union of these classes (a pydantic discriminated union on `type`); every
-one derives from `BaseEvent` (`id`, `type`, `version`, `created_at`, `test`, `user_uuid`).
+one derives from `BaseEvent` (`id`, `type`, `created_at`, `test`, `user_uuid`).
 `router.on` refuses a type it does not know (a `ValidationError`: a typo never goes unnoticed).
 Webhook data never carries what only API reads return (`customer`,
 `refund`/`refundable`/`not_refundable_reason`, a subscription's `dunning`, a refund's `approval`,
@@ -1291,7 +1318,14 @@ if page.has_more:
 detail = client.webhooks.events.get(event_id)
 for d in detail.deliveries:
     print(detail.event.id, d.url, d.delivered, len(d.attempts))
+    for attempt in d.attempts:  # oldest first
+        print(attempt.attempt, attempt.status_code, attempt.skipped, attempt.error)
 ```
+
+An attempt's `status_code` is `None` when the endpoint didn't answer, and on a **skipped**
+attempt (`skipped=True`): a member's endpoint while the organization's `members.webhooks` policy
+is off for them gets nothing posted, the attempt's `error` says why, and it doesn't count against
+the endpoint's health.
 
 ## Currencies
 
@@ -1369,7 +1403,7 @@ fields every error has; catch the most specific class you can act on:
 | `ValidationError` | 400 `validation_failed`, or input the SDK refused **before sending** (`status` None) | `field_errors`: each failing input by its wire name, dotted when nested (`frequency.unit`) |
 | `BadRequestError` | any other 400 | `foreign_key_violation` (`details["field"]`), `test_mode_only`, `sender_is_receiver` |
 | `AuthenticationError` | 401 | a missing, unknown, expired or revoked key (a removed member's keys too) |
-| `PermissionDeniedError` | 403 | `forbidden`, `policy_disabled` (`details["policy"]`), `plan_required` |
+| `PermissionDeniedError` | 403 | `forbidden` (a role or another space's resource; no details), `policy_disabled`: a member's key doing what its organization's policy doesn't allow members (`details["policy"]` names the policy; `details["field"]` the request field it governs, e.g. a checkout's `successUrl` / `cancelUrl` under `members.checkoutRedirects`) |
 | `NotFoundError` | 404 | unknown, deleted, or outside the request's space; also a `get_by_reference` that found nothing (code `not_found`, the list's `request_id`) |
 | `ConflictError` | 409 | `unique_violation` (`details["field"]`), `tx_already_sent`, `merchant_not_ready` (`details["reason"]`), `held_funds_pending`, `already_joined`, `payment_not_due`, `subscription_already_stopped_or_inactive`, `idempotency_key_in_use`, `conflict` |
 | `GoneError` | 410 | `merchant_closed`: a removed member's or a closed organization's space |
@@ -1378,7 +1412,7 @@ fields every error has; catch the most specific class you can act on:
 | `ServerError` | 5xx (503 `network_unavailable`, 504 `timeout`), an unexpected 3xx (redirects are never followed), a 2xx whose body is not the expected JSON | |
 | `NetworkError` | no response: DNS, connection, TLS, timeout | the cause is chained (`__cause__`) |
 | `WebhookSignatureError` | a webhook signature refused, locally or by `verify_remote` | `reason` |
-| `ApiError` | any other HTTP error (e.g. 413 `request_too_large`), and the base of all the above | |
+| `ApiError` | any other HTTP error (e.g. 413 `request_too_large`; 405 `method_not_allowed`, with an `Allow` header, for a path called with the wrong method, which the SDK never does), and the base of all the above | |
 
 Every error carries `status` (`None` without a response), `code` (branch on it, never on
 `message`), `message`, `details` (never `None`, and raw: money in it is a string,
@@ -1409,8 +1443,9 @@ names the taken field in `details["field"]`, a `RateLimitError` says when to ret
 `retry_after`. Quote the request id to support.
 
 **Client-side validation** runs before every request: names and texts (lengths in characters, no
-markup characters), references (`A-Z a-z 0-9 . _ : @ -`, 1 to 100, on creates and on the
-`reference` filters and `get_by_reference`), emails (the customers' `email` filter too), phone
+markup characters), references (`A-Z a-z 0-9 . _ : @ -`, 1 to 100, never `.` or `..` alone, on
+creates, on `product_reference` / `customer_reference`, on the `reference` filters and on
+`get_by_reference`), emails (the customers' `email` filter too), phone
 numbers, absolute `http(s)` URLs, USD amounts (decimal strings with at most 2 decimals, above 0, at
 most 1,000,000), percents (decimal strings, at most 2 decimals: `organization_fee_percent` 0 to
 50), metadata (keys, values, at most 50 keys), durations (a frequency between 1 unit and 1 year), UUIDs and transaction ids, dates, cursors (at most 200
@@ -1434,7 +1469,7 @@ API: the `"5"` USD test-mode cap, `https`-only live URLs, the live subscription 
 | Back-off | 1 s, 2 s, 4 s…; a 429 waits for its `Retry-After` if longer. A wait above 60 s is not made: the `RateLimitError` is raised at once |
 
 `qbitflow.is_retryable(error)` says whether an error is of a transient kind. `timeout` bounds each
-attempt; a retried call may take longer in total.
+attempt, the response body included; a retried call may take longer in total.
 
 **Idempotency keys.** Each call of a create sends a fresh `Idempotency-Key` (a UUID v4) and reuses
 it on every retry of that call: a create retried after a timeout answers the first result instead
@@ -1479,14 +1514,15 @@ client = QBitFlow(
     os.environ["QBITFLOW_API_KEY"],
     timeout=10,  # seconds, per attempt
     max_retries=5,
-    http_client=httpx.Client(proxy="http://proxy.internal:3128"),  # proxies, transports, tracing…
+    # proxies, transports, tracing… (proxy= needs httpx 0.26+; older: proxies=)
+    http_client=httpx.Client(proxy="http://proxy.internal:3128"),
 )
 ```
 
 | Constructor argument | Default | |
 |---|---|---|
-| `base_url` | `https://api.qbitflow.app/v2` (`qbitflow.DEFAULT_BASE_URL`) | an absolute `http(s)` URL; a trailing `/` is stripped |
-| `timeout` | 30 (`DEFAULT_TIMEOUT`) | seconds, per attempt; positive |
+| `base_url` | `https://api.qbitflow.app/v2` (`qbitflow.DEFAULT_BASE_URL`) | an absolute `http(s)` URL with a host, without credentials (`user@`), query or fragment; a trailing `/` is stripped |
+| `timeout` | 30 (`DEFAULT_TIMEOUT`) | seconds, per attempt (connecting, sending, and reading the whole answer); positive and finite |
 | `max_retries` | 3 (`DEFAULT_MAX_RETRIES`) | `0` disables retries; negative is refused |
 | `http_client` | an `httpx.Client` the SDK creates (and closes) | yours is never closed by the SDK, and never follows redirects for it |
 | `on_behalf_of` | none | every request acts in that member's space; `None` or `""`: the organization level (no header) |
@@ -1518,31 +1554,31 @@ safe to share between threads.
 3.0.0 is a rewrite for API v2: base URL `/v2`, a new client with keyword-only arguments, UUID ids,
 REST routes, money as decimal strings, members and invitations instead of users and claims, a new
 webhook signature, typed errors.
-**[MIGRATION-v3.md](MIGRATION-v3.md)** maps every 2.x method and type to its replacement, with
+**[MIGRATION-v3.md](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/MIGRATION-v3.md)** maps every 2.x method and type to its replacement, with
 before/after code for the common tasks.
 
 ## Examples
 
-Runnable scripts in [`examples/`](examples) (`QBITFLOW_API_KEY=sk_… python examples/<name>.py`;
+Runnable scripts in [`examples/`](https://github.com/QBitFlow/qbitflow-python-sdk/tree/main/examples) (`QBITFLOW_API_KEY=sk_… python examples/<name>.py`;
 `QBITFLOW_BASE_URL` optional). The code blocks of this README come from their `# docs:start`
-regions ([CONTRIBUTING.md](CONTRIBUTING.md#website-snippets)).
+regions ([CONTRIBUTING.md](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/CONTRIBUTING.md#website-snippets)).
 
 | Example | Shows | Other environment |
 |---|---|---|
-| [`client_setup.py`](examples/client_setup.py) | a client and `me()`, `QBitFlow.from_env` | |
-| [`checkout.py`](examples/checkout.py) | a payment checkout, its status, waiting, expiry; a checkout with fees | `WAIT=1` waits for the payment |
-| [`catalog.py`](examples/catalog.py) | create and list products, list customers, a checkout for a product | |
-| [`payments.py`](examples/payments.py) | a page of payments, one payment, every payment, the payments-and-bills feed, `format_amount` | `PAYMENT_UUID` |
-| [`refunds.py`](examples/refunds.py) | the pending refunds (customers' requests), one refund | |
-| [`subscriptions.py`](examples/subscriptions.py) | a subscription checkout with a trial; one subscription's access, bills, metadata, a test bill, cancel at period end | `SUBSCRIPTION_UUID`, `TEST_BILL=1`, `CANCEL=1` |
-| [`marketplace.py`](examples/marketplace.py) | invitations, members, `on_behalf_of`, held funds, fee, trust, removal | `INVITE=1`, `INVITATION_UUID`, `MEMBER_UUID`, `UPDATE_FEE=1`, `TRUST=1`, `REMOVE=1` |
-| [`webhook_endpoints.py`](examples/webhook_endpoints.py) | create a webhook endpoint, the event log | `CREATE_ENDPOINT=1` |
-| [`webhook_fastapi.py`](examples/webhook_fastapi.py) | a `WebhookRouter` mounted in FastAPI (needs `fastapi` and `uvicorn`) | `QBITFLOW_WEBHOOK_SECRET` (no API key) |
-| [`webhook_handler.py`](examples/webhook_handler.py) | a `WebhookRouter` behind a standard-library server: typed handlers (payments, bills, refunds), deduplication, `has_access` | `QBITFLOW_WEBHOOK_SECRET` (no API key) |
-| [`webhook_verify.py`](examples/webhook_verify.py) | `construct_event` on a delivery signed with `webhooks.sign` (offline) | `QBITFLOW_WEBHOOK_SECRET` (optional, no API key) |
-| [`errors_and_retries.py`](examples/errors_and_retries.py) | error classes, `is_retryable`, idempotency keys across processes | |
-| [`accounting.py`](examples/accounting.py) | a year of accounting events, as models and as `qbitflow-2026.csv` | |
-| [`currencies.py`](examples/currencies.py) | the currencies customers can pay with | |
+| [`client_setup.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/client_setup.py) | a client and `me()`, `QBitFlow.from_env` | |
+| [`checkout.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/checkout.py) | a payment checkout, its status, waiting, expiry; a checkout with fees | `WAIT=1` waits for the payment |
+| [`catalog.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/catalog.py) | create and list products, list customers, a checkout for a product | |
+| [`payments.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/payments.py) | a page of payments, one payment, every payment, the payments-and-bills feed, `format_amount` | `PAYMENT_UUID` |
+| [`refunds.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/refunds.py) | the pending refunds (customers' requests), one refund | |
+| [`subscriptions.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/subscriptions.py) | a subscription checkout with a trial; one subscription's access, bills, metadata, a test bill, cancel at period end | `SUBSCRIPTION_UUID`, `TEST_BILL=1`, `CANCEL=1` |
+| [`marketplace.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/marketplace.py) | invitations, members, `on_behalf_of`, held funds, fee, trust, removal | `INVITE=1`, `INVITATION_UUID`, `MEMBER_UUID`, `UPDATE_FEE=1`, `TRUST=1`, `REMOVE=1` |
+| [`webhook_endpoints.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/webhook_endpoints.py) | create a webhook endpoint, the event log | `CREATE_ENDPOINT=1` |
+| [`webhook_fastapi.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/webhook_fastapi.py) | a `WebhookRouter` mounted in FastAPI (needs `fastapi` and `uvicorn`) | `QBITFLOW_WEBHOOK_SECRET` (no API key) |
+| [`webhook_handler.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/webhook_handler.py) | a `WebhookRouter` behind a standard-library server: typed handlers (payments, bills, refunds), deduplication, `has_access` | `QBITFLOW_WEBHOOK_SECRET` (no API key) |
+| [`webhook_verify.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/webhook_verify.py) | `construct_event` on a delivery signed with `webhooks.sign` (offline) | `QBITFLOW_WEBHOOK_SECRET` (optional, no API key) |
+| [`errors_and_retries.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/errors_and_retries.py) | error classes, `is_retryable`, idempotency keys across processes | |
+| [`accounting.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/accounting.py) | a year of accounting events, as models and as `qbitflow-2026.csv` | |
+| [`currencies.py`](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/examples/currencies.py) | the currencies customers can pay with | |
 
 The examples share the order references `order-1042` (payment), `order-1043` (subscription) and
 `order-1044` (a payment with fees), unique per space: those that create a payment checkout expire it before they exit, so they can
@@ -1555,34 +1591,35 @@ pip install -e ".[dev]"
 mypy qbitflow/ && flake8 qbitflow/ tests/ examples/ && black --check qbitflow/ tests/ examples/ && isort --check-only qbitflow/ tests/ examples/ && pytest
 ```
 
-`pytest` runs the offline suite against stub transports, including the cross-SDK conformance
-vectors in `tests/fixtures/vectors/`, and the website snippet check
-([CONTRIBUTING.md](CONTRIBUTING.md#website-snippets)). The live checks need an API key **and** an explicit base
-URL:
+`pytest` runs the offline suite against stub transports, including the conformance vectors in
+`tests/fixtures/vectors/` (the cases every QBitFlow SDK passes). The live checks need an API key
+**and** an explicit base URL, and skip without a key:
 
 ```bash
 QBITFLOW_API_KEY=sk_… QBITFLOW_BASE_URL=https://… pytest tests/test_integration.py -v
 ```
 
 The read-only checks only read; the write checks also need `QBITFLOW_LIVE_WRITES=1` and a
-test-mode key (or `QBITFLOW_ALLOW_LIVE_MODE_WRITES=1`).
+test-mode key (or `QBITFLOW_ALLOW_LIVE_MODE_WRITES=1`). The same gates run in CI on Python 3.10 to
+3.14; [CONTRIBUTING.md](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/CONTRIBUTING.md)
+says which ones a contribution must pass.
 
 ## License
 
-This project is licensed under the MPL-2.0 License: see the [LICENSE](LICENSE) file. See also
-[COMPLIANCE.md](COMPLIANCE.md) and the [trademark policy](TRADEMARKS.md).
+This project is licensed under the MPL-2.0 License: see the [LICENSE](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/LICENSE) file. See also
+[COMPLIANCE.md](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/COMPLIANCE.md) and the [trademark policy](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/TRADEMARKS.md).
 
 ## Support
 
 - 📖 [Documentation](https://qbitflow.app/docs)
 - 📧 [Email Support](mailto:support@qbitflow.app)
-- 🐛 [Issue Tracker](https://github.com/qbitflow/qbitflow-python-sdk/issues)
+- 🐛 [Issue Tracker](https://github.com/QBitFlow/qbitflow-python-sdk/issues)
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for version history.
+See [CHANGELOG.md](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/CHANGELOG.md) for version history.
 
 ## Security
 
 For security issues, please email security@qbitflow.app instead of using the issue tracker (see
-[SECURITY.md](SECURITY.md)).
+[SECURITY.md](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/SECURITY.md)).

@@ -1,382 +1,249 @@
 # Changelog
 
-All notable changes to the QBitFlow Python SDK will be documented in this file.
+All notable changes to the QBitFlow Python SDK are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/), and this
+project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2026-10-19
+## [3.0.0] - 2026-10-28
 
-The SDK for **QBitFlow API v2**, aligned with the final API v2 contract (api-hub `docs/api` @
-`b97ca6c`) and with the behaviour contract the Go, JavaScript, Python and PHP SDKs 3.0.0 share
-(same services, methods, errors, retries, validation and webhook verification; checked against the
-shared conformance vectors). A major release: the client, the routes, the services and most names
-change. [MIGRATION-v3.md](MIGRATION-v3.md) maps every 2.x method and type to its replacement.
-
-This entry describes the changes since 2.1.0, the last published release (2.5.0 was prepared but
-never published; its changes are part of 3.0.0).
-
-### ⚠️ Breaking
-
--   **API v2**: the default base URL is `https://api.qbitflow.app/v2`, with its REST routes:
-    plural collections (`/products/:uuid`, `/customers`, `/payments`, `/subscriptions`,
-    `/bills/:uuid`, `/refunds`, `/wallets`, `/currencies`, `/checkout-sessions/…`,
-    `/payment-failures`, `/transactions`, `/held-funds`), updates as `PATCH`, actions as
-    `POST /<resource>/:uuid/<verb>`, lookups by reference as list filters, and every `DELETE`
-    answering `204` with no body. `/v1` is gone.
--   **The client.** `QBitFlow(api_key, *, base_url=None, timeout=None, max_retries=None,
-    on_behalf_of=None, http_client=None)`: keyword-only options, `timeout` per attempt in seconds,
-    `max_retries=0` disables retries, an injectable `httpx.Client`, context-manager support and
-    `close()`. The key must be non-blank and start with `sk_` (a `ValidationError` otherwise,
-    instead of `ValueError`; nothing is sent). `client.me()` describes the key.
-    `client.on_behalf_of(user_uuid)` returns a client acting in a member's space (it replaces the
-    per-service `on_behalf_of`); `""` (or `None`) means the organization level, and the
-    `On-Behalf-Of` header is then omitted (never sent blank).
--   **Services and methods** follow the shared surface: `checkout_sessions`, `payments`,
-    `transactions`, `failures`, `subscriptions`, `refunds`, `products`, `customers`, `members`,
-    `invitations`, `wallets`, `accounting`, `webhooks` (+ `.endpoints`, `.events`), `currencies`.
-    Every method takes **keyword-only arguments** (path ids positional) and
-    `options=RequestOptions(...)` last (`on_behalf_of`, `idempotency_key`, `request_id`). The
-    `Create…Dto` / `Update…Dto` request classes are gone.
--   **Ids are UUID strings.** Products are named by `uuid` (was the numeric `id`), and
-    `product_id` is `product_uuid` everywhere; people are named by their user UUID (`user_id` →
-    `user_uuid`). `organization_id` is gone from every model. Currencies keep numeric ids.
-    Transaction ids are prefixed (`pay@`, `sub@`, `sub-hist@`, `refund@`, `transfer@`,
-    `release@`) and every route also takes the bare UUID.
--   **Money is a decimal string, never a float**, in requests and in responses: USD amounts
-    (`price_usd`, `amount_usd`, `paid_usd`, `total_usd`, `attempted_usd`), token amounts
-    (`amount`, `paid`, `owed`, next to their `…_min_units`) and fee rates in percent
-    (`fee_percent`, `organization_fee_percent`, `refund_percent`: `"1.5"` is 1.5 %). The money
-    inputs (`products.create(price_usd=…)` / `update`, the sessions' inline `price_usd`,
-    `FeeItem.amount_usd`, `invitations.create(organization_fee_percent=…)`,
-    `members.update(organization_fee_percent=…)`)
-    take a `str` or a `decimal.Decimal` (sent as `str(value)`, which must then match the grammar);
-    a `float` or an `int` is refused with a `ValidationError` (a float cannot carry `0.1`
-    exactly, and the API answers 400 to a JSON number). No float is left in a model.
--   **Amounts are token amounts.** `Payment.amount`, `Bill.amount`, `Transaction.amount` and
-    `HeldFundsReleased.amount` are now in the currency's units (`"10"` for 10 USDC), next to
-    `amount_min_units` and the new `amount_usd` (what `amount` used to be).
--   **Users and claims become invitations, members and held funds**: `users.*` →
-    `invitations.*` and `members.*` (a person exists once they accept an invitation); `claim.*` →
-    `members.trust` and the held-funds reads. `api_keys.*` is removed (keys are managed in the
-    dashboard; `client.me()` describes the current key).
--   **Checkout sessions have their own service.** `one_time_payments.create_session` and
-    `subscriptions.create_session` → `checkout_sessions.create_payment` / `create_subscription`
-    (`POST /checkout-sessions/payment` / `subscription`), returning a `CreatedCheckoutSession`
-    (`uuid`, `link`, `expires_at`, always set). `transaction_status.get` →
-    `checkout_sessions.get(uuid)` (`GET /checkout-sessions/:uuid`), a `CheckoutSessionStatus` with
-    four statuses (`created`, `waitingConfirmation`, `completed`, `expired`) and `expires_at` while
-    open: a failed attempt is `created` with `last_attempt` set, never final.
-    `checkout_sessions.expire` is new. The session getters (`get_session`) are removed.
--   **Subscriptions.** `status` (was `subscription_status`) takes `trial`, `trialExpired`,
-    `active`, `pastDue`, `paused`, `stopped`, `cancelled`; `low_on_funds` and `pending` became
-    `action_required` values (`topUpAllowance`, `raiseMaximum`, `confirmTrial`), and the `stopped`
-    bool the `stopped` status. `frequency` is a `Duration` (was seconds); `last_billing_date` →
-    `last_billed_at`, `next_billing_date` → `next_billing_at`, `minimum_cancellation_date` →
-    `cancellable_at` (all `Optional[datetime]`); `allowance` is an `Allowance` object (`amount`,
-    `amount_min_units`, `amount_usd`, `remaining_periods`, `max_per_period`,
-    `max_per_period_min_units`) that absorbs `max_amount_per_period`; `from_`, `product_uuid` and
-    `subscription_hash` are `None` when unknown; `currency` is always set; `management_page_link`
-    is on the subscription itself. `force_cancel` → `cancel(uuid, immediate=…)`
-    (`POST /subscriptions/:uuid/cancel`; `immediate=False` cancels at the end of the paid period;
-    returns a `SubscriptionCancellation` with `pending` for an HTTP 202);
-    `execute_test_billing_cycle` → `test_bill` (`POST /subscriptions/:uuid/test-bill`, returns a
-    `TestBill`: `bill_uuid` `sub-hist@…`, `stage`, `outcome`, `attempts`, `next_attempt_at`);
-    `get_payment_history` → `list_bills` / `iterate_bills`; `get` returns cancelled subscriptions
-    too.
--   **The settlement.** `Payment.metadata` (the fee split) → `Payment.settlement`, a `Settlement`
-    (`fee_percent`, `organization_fee`, `referral_fee`, `split`, `transaction`) on payments, bills,
-    transactions and held-funds lines; a `TransferSettlement` on refunds and held-funds releases.
-    `PaymentMetadata`, `TxMetadata`, `BlockData`, `NetworkFees`, `TxAmounts`, `TxAmountsMinUnits`
-    and `TxAmountsUsd` are replaced by `Settlement`, `Split` (each part a `TokenAmount`;
-    `split.platform` no longer includes the referrer's share), `SettlementTransaction`
-    (`block_number`, `block_time`, `gas_used`, `fee`, `l1_fee`, `native_price_usd`) and
-    `TransferSettlement`. `OrganizationFee.organization` and `ReferralFee.referrer` → `address`.
--   **`metadata` is now your own data**: a `dict[str, str]` on `Product`, `Customer`, `Payment`
-    (copied from its checkout, read-only), `Subscription`, `Transaction` and the
-    `checkout.expired` session (`{}` without any).
--   **Models renamed and retyped**: `LinkResponse` → `CreatedCheckoutSession`,
-    `TransactionStatus` → `CheckoutSessionStatus`, `SubscriptionHistory` → `Bill`, `RefundEntry` →
-    `Refund` (`tx_id` → `tx_uuid`), `CombinedPaymentItem` → `Transaction`, `User` → `Member`,
-    `UserRole` → `Role`, `CursorData` → `Page`; `transaction_hash` → `tx_hash`; the wire's `from`
-    is `from_`. `name` → `first_name` on `Customer`, `CustomerSummary`, `Member` and `MeMember`
-    (and the customer methods' arguments); a payment's and a bill's `name` / `description` →
-    `product_name` / `product_description`; `Product.price` → `price_usd`; `Me.on_behalf_of` →
-    `on_behalf_of_user_uuid`; `Member.accepted_currency_ids` → `accepted_currencies`
-    (`list[Currency]`); `Wallet.public_key` → `address`; `TokenWallet.token_id` / `token` →
-    `currency`; `Balance` is a `TokenAmount` plus its `currency` (was a code, `balance` and
-    `balance_usd`); `HeldFunds.total_amount` and `MemberHeldFunds.total_amount` → `total_usd`;
-    `LedgerEntry.amount` → `amount_usd`, `LedgerEntry.metadata` → `settlement`, plus `owed`;
-    `Invitation.trust_layer` → `hold_funds` (and the `invitations.create` argument);
-    `CreatedInvitation` is flat (the invitation's fields and `link`); the `currency_id` fields are
-    gone (each model carries its `currency` object). Optional fields are `Optional[...]` (`None`
-    when absent); a field the API always sends has a zero default.
--   **The currency object** gains `code` (`BASE:USDC`) and `chain`; `address` is `None` on a
-    native coin; the nested `main_currency` is gone (`main_currency_id` stays).
--   **Enum values** follow the API's lowerCamelCase (`pastDue`, `trialExpired`);
-    `TransactionType.ONE_TIME_PAYMENT` → `PAYMENT`, `EXECUTE_SUBSCRIPTION_PAYMENT` →
-    `EXECUTE_SUBSCRIPTION`, the PAYG values are `createPaygSubscription` /
-    `cancelPaygSubscription`. `AccountingEventType` `subscriptionHistory` → `bill`
-    (`AccountingEventType.BILL`); `LedgerEntryType` is `payment` or `refund` only (a held seller
-    sells no subscription, so no bill is ever a held-funds line). `RefundStatus` adds `FAILED`
-    (declared, never set). `WebhookPayloadVersion` has `V2` only: v2 is the only payload.
--   **Pagination**: `get_all(limit, cursor)` → `list(limit=…, cursor=…, filters…)` returning a
-    `Page[T]` (`items`, `has_more`, `next_cursor`): `has_more` is a field (it was a property),
-    `next_cursor` an opaque string (`None` on the last page). Iterators stop when `has_more` is
-    false. Bounded lists (`currencies.list`, `wallets.list`, `wallets.list_for_member`,
-    `wallets.list_accepted_currencies`, `members.list_held_funds`, `accounting.export_json`)
-    return a `list` (and follow a `next_cursor` should one ever claim more, so an export is never
-    cut short silently). Iterators also stop on an empty page that claims more, a page claiming
-    more without a cursor, or a cursor that did not move (a server fault).
--   **Lookups by reference are list filters.** `products`, `customers`, `payments` and
-    `subscriptions` `get_by_reference(reference)` run the list's `?reference=` filter and return
-    the item whose `reference` equals the one asked for (exactly), or raise a `NotFoundError`
-    (status 404, code `not_found`, the list answer's request id) when none does — never another
-    resource. The reference is validated (1 to 100 of `A-Z a-z 0-9 . _ : @ -`).
-    `customers.get_by_email` is removed: an email may match several customers
-    (`customers.list(email=…)`).
--   **Deletes and revokes return `None`**: every `DELETE` answers `204`; `invitations.revoke` no
-    longer returns the invitation.
--   **Decoding policy**: an absent or `null` value of a non-optional field decodes to its zero
-    value (`ZERO_TIME` for a timestamp); a value of the wrong JSON type is a `ServerError` (a JSON
-    number where a decimal string is expected included); unknown enum values are kept as raw
-    strings; timestamps are aware `datetime`s with any offset. Every answer is a JSON object: a
-    `null` body is a `ServerError`.
--   **Errors.** One class per condition, all deriving from `QBitFlowError` and `ApiError`
-    (`status`, `code`, `message`, `details`, `request_id`, `field_errors`, `raw_body`):
-    `ValidationError` (400 `validation_failed` and client-side checks), `BadRequestError` (other
-    400s, which 2.x reported as validation errors), `AuthenticationError`,
-    `PermissionDeniedError` (was `ForbiddenException` in 2.5.0), `NotFoundError` (was
-    `NotFoundException`), `ConflictError`, `GoneError`, `IdempotencyError` (422, which 2.x
-    reported as a validation error), `RateLimitError` (`retry_after`, `limit`, `period_seconds`),
-    `ServerError`, `NetworkError`, `WebhookSignatureError`. `APIError` → `ApiError`;
-    `InvalidRequestError` is removed. The `qbitflow.exceptions` package is gone: import the
-    errors from `qbitflow`.
--   **Webhooks** use API v2's scheme: the `QBitFlow-Signature: t=…,v1=…` header, an
-    HMAC-SHA256 of `t + "." + raw_body` over the raw body (no canonical JSON), and the event
-    envelope (`id`, `type`, `version`, `created_at`, `test`, `user_uuid`, `data`); a version other
-    than `v2` is refused (`ValidationError`). `verify_webhook_signature`,
-    `compute_webhook_signature`, `canonical_json`, `extract_webhook_headers`, the `X-Webhook-*`
-    header constants, `TEST_WEBHOOK_ID` and `client.webhooks.verify(payload, signature,
-    timestamp)` are replaced by `qbitflow.webhooks.verify` / `construct_event` / `parse_event`
-    (raising `WebhookSignatureError` with a `reason`) and `client.webhooks.verify_remote`.
--   **Webhook events renamed and reshaped**: `refund.completed` → `refund.approved`
-    (`EventType.REFUND_APPROVED`, `RefundApprovedEvent`), `refund.denied` → `refund.rejected`
-    (`EventType.REFUND_REJECTED`, `RefundRejectedEvent`). `subscription.billed`'s data is nested:
-    `SubscriptionBilled(bill=…, subscription=…)` (the flattened `subscription_reference` /
-    `subscription_status` are `data.subscription.reference` / `.status`).
-    `subscription.created`'s data is a plain `Subscription` (the `SubscriptionCreated` class is
-    gone). `subscription.upcomingBill`'s `billing_date` → `billing_at`, and its `amount_usd` is a
-    string. `heldFunds.released`'s `tx_metadata` → `settlement` (a `TransferSettlement`), its
-    `amount` the token amount next to `amount_usd`. The `checkout.expired` session has
-    `price_usd`, `amount_usd` (were `price` / `amount` numbers), `available_currencies` (was
-    `available_currency_ids`), `metadata`, and `upgrading_from_trial` as a bool.
--   **Renamed methods** (inside 3.0.0's preparation, before the API v2 final contract):
-    `checkout_sessions.get_status` → `get`; `payments.list_combined` / `iterate_combined` →
-    `transactions.list` / `iterate` (`CombinedPayment` → `Transaction`, `CombinedPaymentSource` →
-    `TransactionKind` with `payment` / `bill`, the `source` filter → `type`);
-    `subscriptions.execute_test_billing` → `test_bill` (`BillingState` → `TestBill`);
-    `refunds.initiate` is removed (refunds are read only, below); `refunds.list` (active) and
-    `list_inactive` /
-    `iterate_inactive` → one `refunds.list` / `iterate` with a `status` filter;
-    `wallets.list_supported_currencies` → `list_accepted_currencies`; `currencies.list_available`
-    / `list_main` → `currencies.list(test=…, main=…)`; `webhooks.endpoints.list` takes
-    `limit` / `cursor` and returns a page; `CheckoutSession` → `CreatedCheckoutSession`,
-    `InvitationCreated` → `CreatedInvitation`, `MemberHeldFundsSummary` → `MemberHeldFunds`.
-    `subscriptions.get_public_history` is removed (the customer's public bill history is set
-    aside; `list_bills` has every bill).
+The SDK for **QBitFlow API v2**. A major release, written for the API's new REST routes: the
+client, the services, the models, the errors and the webhooks change, and almost every 2.x call
+needs an edit. This entry lists the changes since 2.1.0;
+[MIGRATION-v3.md](https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/MIGRATION-v3.md) maps
+every 2.x method and type to its replacement, with before/after code. Requires Python 3.10 or
+later.
 
 ### Added
 
--   `client.me()`: what the key is (role, space, mode, the member acted for), the recommended
-    start-up check; `client.on_behalf_of(user_uuid)`; `RequestOptions`. `MeSpace` has `role`,
-    `trusted_at`, `created_at` and `organization_fee_percent`.
--   `checkout_sessions`: `create_payment`, `create_subscription` (with `expires_in_minutes`,
-    `metadata` and the `{{UUID}}` / `{{TRANSACTION_TYPE}}` redirect placeholders), `get`,
-    `expire`.
--   **Checkout fees**: the customer pays a tax, shipping or QBitFlow's processing fee on top of
-    the price.
-    -   `checkout_sessions.create_payment(..., fees=CheckoutFees(items=[FeeItem(label,
-        amount_usd, description=None)], processing_fee=None))`: up to 10 lines of your own and
-        the processing fee (grossed up so you keep the price and your lines; `None` follows the
-        dashboard's `checkout.customerPaysProcessingFee` setting). `amount_usd` is a decimal
-        string or a `Decimal`, sent as a JSON string. Omitted when not given.
-    -   `checkout_sessions.create_subscription(..., fees=…)`: the same `CheckoutFees` and rules
-        (errors on `fees.items[i].<field>` after the terms'), locked with the price: every bill
-        charges the price plus every line.
-    -   Validated before sending: at most 10 lines (`fees.items`), `label` the name rule in 1 to
-        40 characters, `description` the text rule up to 200, `amount_usd` above 0, at most
-        1,000,000, at most 2 decimals, no sign or exponent (`fees.items[i].amountUsd`…). The
-        test-mode `"5"` cap, fees included, is the API's (a 400 on `fees`).
-    -   Models: `FeeLine` (`type`, `label`, `description`, `amount_usd` as a decimal string) and
-        the open enum `FeeLineType` (`CUSTOM`, `PROCESSING_FEE`); `Payment.price_usd` and
-        `fees` (so `payment.completed` has them: `amount_usd` = `price_usd` + the fees);
-        `Subscription.fees` (next to `price_usd`, which stays the price); `Transaction.price_usd`
-        and `fees`; `PaymentSessionData.fees` and `amount_usd` (`checkout.expired`: what the
-        customer pays before the network fee).
--   **Merchant metadata** (`metadata=`, a mapping of strings) on `products.create` / `update`,
-    `customers.create` / `update`, both session creates, and `subscriptions.update`
-    (`PATCH /subscriptions/:uuid`): merged on the updates, a key set to `""` deleting it.
--   `transactions.list` / `iterate` (`GET /transactions`): the feed of payments and bills, each a
-    `Transaction` with its `type` (`TransactionKind`: `payment`, `bill`), filtered by `type`,
-    `subscription_uuid`, `refunded` and the shared filters.
--   `payments.list` / `iterate` with filters (customer, product, dates, `reference`, `refunded`,
-    `include_members` / `user_uuid`); `payments.get(uuid, include_members=…)`. `failures.list` /
-    `iterate`: the failed payment attempts (`attempted`, `attempted_usd`, `currency`).
--   `products.list` / `iterate` (paginated: `limit`, `cursor`, `include_hidden`, `subscription`,
-    `reference`) and subscription products (`SubscriptionTermsParams`); `customers.list` /
-    `iterate` (`email`, `reference`, `verified`).
--   `subscriptions.list` / `iterate` (`status`, `reference` and the shared filters), `update`,
-    `list_bills` / `iterate_bills`, `get_bill` (`GET /bills/:uuid`);
-    `Subscription.current_period_end` (grant access while now is before it), `action_required`,
-    `price_usd`, `cancellation_reason`, `dunning`, `metadata`, `management_page_link`;
-    `Allowance`.
--   `refunds.list` / `iterate` (`status` (a list, sent as repeated `?status=`), `tx_uuid`, `held`,
-    `include_members`, `user_uuid`) and `refunds.get` (`GET /refunds/:uuid`), read only: a
-    customer's request is answered, and a merchant's own refund sent, from the dashboard (the
-    merchant's is recorded only once its transfer confirmed, `approved`: `refund.approved` is its
-    only event). A `Refund` carries `paid`, `amount`, its `currency` and, once approved, its
-    `settlement`.
--   `members` (`list`, `iterate`, `get`, `update`, `remove`, `trust`, `list_held_funds`,
-    `get_held_funds`, `get_own_held_funds`) and `invitations` (`create`, `list`, `iterate`,
-    `revoke`) for marketplaces. `invitations.create(send_email=False)` (`None`: emailed) creates
-    the invitation without emailing it, to share its `link` yourself.
--   `MerchantNotReadyReason` (`details["reason"]` of a `409 merchant_not_ready`): `NO_WALLET`,
-    `ORGANIZATION_NO_WALLET`, `NO_TOKEN_WALLET`, and `FUNDS_HELD` (`fundsHeld`), a subscription
-    checkout of a member whose funds the organization holds (a held member sells one-time
-    payments only, until `members.trust`).
--   `wallets` (`list(with_balances=…)`, `list_for_member`, `list_accepted_currencies`),
-    `accounting.export_csv`, `currencies.list(test=…, main=…)`, `currencies.get(id)`.
--   `TokenAmount` (`amount`, `amount_min_units`, `amount_usd`), the shape of every token amount.
--   `webhooks.endpoints` (`list` / `iterate` paginated, `create` with the secret shown once,
-    `get`, `update`, `delete`) and `webhooks.events` (the event log: `list`, `iterate`, `get` with
-    its deliveries, `EventDetail`).
--   **Typed webhook events**: one class per event type (`PaymentCompletedEvent`, …,
-    `RefundApprovedEvent`, `RefundRejectedEvent`, …, `WebhookTestEvent`: 15 types) in the `Event`
-    discriminated union, `UnknownEvent` (raw `data`) for new types; `EventType` constants. Every
-    `v1=` signature is checked, so a secret rotation needs nothing on the receiver's side.
--   **Iterators** for every paginated list (`iterate`, `iterate_bills`): lazy, one request per
-    page, filters and page size kept.
--   **Retries**: reads and the 6 creates are retried on network errors, timeouts, 5xx, 429
-    (honouring `Retry-After`, up to 60 s) and 409 `idempotency_key_in_use`, 3 times by default
-    with a 1 s · 2ⁿ back-off; `max_retries=0` disables them; `is_retryable`.
--   An `Idempotency-Key` on each create, generated per call and reused on every retry
-    (`RequestOptions(idempotency_key=…)` to set your own).
--   **Client-side validation** of every input, mirroring the API v2 validators and raising
-    `ValidationError` with wire field names before anything is sent: names, texts, references
-    (also on the `reference` filters and `get_by_reference`), emails (also the customers'
-    `email` filter), phones, URLs, USD amounts as strings (at most 2 decimals, above 0, at most
-    1,000,000), percents as strings (at most 2 decimals and 16 characters;
-    `organization_fee_percent` 0 to 50, required on `members.update`), metadata (at
-    most 50 keys of 1 to 40 of `A-Z a-z 0-9 _ - . :`, values of at most 500 characters without
-    control or bidirectional characters), durations, ids (the `release@` prefix included),
-    dates, cursors (at most 200 characters), the refunds' `status` filter (at most 5 known
-    statuses), the transactions' `type`, exclusive filters, argument types, and a clearable
-    `customers.update(last_name="")`.
--   `X-Request-Id` (`RequestOptions(request_id=…)`), echoed as `request_id` on errors.
--   `NOT_GIVEN`: the default of the clearable update fields (`""` or `None` clears them).
--   `qbitflow.__version__` single-sourced in `qbitflow/_version.py`; `User-Agent:
-    qbitflow-python/3.0.0`.
--   **Integration helpers** (the same in the four SDKs):
-    -   `webhooks.WebhookRouter(secret, *, tolerance=300, on_error=None)` (also
-        `client.webhooks.router(secret)`): `@router.on("payment.completed")` (or an `EventType`)
-        handlers called with `(data, event)`, `@router.on_unknown`, `@router.on_any`,
-        `router.add(type, fn)`; `router.handle(raw_body, signature_header)` returns a
-        `WebhookResult(status, event, error)`: 400 for a bad signature or body (no handler
-        runs), 200 once handled or for a type without a handler, 500 when a handler raises (the
-        rest are skipped); `on_error(event, exc)` hears every 400 and 500. Adapters, each
-        importing its framework only when used (no new dependency; optional extras `flask`,
-        `django`, `fastapi`, `starlette`): `router.flask_view()`, `router.django_view()`
-        (CSRF-exempt), `router.fastapi_endpoint()` and `await router.handle_asgi(request)` for
-        Starlette/FastAPI. They accept `POST` only (405), read at most 1 MiB (413), match
-        `QBitFlow-Signature` case-insensitively and answer `{"received":true}` or
-        `{"error":"…"}` (`invalid signature`, `invalid event`, `cannot read the body`,
-        `internal error`, `method not allowed`, `body too large`).
-    -   `webhooks.sign(raw_body, secret, timestamp=None)`: a `QBitFlow-Signature` header as
-        QBitFlow sends it, to test your endpoint.
-    -   `checkout_sessions.wait_for_completion(uuid, *, timeout=600, interval=3)`: polls
-        `checkout_sessions.get` until `completed` or `expired`; on timeout, the last status seen
-        (`timeout <= 0` means 600 s, `interval` at least 1 s, the last wait shortened to the time
-        left).
-    -   `Subscription.has_access(at=None)`: `current_period_end` set and `at` before it.
-    -   `qbitflow.format_amount(min_units, decimals)` / `parse_amount(amount, decimals)` and
-        `Currency.format_amount(min_units)`: exact conversions between minimal units and
-        decimal strings (string arithmetic, never a float).
-    -   `accounting.export_json_range` / `export_csv_range`: any range, split into windows of at
-        most 92 days, both ends included (`[from, from + 91d]`), requested in order and joined
-        (the CSV header once).
-    -   `QBitFlow.from_env(**overrides)`: `QBITFLOW_API_KEY` (required), `QBITFLOW_BASE_URL`,
-        `QBITFLOW_ON_BEHALF_OF`; keyword arguments win.
-    -   `qbitflow.PLACEHOLDER_UUID` (`{{UUID}}`) and `PLACEHOLDER_TRANSACTION_TYPE`
-        (`{{TRANSACTION_TYPE}}`) for `success_url` / `cancel_url`.
+-   **Checkout sessions** (`client.checkout_sessions`): `create_payment` and
+    `create_subscription` (with `expires_in_minutes`, `metadata`, and the `{{UUID}}` /
+    `{{TRANSACTION_TYPE}}` redirect placeholders, `qbitflow.PLACEHOLDER_UUID` and
+    `PLACEHOLDER_TRANSACTION_TYPE`), `get`, `expire`, and `wait_for_completion(uuid, *,
+    timeout=600, interval=3)` for scripts.
+-   **Checkout fees**: `fees=CheckoutFees(items=[FeeItem(label, amount_usd, description=None)],
+    processing_fee=None)` on both session creates: up to 10 lines of your own (a tax, shipping)
+    and QBitFlow's processing fee, which the customer pays on top of the price (a subscription:
+    with every bill). Recorded as `fees` (`FeeLine`, `FeeLineType`) next to `price_usd` on
+    payments, subscriptions, transactions and the `checkout.expired` session.
+-   **Your own metadata** (`metadata=`, a `dict[str, str]`) on products, customers, checkouts
+    and subscriptions (`subscriptions.update`), copied from a checkout onto its payment or
+    subscription and into their webhooks; merged on updates (a key set to `""` deletes it).
+-   **Marketplaces**: `members` (`list`, `iterate`, `get`, `update`, `remove`, `trust`,
+    `list_held_funds`, `get_held_funds`, `get_own_held_funds`) and `invitations` (`create`,
+    `list`, `iterate`, `revoke`; `create(send_email=False)` to share the link yourself), with
+    `Member`, `Invitation`, `CreatedInvitation`, `HeldFunds`, `LedgerEntry`, `MemberHeldFunds`.
+-   **Acting for a member**: `client.on_behalf_of(user_uuid)` returns a client whose requests
+    act in that member's space (`On-Behalf-Of`); `RequestOptions(on_behalf_of=…)` for one call.
+-   `client.me()`: what the API key is (its role, its space, test or live mode, the member it
+    acts for), the recommended start-up check (`Me`, `MeSpace`, `MeMember`).
+-   `transactions.list` / `iterate`: one feed of payments and subscription bills
+    (`Transaction`, `TransactionKind`); `failures.list` / `iterate`: the failed payment attempts
+    (`Failure`, `FailureKind`, `FailureCategory`).
+-   `payments.list` / `iterate` with filters (customer, product, dates, `reference`,
+    `refunded`, `include_members` / `user_uuid`).
+-   `subscriptions.list` / `iterate`, `update` (metadata), `list_bills` / `iterate_bills`,
+    `get_bill`; `Subscription.current_period_end`, `action_required`, `price_usd`,
+    `cancellation_reason`, `dunning`, `metadata`, `management_page_link`, the `Allowance`
+    object, and `Subscription.has_access(at=None)` (grant access while now is before
+    `current_period_end`).
+-   `refunds.list` / `iterate` (filters `status`, `tx_uuid`, `held`, `include_members`,
+    `user_uuid`) and `refunds.get`, read only: refunds are answered and sent from the dashboard.
+-   `products.list` / `iterate` (paginated, `include_hidden`, `subscription`, `reference`),
+    subscription products (`SubscriptionTermsParams`), `Product.payment_link`;
+    `customers.list` / `iterate` (`email`, `reference`).
+-   `wallets.list(with_balances=…)`, `wallets.list_for_member`,
+    `wallets.list_accepted_currencies`; `currencies.get(id)`.
+-   `accounting.export_json` / `export_csv`, and `export_json_range` / `export_csv_range`, which
+    split any range into windows of at most 92 days and join the results.
+-   **Webhook endpoints and the event log**: `webhooks.endpoints` (`list`, `iterate`, `create`
+    with the secret shown once, `get`, `update`, `delete`) and `webhooks.events` (`list`,
+    `iterate`, `get` with its deliveries: `EventDetail`, `EndpointDelivery`, `DeliveryAttempt`).
+-   **Typed webhook events**: one class per event type (15, from `PaymentCompletedEvent` to
+    `WebhookTestEvent`) in the `qbitflow.Event` discriminated union, `UnknownEvent` for a type
+    added later, and the `EventType` constants.
+-   **`WebhookRouter`** (`webhooks.WebhookRouter(secret)` or `client.webhooks.router(secret)`):
+    register a handler per event type, then mount it with `router.flask_view()`,
+    `router.django_view()`, `router.fastapi_endpoint()` or `await router.handle_asgi(request)`,
+    or call `router.handle(raw_body, signature_header)`. It verifies, parses, dispatches and
+    answers the status QBitFlow expects. Optional extras `qbitflow[flask]`, `[django]`,
+    `[fastapi]` and `[starlette]` pin a supported framework; none is a dependency.
+-   `webhooks.sign(raw_body, secret, timestamp=None)`, to test your endpoint.
+-   **Iterators** for every paginated list: lazy, one request per page, filters kept.
+-   **Retries with idempotency**: reads and the 6 creates are retried on network errors,
+    timeouts, 5xx, 429 (honouring `Retry-After`, up to 60 seconds) and 409
+    `idempotency_key_in_use`, with a 1 s, 2 s, 4 s back-off; every create sends an
+    `Idempotency-Key`, reused on its retries (`RequestOptions(idempotency_key=…)` for your own).
+    `qbitflow.is_retryable(error)`.
+-   **Client-side validation** of every input, mirroring the API's rules, before anything is
+    sent: a `ValidationError` naming each field by its wire name.
+-   `QBitFlow.from_env(**overrides)` (`QBITFLOW_API_KEY`, `QBITFLOW_BASE_URL`,
+    `QBITFLOW_ON_BEHALF_OF`); `RequestOptions(request_id=…)` (sent as `X-Request-Id`).
+-   `qbitflow.format_amount(min_units, decimals)`, `parse_amount(amount, decimals)` and
+    `Currency.format_amount(min_units)`: exact conversions, never through a float.
+-   `TokenAmount`, `Settlement`, `Split`, `SettlementTransaction`, `TransferSettlement`: how a
+    payment was paid and split; `MerchantNotReadyReason` for a 409 `merchant_not_ready`.
+-   `NOT_GIVEN`, the default of the clearable update fields (`""` or `None` clears them).
+-   `qbitflow.__version__` and `User-Agent: qbitflow-python/3.0.0`.
 
 ### Changed
 
--   Requires `pydantic>=2.5` (callable discriminators for the event union).
--   `AccountingEvent` follows the API's export: amounts in the currency's units as decimal
-    strings, each with its `…_min_units` twin (`gross_amount_min_units`,
-    `platform_fee_min_units`, `referral_fee_min_units`, `organization_fee_min_units`,
-    `net_amount_min_units`, `network_fees_min_units`); USD amounts and rates as decimal strings;
-    `currency` (was `token_symbol`), `currency_price_usd`, and the network fees apart from the
-    net (`network_fees_paid_by`, the open enum `NetworkFeesPayer`: `PAYER`, `MERCHANT`,
-    `ORGANIZATION`; `network_fees`, `network_fees_currency`, `network_fees_currency_decimals`,
-    `network_fees_currency_price_usd`, `network_fees_usd`). `payment_reference` /
-    `related_payment_reference` → `reference` / `related_reference`, `payment_uuid` /
-    `related_payment_uuid` → `tx_uuid` / `related_tx_uuid`; a fee that doesn't apply is `None`
-    (was `"0"`). Its fields are in the CSV's column order; the always-empty `user_name`,
-    `user_last_name`, `customer_name` and `customer_last_name` are gone. The export window is at
-    most 92 days, both ends included (the API's check).
--   Redirects are never followed (a 3xx is a `ServerError`).
--   A 2xx with an empty or non-JSON body where a result is expected is a `ServerError`.
--   Error bodies are parsed on every route (the CSV export included).
--   Request bodies that JSON cannot represent (NaN, infinities, unpaired surrogates) are refused
-    with a `ValidationError` naming the field, and nothing is sent.
--   Update methods send an explicit `""` for the clearable fields (`customers.update`'s
-    `last_name` / `phone_number` / `address`, `products.update`'s `description`,
-    `webhooks.endpoints.update`'s `description`): `""` (or `None`) clears them, `NOT_GIVEN` (the
-    default) leaves them.
--   The event log's cursor is opaque (was an event id); the subscriptions' `status` and the event
-    log's `type` filters are sent as given (the API checks them).
--   `CustomerSummary.deleted` and `DeliveryAttempt.skipped` are `bool`s (false when absent).
--   `TestBill` sets `__test__ = False`, so pytest never collects it from a test module that
-    imports it.
--   Error messages read `<message> (status <status>, code <code>, request <requestId>)`,
-    followed by each field error; the SDK's own validation messages never echo the rejected
-    values.
+-   **Breaking: API v2.** The default base URL is `https://api.qbitflow.app/v2`, with REST
+    routes (updates as `PATCH`, every `DELETE` answering `204`). The constructor no longer reads
+    `QBITFLOW_BASE_URL` and `qbitflow.config.set_base_url` is gone: pass `base_url=`, or use
+    `QBitFlow.from_env()`.
+-   **Breaking: the client.** `QBitFlow(api_key, *, base_url=None, timeout=None,
+    max_retries=None, on_behalf_of=None, http_client=None)`: keyword-only options, `timeout` in
+    seconds per attempt (a float), `max_retries=0` disables retries, an injectable
+    `httpx.Client`, `close()` and context-manager support. The key is checked when the client is
+    built (non-blank, starting with `sk_`, printable ASCII without spaces): a `ValidationError`,
+    nothing sent. API v2 keys are `sk_<test|live>_<uuid>_<secret>`; keys of an earlier format
+    are refused by the API (401): create a new one in the dashboard.
+-   **Breaking: keyword arguments.** Every method takes keyword-only arguments (path ids are
+    positional) and `options=RequestOptions(...)` last; the `Create…Dto` / `Update…Dto` request
+    classes are gone (`products.create(name=…, price_usd=…)`).
+-   **Breaking: services renamed.** `one_time_payments.create_session` and
+    `subscriptions.create_session` → `checkout_sessions.create_payment` / `create_subscription`;
+    `transaction_status.get(uuid, type)` → `checkout_sessions.get(uuid)`;
+    `one_time_payments.get` / `get_by_reference` / `get_all` → `payments.get` /
+    `get_by_reference` / `list`; `one_time_payments.get_all_combined` → `transactions.list`;
+    `subscriptions.get_payment_history` → `list_bills`; `subscriptions.force_cancel` →
+    `cancel(uuid, immediate=True)` (returns a `SubscriptionCancellation`; `immediate=False`
+    cancels at the end of the paid period); `subscriptions.execute_test_billing_cycle` →
+    `test_bill` (returns a `TestBill`); `refunds.get_all` / `get_all_inactive` →
+    `refunds.list(status=[…])`; `products.get_all` and `customers.get_all` → `list` (paginated);
+    `currencies.get_all_available` / `get_all_main` → `currencies.list(test=…, main=…)`;
+    `accounting.export(from, to, format)` → `export_json` / `export_csv`; per-service
+    `on_behalf_of(user_id)` → `client.on_behalf_of(user_uuid)`; `users.*` → `invitations.*` and
+    `members.*`; `claim.*` → `members.trust` and the held-funds reads.
+-   **Breaking: ids are strings.** Products are named by `uuid` (was the numeric `id`;
+    `product_id` → `product_uuid` everywhere), people by their user UUID (`user_id` →
+    `user_uuid`); `organization_id` and the `currency_id` fields are gone (each model carries its
+    `currency`). Transaction ids are prefixed (`pay@`, `sub@`, `sub-hist@`, `refund@`,
+    `transfer@`, `release@`); every route also takes the bare UUID. Currencies keep numeric ids.
+-   **Breaking: money is a decimal string, never a float**, in requests and responses: USD
+    amounts (`price_usd`, `amount_usd`), token amounts (`amount`, next to `amount_min_units`)
+    and fee rates in percent (`fee_percent`, `organization_fee_percent`, `refund_percent`; the
+    `…_bps` integers are gone). Money inputs take a `str` or a `decimal.Decimal`; a `float` is
+    a `ValidationError`.
+-   **Breaking: amounts are token amounts.** `Payment.amount` and `Bill.amount` are in the
+    currency's units (`"10"` for 10 USDC); the USD value is `amount_usd`.
+-   **Breaking: models renamed and reshaped.** `LinkResponse` → `CreatedCheckoutSession`
+    (`expires_at` a `datetime`); `TransactionStatus` → `CheckoutSessionStatus`;
+    `TransactionStatusValue` → `CheckoutSessionStatusValue` (`created`, `waitingConfirmation`,
+    `completed`, `expired`: a failed attempt is `created` with `last_attempt` set, never final);
+    `SubscriptionHistory` → `Bill`; `RefundEntry` → `Refund` (`tx_id` → `tx_uuid`);
+    `CombinedPaymentItem` → `Transaction` (`source` → `type`); `User` → `Member`; `UserRole` →
+    `Role` (`ADMIN`, `USER`); `PaymentMetadata` and its parts → `Settlement` (on `settlement`;
+    `metadata` is now your own data). `transaction_hash` → `tx_hash`; `name` → `first_name` on
+    customers; a payment's and a bill's `name` / `description` → `product_name` /
+    `product_description`; `Product.price` → `price_usd`.
+-   **Breaking: subscriptions.** `subscription_status` → `status` (`trial`, `trialExpired`,
+    `active`, `pastDue`, `paused`, `stopped`, `cancelled`); `low_on_funds` and `pending` became
+    `action_required` values (`topUpAllowance`, `raiseMaximum`, `confirmTrial`), the `stopped`
+    bool the `stopped` status. `frequency` is a `Duration` (was seconds); `last_billing_date` →
+    `last_billed_at`, `next_billing_date` → `next_billing_at`, `minimum_cancellation_date` →
+    `cancellable_at`; `allowance` is an `Allowance` object.
+-   **Breaking: enum values** follow the API's lowerCamelCase (`pastDue`, `trialExpired`);
+    `RefundStatus.REFUSED` → `REJECTED`; `TransactionType.ONE_TIME_PAYMENT` → `PAYMENT`.
+    Enums are open: a value the SDK does not know yet is kept as the raw string.
+-   **Breaking: the currency object** gains `code` (`BASE:USDC`) and `chain`; `address` is
+    `None` on a native coin; the nested `main_currency` is gone (`main_currency_id` stays).
+-   **Breaking: accounting rows** (`AccountingEvent`) follow the API v2 export: amounts in the
+    currency's units as decimal strings with their `…_min_units` twins, USD amounts and rates
+    as decimal strings, `token_symbol` → `currency`, `payment_id` / `related_payment_id` →
+    `tx_uuid` / `related_tx_uuid`, `payment_reference` / `related_payment_reference` →
+    `reference` / `related_reference`, `product_id` → `product_uuid`, the network fees apart
+    from the net (`network_fees_paid_by`). One export covers at most 92 days, both ends included.
+-   **Breaking: pagination.** `get_all(limit, cursor)` → `list(limit=…, cursor=…, filters…)`
+    returning a `Page[T]` (`items`, `has_more`, `next_cursor`), plus an `iterate` twin. The
+    short lists (currencies, wallets, held funds, the JSON export) return a plain `list`.
+-   **Breaking: lookups by reference** (`products`, `customers`, `payments`, `subscriptions`
+    `get_by_reference`) run the list's `?reference=` filter and raise `NotFoundError` when no
+    item has exactly that reference.
+-   **Breaking: deletes return `None`** (every `DELETE` answers `204`).
+-   **Breaking: errors.** One class per condition, imported from `qbitflow`, all deriving from
+    `QBitFlowError` and `ApiError` (`status`, `code`, `message`, `details`, `request_id`,
+    `field_errors`, `raw_body`): `ValidationError`, `BadRequestError`, `AuthenticationError`,
+    `PermissionDeniedError`, `NotFoundError` (was `NotFoundException`), `ConflictError`,
+    `GoneError`, `IdempotencyError`, `RateLimitError` (`retry_after`, `limit`,
+    `period_seconds`), `ServerError`, `NetworkError`, `WebhookSignatureError`. `APIError` →
+    `ApiError`. A 403 `policy_disabled` carries `details["policy"]`, and `details["field"]`
+    when the policy governs a request field (a member's checkout `success_url` / `cancel_url`
+    while the organization's `members.checkoutRedirects` policy is off).
+-   **Breaking: webhooks** use API v2's scheme: the `QBitFlow-Signature: t=…,v1=…` header, an
+    HMAC-SHA256 of `t + "." + raw_body` over the raw body (no canonical JSON), and the event
+    envelope (`id`, `type`, `created_at`, `test`, `user_uuid`, `data`). `verify_webhook_signature`,
+    `compute_webhook_signature` and `client.webhooks.verify(payload, signature, timestamp)` →
+    `qbitflow.webhooks.verify` / `construct_event` / `parse_event` (raising
+    `WebhookSignatureError` with a `reason`) and `client.webhooks.verify_remote`. Every `v1=`
+    signature is checked, so a secret rotation needs nothing on the receiving side.
+-   **Breaking: retries** are limited to reads and the 6 idempotent creates; other writes are
+    never retried automatically. Redirects are never followed (a 3xx is a `ServerError`).
+-   A member's own key may send a checkout's `success_url` / `cancel_url` while the
+    organization's `members.checkoutRedirects` policy allows it (403 `policy_disabled`
+    otherwise); the organization acting for the member (`on_behalf_of`) always may.
+-   Dependencies: `pydantic>=2.5` (was 2.0); `email-validator` is no longer needed.
 
 ### Removed
 
--   `users`, `api_keys`, `claim`, `transaction_status` (and its WebSocket URL helper),
-    `one_time_payments` (and its `get_session` / `get_customer_for_transaction`: read
-    `payment.customer_uuid`, then `customers.get`), `subscriptions.get_session`,
-    `refunds.get_by_transaction` (read `payment.refund` / `bill.refund`, or
-    `refunds.list(tx_uuid=…)`), `customers.get_by_email` (`customers.list(email=…)`),
-    `subscriptions.get_payment_history` and the public bill history (the customer's page;
-    `list_bills` has every bill), pay-as-you-go (the API has no pay-as-you-go routes).
--   Canonical-JSON webhook verification and the v1 webhook payload models
-    (`SessionWebhookResponse`, `SubscriptionStatusTransitionWebhook`…), `qbitflow.config`,
-    `qbitflow.dto`, `qbitflow.requests`, `qbitflow.utils`, `qbitflow.exceptions`.
--   `PaymentMetadata`, `TxMetadata`, `BlockData`, `NetworkFees`, `TxAmounts`,
-    `TxAmountsMinUnits`, `TxAmountsUsd` (→ `Settlement` & co.), `SubscriptionCreated` (→
-    `Subscription`), `ApiKey`, `Organization`, `ClaimFund`, `CreateClaimRequestResponse`,
-    `StatusResponse`, `SuccessResponse`, `TransactionShortType`; `legacyId` is not modelled.
--   Not implemented (set aside, dashboard concerns that may come back in a minor release): the
-    settings routes, webhook delivery tooling (endpoint test, deliveries list, event types,
-    resend), `GET /account`, `GET /api-keys` and the public bill history.
+-   `users`, `api_keys` and `claim` (members and invitations replace them; keys are managed in
+    the dashboard, `client.me()` describes the current one).
+-   `transaction_status` and its WebSocket URL helper (`checkout_sessions.get`,
+    `wait_for_completion` and webhooks replace them).
+-   `one_time_payments.get_session` / `subscriptions.get_session`, and
+    `one_time_payments.get_customer_for_transaction` (read `payment.customer_uuid`, then
+    `customers.get`).
+-   `refunds.get_by_transaction` (`refunds.list(tx_uuid=…)`, or `payment.refund`).
+-   `customers.get_by_email`: an email may match several customers (`customers.list(email=…)`).
+-   Pay-as-you-go subscriptions (`PayAsYouGoSubscription`, `PaygSubscriptionSession`): the API
+    has none.
+-   The refund status `failed` (`RefundStatus.FAILED`) and the checkout statuses `pending`,
+    `failed` and `cancelled`: the API never sends them.
+-   Every `TransactionType` value but `PAYMENT` and `CREATE_SUBSCRIPTION`, and
+    `TransactionShortType`.
+-   `Role.OWNER` (an API key is at most `admin`; an `"owner"` the API may send decodes as the
+    plain string).
+-   Canonical-JSON webhook verification (`canonical_json`, `extract_webhook_headers`, the
+    `X-Webhook-*` header helpers, `TEST_WEBHOOK_ID`) and the v1 webhook payload models
+    (`SessionWebhookResponse`, `SubscriptionStatusTransitionWebhook`, the session models).
+-   `qbitflow.config`, `qbitflow.dto`, `qbitflow.requests`, `qbitflow.utils` and
+    `qbitflow.exceptions` (import everything from `qbitflow`); `InvalidRequestError`;
+    `ApiKey`, `Organization`, `ClaimRequest`, `ClaimFund`, `CreateClaimRequestResponse`,
+    `StatusLinkResponse`, `StatusResponse`, `SuccessResponse`; `PaymentMetadata`,
+    `TxMetadata`, `BlockData`, `NetworkFees`, `TxAmountsFull`, `TxAmountsUSD`,
+    `TxAmountsMinUnits` (→ `Settlement` and its parts).
 
 ### Fixed
 
--   **Field validation errors were read from the wrong key** (a top-level `errors` list instead
-    of the API's `details.errors`), so every field of a 400 came back empty. `field_errors` now
-    names each failing input by its wire name, dotted when nested (`frequency.unit`).
--   User-supplied path segments and query values are escaped: an id containing `/`, `?`, `#`,
-    `%` or `&` no longer changes the request; a `.` or `..` segment is escaped (an event id of
-    `.` or `..` is refused).
+-   Field validation errors are read from the API's `details.errors`: `field_errors` names each
+    failing input by its wire name, dotted when nested (`frequency.unit`). 2.x read another key
+    and always returned them empty.
+-   Path segments and query values are percent-encoded: an id containing `/`, `?`, `#`, `%` or
+    `&` can no longer change the request, and a `.` or `..` segment is escaped.
+-   A reference (`reference`, `product_reference`, `customer_reference`, the `reference=`
+    filters, `get_by_reference`) equal to `.` or `..` is refused before sending, as the API
+    does: such a reference could never be named in a URL.
 -   Lengths are counted in characters (code points), as the API does.
+-   A 400 that is not a validation failure is a `BadRequestError`, and a 422 an
+    `IdempotencyError`, instead of a `ValidationError`.
+-   A deeply nested JSON answer or webhook body is a `ServerError` or a `ValidationError`, never
+    a raw `RecursionError`.
 
-The website snippet ids are unchanged (none renamed or retired); `transactions-list`,
-`subscriptions-update` and `refunds-get` are new; `refunds-create` is listed as unsupported
-(refunds are read only in the SDK).
+### Security
+
+-   `timeout` bounds each attempt as a whole, the response body included, so a server sending
+    its answer slowly can no longer hold a call indefinitely.
+-   The API key is validated when the client is built, and the error never quotes it: a key
+    with a line break used to fail every request with an error whose message carried the key.
+-   `base_url` must be an `http`/`https` URL with a host and without credentials, query or
+    fragment; the error never quotes the URL.
+-   `repr()` never shows a secret: the client shows its base URL only, `WebhookEndpointCreated`
+    leaves out its `secret`, and the webhook router never shows its secret.
+-   Redirects are never followed, so the `X-API-Key` header is never sent to another origin; TLS
+    verification stays httpx's default.
+-   Webhook signatures are compared in constant time against every `v1` signature, within a
+    5-minute tolerance either way.
 
 ## [2.1.0] - 2026-09-21
 
@@ -431,7 +298,9 @@ retrieval raise, and one that silently reset a user's organization fee.
 
 ### Changed — examples
 
-- The FastAPI example (`examples/server.py`) now uses `extract_webhook_headers` and `verify_webhook_signature`, verifying locally when `QBITFLOW_WEBHOOK_SECRET` is set and falling back to the API otherwise.
+- The FastAPI example (`examples/server.py`) now uses `extract_webhook_headers` and
+  `verify_webhook_signature`, verifying locally when `QBITFLOW_WEBHOOK_SECRET` is set and falling
+  back to the API otherwise.
 
 ### Added — client-side request validation
 
@@ -541,34 +410,55 @@ unchanged (`/v1`); only the SDK version changes.
 
 ### Added
 
-- **Act for user**: `BaseRequest.on_behalf_of(userID: string)` temporarily act as a different user for the duration of a request. This is useful for admin-level operations that need to be performed on behalf of another user. 
+- **Act for user**: `BaseRequest.on_behalf_of(userID: string)` temporarily act as a different user
+  for the duration of a request. This is useful for admin-level operations that need to be performed
+  on behalf of another user.
 - **`users.get_by_email(email)`** — retrieve a user by their email address 
 
 ## [1.3.0] - 2026-08-17
 
 ### Added
 
-- **Reference-based lookups** — resolve resources by the reference you assigned instead of storing QBitFlow's internal UUIDs:
-  - `one_time_payments.get_by_reference(reference)` — `GET /transaction/payment/reference/:paymentReference`
-  - `subscriptions.get_by_reference(reference)` — `GET /transaction/subscription/reference/subscription/:subscriptionReference`
+- **Reference-based lookups** — resolve resources by the reference you assigned instead of storing
+  QBitFlow's internal UUIDs:
+  - `one_time_payments.get_by_reference(reference)` — `GET
+    /transaction/payment/reference/:paymentReference`
+  - `subscriptions.get_by_reference(reference)` — `GET
+    /transaction/subscription/reference/subscription/:subscriptionReference`
   - `customers.get_by_reference(reference)` — `GET /customer/reference/:reference`
-- **Your own references on session creation** — `one_time_payments.create_session()` and `subscriptions.create_session()` now accept:
-  - `reference` — your own transaction reference (e.g. order/invoice ID), echoed back on the resulting object and in webhooks
+- **Your own references on session creation** — `one_time_payments.create_session()` and
+  `subscriptions.create_session()` now accept:
+  - `reference` — your own transaction reference (e.g. order/invoice ID), echoed back on the
+    resulting object and in webhooks
   - `product_reference` — select a product by your own reference (alternative to `product_id`)
-  - `customer_reference` — select an existing customer by your own reference (alternative to `customer_uuid`); a new customer is created during checkout if none matches
+  - `customer_reference` — select an existing customer by your own reference (alternative to
+    `customer_uuid`); a new customer is created during checkout if none matches
 
 ### Changed
 
-- **`subscriptions.create_session()` no longer requires `product_id`** — provide either `product_id` or `product_reference` (relaxes the 1.2.0 requirement).
-- **`Payment.reference`** and **`Subscription.reference`** — added; the reference you set when creating the session.
-- **`OneTimePaymentSession` / `SubscriptionSession` / `PaygSubscriptionSession`** — added `reference`, `product_reference`, and `customer_reference`, so session responses and transaction webhook payloads expose the references you provided.
-- **`SubscriptionStatusTransitionWebhook.subscription_reference`** — added; the subscription's reference is now included on status-transition webhooks.
+- **`subscriptions.create_session()` no longer requires `product_id`** — provide either `product_id`
+  or `product_reference` (relaxes the 1.2.0 requirement).
+- **`Payment.reference`** and **`Subscription.reference`** — added; the reference you set when
+  creating the session.
+- **`OneTimePaymentSession` / `SubscriptionSession` / `PaygSubscriptionSession`** — added
+  `reference`, `product_reference`, and `customer_reference`, so session responses and transaction
+  webhook payloads expose the references you provided.
+- **`SubscriptionStatusTransitionWebhook.subscription_reference`** — added; the subscription's
+  reference is now included on status-transition webhooks.
 
 ## [1.2.1] - 2026-07-18
 
-- Removed `webhook_url` from `one_time_payments.create_session()` and `subscriptions.create_session()`. Webhook URLs are now set at the settings level in the QBitFlow dashboard, and cannot be overridden per session. This change simplifies session creation and ensures consistent webhook handling across all transactions.
-- Added webhooks for subscription status transitions. The new webhook payload includes `subscription_uuid`, `previous_status`, `current_status`, and `updated_at` fields, allowing clients to track subscription lifecycle events more effectively.
-- Also added a test webhook ID for webhook endpoint reachability checks from the frontend "Test webhook" action. This test sends a fake payload to the configured URL, which some SDKs may not parse like a real webhook. If the incoming webhook ID matches `TEST_WEBHOOK_ID`, handlers should return HTTP `200` immediately and skip normal payload processing.
+- Removed `webhook_url` from `one_time_payments.create_session()` and
+  `subscriptions.create_session()`. Webhook URLs are now set at the settings level in the QBitFlow
+  dashboard, and cannot be overridden per session. This change simplifies session creation and
+  ensures consistent webhook handling across all transactions.
+- Added webhooks for subscription status transitions. The new webhook payload includes
+  `subscription_uuid`, `previous_status`, `current_status`, and `updated_at` fields, allowing
+  clients to track subscription lifecycle events more effectively.
+- Also added a test webhook ID for webhook endpoint reachability checks from the frontend "Test
+  webhook" action. This test sends a fake payload to the configured URL, which some SDKs may not
+  parse like a real webhook. If the incoming webhook ID matches `TEST_WEBHOOK_ID`, handlers should
+  return HTTP `200` immediately and skip normal payload processing.
 
 ## [1.2.0] - 2026-05-04
 

@@ -1,8 +1,25 @@
 # Contributing
 
-## Gates
+Thank you for helping improve the QBitFlow Python SDK. Bug reports and pull requests are welcome
+on [GitHub](https://github.com/QBitFlow/qbitflow-python-sdk). For a security issue, do **not**
+open an issue: follow [SECURITY.md](SECURITY.md).
 
-From the SDK root, with the dev extras installed (`pip install -e ".[dev]"`):
+## Setting up
+
+Python 3.10 or later:
+
+```bash
+git clone https://github.com/QBitFlow/qbitflow-python-sdk.git
+cd qbitflow-python-sdk
+python -m venv .venv && . .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+## The gates
+
+Every pull request must pass these, the same checks CI runs on Python 3.10 to 3.14
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). Run them from the repository root with
+every `QBITFLOW_*` environment variable unset, so the suite stays offline:
 
 ```bash
 mypy qbitflow/
@@ -13,8 +30,31 @@ python -m py_compile examples/*.py
 pytest -q -p no:cacheprovider
 ```
 
-Run them with every `QBITFLOW_*` variable unset: the suite stays offline. The live checks
-(`tests/test_integration.py`) are described in the README's Testing section.
+`pytest` runs the whole offline suite against stub HTTP transports: the models, the services'
+requests, validation, retries, errors, webhooks, and the conformance vectors in
+`tests/fixtures/vectors/` (cases every QBitFlow SDK reproduces). Nothing in it needs a network or
+an API key.
+
+Two groups of tests skip themselves on an outside contributor's machine, and that is expected:
+
+- **`tests/test_integration.py`**, the live checks. They run only with an API key **and** an
+  explicit base URL (`QBITFLOW_API_KEY`, `QBITFLOW_BASE_URL`; a key without a base URL fails, so
+  they are never aimed at production by accident), and write only with `QBITFLOW_LIVE_WRITES=1`
+  on a test-mode key. Use your own test-mode key if you want to run them; the maintainers run them
+  before every release.
+- **`tests/test_snippets.py`**, the website snippet check (below). It needs the maintainers'
+  documentation tooling, which is not part of this repository.
+
+## Code style
+
+- Formatting is black and isort (line length 100); lint is flake8; typing is mypy, and the
+  package ships `py.typed`: every public function is annotated.
+- Every public class, function and method has a docstring saying what it does, what it sends
+  (the HTTP route), what it returns and what it raises.
+- Arguments are keyword-only (except path ids); the wire's camelCase names are mapped to
+  snake_case with explicit per-field aliases.
+- Money stays a decimal string end to end: never a float.
+- A change of behaviour comes with a test, and with a `CHANGELOG.md` entry under `Unreleased`.
 
 ## Website snippets
 
@@ -23,7 +63,7 @@ The code on [qbitflow.app/docs](https://qbitflow.app/docs) and the Python code b
 programs in `examples/`, which run and pass the gates above.
 
 ```python
-def create_checkout(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSession:
+def create_checkout(client: qbitflow.QBitFlow) -> qbitflow.CreatedCheckoutSession:
     # docs:start checkout-create-payment
     session = client.checkout_sessions.create_payment(...)
     # docs:end checkout-create-payment
@@ -33,38 +73,14 @@ def create_checkout(client: qbitflow.QBitFlow) -> qbitflow.CheckoutSession:
 - **Markers** are exactly `# docs:start <id>` and `# docs:end <id>` on their own lines (any
   indentation: the region is dedented when extracted). One region per id; regions never nest or
   overlap, and the id on `docs:end` matches its `docs:start`.
-- **Ids** come from the hub's `snippets/catalog.json`: the same ids in every QBitFlow SDK, each
-  with what its snippet `shows` and the `routes` it calls.
+- **Ids** are shared by every QBitFlow SDK and are a public contract with the website: never
+  rename or remove one.
 - **A region reads on its own.** It uses a ready client named `client` (only `client-init` and
-  `client-on-behalf-of` build theirs), refers to the SDK as `qbitflow.…` (`import qbitflow`), uses
-  the catalog's shared values (T-shirt, Blue, size M, 4.99, `tshirt-blue-m`, `order-1042`,
-  `order-1043`, `https://shop.example.com/…`, `qbitflow.PLACEHOLDER_UUID`, `seller@example.com`,
-  …), and takes the ids it needs but doesn't create from variables defined just outside it
+  `client-on-behalf-of` build theirs), refers to the SDK as `qbitflow.…` (`import qbitflow`), and
+  takes the ids it needs but doesn't create from variables defined just outside it
   (`payment_uuid`, `subscription_uuid`, `session_uuid`, `member_uuid`). Keys come from
-  `QBITFLOW_API_KEY` and `QBITFLOW_WEBHOOK_SECRET`, never from the code. Setup (env lookups,
-  `_common.new_client()`, `main()`) stays outside the regions.
-- **The manifest** `examples/snippets.manifest.json` maps every catalog id to the file holding
-  its region, or lists it under `unsupported` with a one-line reason; `catalog` is the hub commit
-  of the catalog this SDK follows.
-- **README blocks** are `<!-- docs:snippet <id> -->` / `<!-- /docs:snippet -->` pairs. The
-  script writes the code between them: never edit it by hand.
-
-From a hub checkout (this SDK in `sdk/qbitflow-python-sdk`):
-
-```bash
-node ../../scripts/embed-snippets.mjs .           # rewrite the README's snippet blocks
-node ../../scripts/embed-snippets.mjs --check .   # change nothing; exit 1 on any problem
-```
-
-`tests/test_snippets.py` runs the `--check` in `pytest`. It finds the hub at `QBITFLOW_HUB_DIR`,
-or two directories up; a standalone clone (or a machine without `node`) skips it, and an invalid
-`QBITFLOW_HUB_DIR` fails it.
-
-### The rule
-
-> **Website snippets.** The code on qbitflow.app/docs and in this README comes from `# docs:start <id>` … `# docs:end <id>` regions in `examples/`. Every change keeps them true:
-> - **New public capability:** add a region, an id in the hub's `snippets/catalog.json` (the same id across all SDKs), and the manifest entry, plus the README block via `scripts/embed-snippets.mjs`.
-> - **Changed capability:** update the region's code. Never hand-edit an embedded README block: re-run the script.
-> - **Ids are a public contract with the website.** Never rename or remove one silently. To retire an id, keep it until the website no longer uses it, and note it in the CHANGELOG.
-> - **Before committing:** the examples run, the manifest check passes, and `embed-snippets --check` passes.
-> - **Unsupported ids:** an id the SDK can't support goes under `unsupported` with a reason. Never write placeholder code.
+  `QBITFLOW_API_KEY` and `QBITFLOW_WEBHOOK_SECRET`, never from the code.
+- **README blocks** are `<!-- docs:snippet <id> -->` / `<!-- /docs:snippet -->` pairs whose code
+  is copied from the region: **never edit them by hand**. If you change a region, say so in your
+  pull request and a maintainer regenerates the README blocks.
+- `examples/snippets.manifest.json` maps every id to the file holding its region.
