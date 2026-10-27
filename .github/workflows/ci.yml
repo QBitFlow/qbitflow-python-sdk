@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main, v3]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    # The offline gates only: no secrets, no live API calls (tests/test_integration.py skips
+    # without QBITFLOW_API_KEY, and the snippet check skips without the maintainers' tooling).
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: mypy
+        run: mypy qbitflow/
+
+      - name: flake8
+        run: flake8 qbitflow/ tests/ examples/
+
+      - name: black
+        run: black --check qbitflow/ tests/ examples/
+
+      - name: isort
+        run: isort --check-only qbitflow/ tests/ examples/
+
+      - name: Compile the examples
+        run: python -m py_compile examples/*.py
+
+      - name: pytest
+        run: pytest -q -p no:cacheprovider
+
+  package:
+    name: Build and check the package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Build
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+
+      - name: twine check
+        run: twine check --strict dist/*
