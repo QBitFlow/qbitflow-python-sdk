@@ -1019,8 +1019,10 @@ print("revoked", invitation_uuid)
 <!-- /docs:snippet -->
 
 - `members.list_held_funds` lists every member you owe, longest held first (a plain list).
-- Today a seller whose account already belongs to another organization cannot accept (no
-  `member.joined` comes), and test-mode sellers are real accounts that accept from a real inbox.
+- A seller who already uses QBitFlow joins your platform with the same account: accepting with an
+  account that belongs to another organization succeeds like any acceptance, keeps its other
+  memberships, and sends `member.joined` as for any member. Test-mode sellers are real accounts
+  that accept from a real inbox.
 
 ## Wallets
 
