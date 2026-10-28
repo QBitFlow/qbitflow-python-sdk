@@ -3315,11 +3315,12 @@
           "status": "pending"
         }
       },
-      "body": "{\"items\":[{\"uuid\":\"01a0f755-f200-7000-8000-00000000000a\",\"test\":true,\"email\":\"bob@example.com\",\"role\":\"user\",\"holdFunds\":true,\"organizationFeePercent\":\"5\",\"expiresAt\":\"2026-10-08T12:00:00Z\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"status\":\"pending\"},{\"uuid\":\"01a0f755-f200-7000-8000-00000000000b\",\"email\":\"carol@example.com\",\"role\":\"admin\",\"expiresAt\":\"2026-10-08T12:00:00Z\",\"revokedAt\":\"2026-10-02T12:00:00Z\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"status\":\"revoked\"}],\"hasMore\":false}",
+      "body": "{\"items\":[{\"uuid\":\"01a0f755-f200-7000-8000-00000000000a\",\"test\":true,\"email\":\"bob@example.com\",\"role\":\"user\",\"holdFunds\":true,\"organizationFeePercent\":\"5\",\"expiresAt\":\"2026-10-08T12:00:00Z\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"status\":\"pending\"},{\"uuid\":\"01a0f755-f200-7000-8000-00000000000b\",\"test\":false,\"email\":\"carol@example.com\",\"role\":\"user\",\"holdFunds\":false,\"organizationFeePercent\":\"0\",\"expiresAt\":\"2026-10-08T12:00:00Z\",\"revokedAt\":\"2026-10-02T12:00:00Z\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"status\":\"revoked\"}],\"hasMore\":false}",
       "expect": "ok",
       "method": "invitations.list",
       "model": "Page<Invitation>",
-      "name": "Page<Invitation> member and team invitations",
+      "name": "Page<Invitation> pending and revoked member invitations",
+      "note": "an API key only lists member invitations; the role key the API still sends is not modelled",
       "probes": [
         {
           "optional": true,
@@ -3343,23 +3344,19 @@
           "value": null
         },
         {
-          "path": "items[1].role",
-          "value": "admin"
-        },
-        {
           "optional": true,
           "path": "items[1].test",
-          "value": null
+          "value": false
         },
         {
           "optional": true,
           "path": "items[1].holdFunds",
-          "value": null
+          "value": false
         },
         {
           "optional": true,
           "path": "items[1].organizationFeePercent",
-          "value": ""
+          "value": "0"
         },
         {
           "kind": "time",
