@@ -1000,9 +1000,8 @@ except qbitflow.ConflictError as exc:
 ```
 <!-- /docs:snippet -->
 
-`invitations.list` / `iterate` (by `status`; your team's invitations are listed too, with `role`
-admin and no `test`, `hold_funds` or fee) and `invitations.revoke` (`204`, returns `None`) manage
-the invitations:
+`invitations.list` / `iterate` (by `status`; member invitations only, the team's being managed
+from the dashboard) and `invitations.revoke` (`204`, returns `None`) manage the invitations:
 
 <!-- docs:snippet invitations-list -->
 ```python

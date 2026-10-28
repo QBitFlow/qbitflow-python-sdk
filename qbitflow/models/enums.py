@@ -262,12 +262,12 @@ class DurationUnit(StrEnum):
 
 
 class Role(StrEnum):
-    """What a credential (or an invitation) may do in a space. An API key is at most ``admin``:
-    ``admin`` (an organization key) or ``user`` (a member's key, or ``On-Behalf-Of``). The SDK's
-    invitations are ``user``; the team's (from the dashboard) ``admin``."""
+    """What a credential may do in a space (:attr:`Me.role`, :attr:`MeSpace.role`). An API key is
+    at most ``admin``: ``admin`` (an organization key) or ``user`` (a member's key, or
+    ``On-Behalf-Of``)."""
 
-    ADMIN = "admin"  #: An organization key; a team invitation.
-    USER = "user"  #: A member's key, or ``On-Behalf-Of`` a member; a member invitation.
+    ADMIN = "admin"  #: An organization key.
+    USER = "user"  #: A member's key, or ``On-Behalf-Of`` a member.
 
 
 class MerchantNotReadyReason(StrEnum):

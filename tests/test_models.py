@@ -329,12 +329,14 @@ def test_optional_fields() -> None:
     assert ref.tx_hash is None and ref.paid_usd is None and ref.amount_usd is None
     assert ref.settlement is None and ref.approval is None
 
-    team = Invitation.model_validate_json(
-        '{"uuid":"i-2","email":"a@b.co","role":"admin","expiresAt":"2026-10-08T12:00:00Z",'
+    # An API key only lists member invitations, which carry test, holdFunds and the fee: their
+    # absence still decodes (tolerant), as None.
+    inv = Invitation.model_validate_json(
+        '{"uuid":"i-2","email":"a@b.co","expiresAt":"2026-10-08T12:00:00Z",'
         '"createdAt":"2026-10-01T12:00:00Z","status":"pending"}'
     )
-    assert team.test is None and team.hold_funds is None and team.organization_fee_percent is None
-    assert team.role == Role.ADMIN and team.accepted_at is None
+    assert inv.test is None and inv.hold_funds is None and inv.organization_fee_percent is None
+    assert inv.redirect_url is None and inv.accepted_at is None
 
     # Lenient on absence and null (behaviour §6): zero values, never an error.
     nulls = Product.model_validate_json(
@@ -432,14 +434,17 @@ def test_out_of_scope_wire_values_are_ignored() -> None:
     assert not hasattr(qbitflow, "Credential")
     assert [r.value for r in Role] == ["admin", "user"]
 
-    # "owner": an API key is at most admin (SDK invitations are user, team ones admin). A server
-    # that still sends it decodes it as a raw string, like any unknown enum value.
+    # "owner": an API key is at most admin. A server that still sends it decodes it as a raw
+    # string, like any unknown enum value.
     owner = Me.model_validate_json('{"role":"owner","space":{"uuid":"s","role":"owner"}}')
     assert owner.role == "owner" and not isinstance(owner.role, Role)
     assert owner.space is not None and owner.space.role == "owner"
     assert not isinstance(owner.space.role, Role) and not hasattr(Role, "OWNER")
-    invitation = Invitation.model_validate_json('{"uuid":"i-1","role":"owner"}')
-    assert invitation.role == "owner" and not isinstance(invitation.role, Role)
+
+    # An invitation's role: always "user" for an API key (the team's invitations are
+    # dashboard-only), so it isn't modelled; the wire key is ignored.
+    invitation = Invitation.model_validate_json('{"uuid":"i-1","role":"user"}')
+    assert "role" not in invitation.to_dict() and not hasattr(invitation, "role")
 
     # A qbf.cash tipper's note, on a payment and on payment.completed's data.
     for model in (Payment, PaymentCompleted):

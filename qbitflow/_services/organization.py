@@ -148,7 +148,7 @@ class MembersService(Service):
 
 class InvitationsService(Service):
     """Invitations to join the organization as a member (``client.invitations``; organization
-    key). Team invitations are made from the dashboard."""
+    key). The team's invitations are made, listed and revoked from the dashboard."""
 
     def create(
         self,
@@ -219,8 +219,9 @@ class InvitationsService(Service):
         status: Union[InvitationStatus, str, None] = None,
         options: Optional[RequestOptions] = None,
     ) -> Page[Invitation]:
-        """One page of the organization's invitations (``GET /invitations``; newest first, page
-        size 20 by default, at most 100), its team's (role ``admin``) included.
+        """One page of the organization's member invitations in the key's mode
+        (``GET /invitations``; newest first, page size 20 by default, at most 100). The team's
+        invitations are only listed in the dashboard.
 
         Args:
             status: Keep only the invitations with this status (pending, accepted, revoked,

@@ -113,6 +113,8 @@ def drop_ignored_keys(value: Any) -> Any:
             continue  # heldFunds.released's transfer type: always heldFundsRelease
         if key == "version" and item == "v2" and "type" in value and "createdAt" in value:
             continue  # the event envelope's version: always v2
+        if key == "role" and item == "user" and "expiresAt" in value:
+            continue  # an invitation's role: always user for an API key (the team's are hidden)
         if key == "lastAttempt" and isinstance(item, dict):
             item = {k: v for k, v in item.items() if k != "status"}  # always failed
         out[key] = drop_ignored_keys(item)

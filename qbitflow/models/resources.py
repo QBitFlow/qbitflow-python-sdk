@@ -367,23 +367,20 @@ class MemberHeldFunds(Model):
 
 
 class Invitation(Model):
-    """An invitation to the organization: to be a member in one mode (role ``user``), or to its
-    team (role ``admin``, from the dashboard: mode-free, so ``test``, ``hold_funds`` and
-    ``organization_fee_percent`` are ``None``)."""
+    """An invitation to join the organization as a member in one mode. An API key only sees
+    member invitations: the team's are managed from the dashboard."""
 
     #: The invitation's id.
     uuid: Str = ""
-    #: A member invitation's mode; ``None`` for a team invitation.
+    #: The member's mode: True for test, False for live (``None`` if the API omits it).
     test: Optional[Bool] = None
     #: The invited address.
     email: Str = ""
-    #: ``admin`` (the team) or ``user`` (a member).
-    role: RoleT = ""
-    #: For a member, True when the organization holds their payments until it trusts them
-    #: (``members.trust``), False when they are paid directly; ``None`` for the team.
+    #: True when the organization holds the member's payments until it trusts them
+    #: (``members.trust``), False when they are paid directly (``None`` if the API omits it).
     hold_funds: Optional[Bool] = Field(default=None, alias="holdFunds")
-    #: For a member, the organization's fee on their payments, a percent string (``"0"``: none);
-    #: ``None`` for the team.
+    #: The organization's fee on the member's payments, a percent string (``"0"``: none;
+    #: ``None`` if the API omits it).
     organization_fee_percent: Optional[Str] = Field(default=None, alias="organizationFeePercent")
     #: Where the person goes once they accepted (with ``?invitationUuid=<uuid>``); ``None`` when
     #: none.
