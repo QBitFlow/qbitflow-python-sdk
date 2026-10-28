@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=77.0", "wheel", "setuptools_scm>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "qbitflow"
 dynamic = ["version"]
-description = "Official Python SDK for QBitFlow - Next Generation Crypto Payment Processing"
+description = "Official Python SDK for QBitFlow (API v2): non-custodial crypto checkouts, subscriptions, marketplaces and webhooks"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MPL-2.0"}
+license = "MPL-2.0"
+license-files = ["LICENSE"]
 authors = [
     {name = "QBitFlow", email = "support@qbitflow.app"}
 ]
@@ -33,44 +34,46 @@ classifiers=[
 	"Development Status :: 5 - Production/Stable",
 	"Intended Audience :: Developers",
 	"Topic :: Software Development :: Libraries :: Python Modules",
-	"License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
 	"Programming Language :: Python :: 3",
 	"Programming Language :: Python :: 3.10",
 	"Programming Language :: Python :: 3.11",
 	"Programming Language :: Python :: 3.12",
 	"Programming Language :: Python :: 3.13",
+	"Programming Language :: Python :: 3.14",
 	"Operating System :: OS Independent",
 	"Typing :: Typed",
 ]
 dependencies = [
     "httpx>=0.24.0,<1.0.0",
-    "pydantic>=2.0.0,<3.0.0",
-	"email-validator>=2.0.0,<3.0.0"
+    # 2.5 is the first release with callable discriminators (the webhook event union).
+    "pydantic>=2.5.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0.0",
     "pytest-cov>=6.3.0",
-    "pytest-asyncio>=0.21.0",
-    "black>=23.0.0",
+    "black>=26.1.0",
     "flake8>=6.0.0",
     "mypy>=1.0.0",
     "isort>=5.12.0",
 ]
-server = [
-    "fastapi>=0.100.0",
-    "uvicorn[standard]>=0.23.0",
-]
+# The webhook router's adapters import their framework lazily: none is a dependency. These
+# extras only pin a supported version alongside the SDK.
+flask = ["flask>=2.2.0"]
+django = ["django>=4.2"]
+fastapi = ["fastapi>=0.100.0"]
+starlette = ["starlette>=0.27.0"]
 
 [project.urls]
 Homepage = "https://qbitflow.app"
 Documentation = "https://qbitflow.app/docs"
-Repository = "https://github.com/qbitflow/qbitflow-python-sdk"
-"Bug Tracker" = "https://github.com/qbitflow/qbitflow-python-sdk/issues"
+Repository = "https://github.com/QBitFlow/qbitflow-python-sdk"
+Changelog = "https://github.com/QBitFlow/qbitflow-python-sdk/blob/main/CHANGELOG.md"
+"Bug Tracker" = "https://github.com/QBitFlow/qbitflow-python-sdk/issues"
 
 [tool.setuptools.dynamic]
-version = {attr = "qbitflow.__version__"}
+version = {attr = "qbitflow._version.__version__"}
 
 [tool.setuptools.packages.find]
 include = ["qbitflow*"]
@@ -78,7 +81,7 @@ exclude = ["tests*", "examples*", "test-internal*"]
 
 [tool.black]
 line-length = 100
-target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312', 'py313', 'py314']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -123,6 +126,7 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --cov=qbitflow --cov-report=term-missing --cov-report=html"
+markers = ["integration: live checks against a QBitFlow API (need QBITFLOW_API_KEY and QBITFLOW_BASE_URL)"]
 
 [tool.coverage.run]
 source = ["qbitflow"]

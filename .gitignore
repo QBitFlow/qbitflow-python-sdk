@@ -20,7 +20,13 @@ qbitflow.egg-info/
 
 test-internal/
 
-CLAUDE.md
-
 **/.qbitflow-sync
 **/.mypy_cache
+
+# Local agent instructions (never published)
+CLAUDE.md
+AGENTS.md
+
+# Build output
+build/
+*.egg-info/

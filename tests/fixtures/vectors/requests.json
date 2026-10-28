@@ -1,0 +1,3903 @@
+{
+  "cases": [
+    {
+      "args": {},
+      "method": "me",
+      "name": "me",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/me",
+        "pathSegments": [
+          "me"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "includeHidden": true,
+          "limit": 50,
+          "reference": "pro-monthly",
+          "subscription": false
+        }
+      },
+      "method": "products.list",
+      "name": "products.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [
+          [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
+          [
+            "includeHidden",
+            "true"
+          ],
+          [
+            "limit",
+            "50"
+          ],
+          [
+            "reference",
+            "pro-monthly"
+          ],
+          [
+            "subscription",
+            "false"
+          ]
+        ],
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&includeHidden=true&limit=50&reference=pro-monthly&subscription=false",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Monthly access to Pro",
+          "metadata": {
+            "crm:plan": "pro",
+            "sku": "PRO-M"
+          },
+          "name": "Pro plan",
+          "priceUsd": "9.99",
+          "reference": "pro-monthly",
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "minPeriods": 3,
+            "trialPeriod": {
+              "unit": "days",
+              "value": 7
+            }
+          }
+        }
+      },
+      "method": "products.create",
+      "name": "products.create",
+      "request": {
+        "body": {
+          "description": "Monthly access to Pro",
+          "metadata": {
+            "crm:plan": "pro",
+            "sku": "PRO-M"
+          },
+          "name": "Pro plan",
+          "priceUsd": "9.99",
+          "reference": "pro-monthly",
+          "subscription": {
+            "frequency": {
+              "unit": "months",
+              "value": 1
+            },
+            "minPeriods": 3,
+            "trialPeriod": {
+              "unit": "days",
+              "value": 7
+            }
+          }
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "method": "products.get",
+      "name": "products.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
+        "pathSegments": [
+          "products",
+          "019cadfd-8900-7c00-8000-0000000000c1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "reference": "pro-monthly"
+      },
+      "method": "products.getByReference",
+      "name": "products.getByReference",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [
+          [
+            "reference",
+            "pro-monthly"
+          ]
+        ],
+        "rawQuery": "reference=pro-monthly",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "description": "",
+          "isActive": false,
+          "metadata": {
+            "legacy": "",
+            "sku": "PRO-M2"
+          },
+          "name": "Pro plan v2",
+          "priceUsd": "12.50"
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "method": "products.update",
+      "name": "products.update",
+      "request": {
+        "body": {
+          "description": "",
+          "isActive": false,
+          "metadata": {
+            "legacy": "",
+            "sku": "PRO-M2"
+          },
+          "name": "Pro plan v2",
+          "priceUsd": "12.50"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
+        "pathSegments": [
+          "products",
+          "019cadfd-8900-7c00-8000-0000000000c1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "method": "products.delete",
+      "name": "products.delete",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
+        "pathSegments": [
+          "products",
+          "019cadfd-8900-7c00-8000-0000000000c1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "DELETE"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "method": "customers.list",
+      "name": "customers.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers",
+        "pathSegments": [
+          "customers"
+        ],
+        "query": [
+          [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
+          [
+            "email",
+            "alice@example.com"
+          ],
+          [
+            "limit",
+            "50"
+          ],
+          [
+            "reference",
+            "crm-5521"
+          ]
+        ],
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&email=alice%40example.com&limit=50&reference=crm-5521",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "address": "1 rue de la Paix\nParis",
+          "email": "alice@example.com",
+          "firstName": "Alice",
+          "lastName": "Martin",
+          "metadata": {
+            "crm:id": "C-5521"
+          },
+          "phoneNumber": "+33 6 12 34 56 78",
+          "reference": "crm-5521"
+        }
+      },
+      "method": "customers.create",
+      "name": "customers.create",
+      "request": {
+        "body": {
+          "address": "1 rue de la Paix\nParis",
+          "email": "alice@example.com",
+          "firstName": "Alice",
+          "lastName": "Martin",
+          "metadata": {
+            "crm:id": "C-5521"
+          },
+          "phoneNumber": "+33 6 12 34 56 78",
+          "reference": "crm-5521"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers",
+        "pathSegments": [
+          "customers"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "method": "customers.get",
+      "name": "customers.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "pathSegments": [
+          "customers",
+          "01a05cd7-2a00-7d00-8000-0000000000d1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "reference": "crm-5521"
+      },
+      "method": "customers.getByReference",
+      "name": "customers.getByReference",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers",
+        "pathSegments": [
+          "customers"
+        ],
+        "query": [
+          [
+            "reference",
+            "crm-5521"
+          ]
+        ],
+        "rawQuery": "reference=crm-5521",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "address": "",
+          "firstName": "Alicia",
+          "lastName": "",
+          "phoneNumber": ""
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "method": "customers.update",
+      "name": "customers.update",
+      "request": {
+        "body": {
+          "address": "",
+          "firstName": "Alicia",
+          "lastName": "",
+          "phoneNumber": ""
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "pathSegments": [
+          "customers",
+          "01a05cd7-2a00-7d00-8000-0000000000d1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "method": "customers.delete",
+      "name": "customers.delete",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "pathSegments": [
+          "customers",
+          "01a05cd7-2a00-7d00-8000-0000000000d1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "DELETE"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "main": true,
+          "test": true
+        }
+      },
+      "method": "currencies.list",
+      "name": "currencies.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/currencies",
+        "pathSegments": [
+          "currencies"
+        ],
+        "query": [
+          [
+            "main",
+            "true"
+          ],
+          [
+            "test",
+            "true"
+          ]
+        ],
+        "rawQuery": "main=true&test=true",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "method": "currencies.get",
+      "name": "currencies.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/currencies/8",
+        "pathSegments": [
+          "currencies",
+          "8"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "cancelUrl": "https://shop.example.com/cart",
+          "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
+          "description": "Lifetime access",
+          "expiresInMinutes": 30,
+          "metadata": {
+            "orderId": "order-1043"
+          },
+          "priceUsd": "10",
+          "productName": "Pro plan (lifetime)",
+          "reference": "order-1043",
+          "successUrl": "https://shop.example.com/thanks?uuid={{UUID}}&type={{TRANSACTION_TYPE}}"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "checkoutSessions.createPayment",
+      "request": {
+        "body": {
+          "cancelUrl": "https://shop.example.com/cart",
+          "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
+          "description": "Lifetime access",
+          "expiresInMinutes": 30,
+          "metadata": {
+            "orderId": "order-1043"
+          },
+          "priceUsd": "10",
+          "productName": "Pro plan (lifetime)",
+          "reference": "order-1043",
+          "successUrl": "https://shop.example.com/thanks?uuid={{UUID}}&type={{TRANSACTION_TYPE}}"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/payment",
+        "pathSegments": [
+          "checkout-sessions",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "customerReference": "crm-5521",
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          },
+          "metadata": {
+            "plan": "pro"
+          },
+          "minPeriods": 0,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "trialPeriod": {
+            "value": 0
+          }
+        }
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "checkoutSessions.createSubscription",
+      "request": {
+        "body": {
+          "customerReference": "crm-5521",
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          },
+          "metadata": {
+            "plan": "pro"
+          },
+          "minPeriods": 0,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "trialPeriod": {
+            "value": 0
+          }
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/subscription",
+        "pathSegments": [
+          "checkout-sessions",
+          "subscription"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "method": "checkoutSessions.get",
+      "name": "checkoutSessions.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/pay@01a0f22f-9600-7000-8000-000000000008",
+        "pathSegments": [
+          "checkout-sessions",
+          "pay@01a0f22f-9600-7000-8000-000000000008"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "checkoutSessions.expire",
+      "name": "checkoutSessions.expire",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/sub@01a05cd7-2a00-7000-8000-000000000003/expire",
+        "pathSegments": [
+          "checkout-sessions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "expire"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "createdAfter": "2026-09-01T00:00:00+02:00",
+          "createdBefore": "2026-10-01T12:30:00.5Z",
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
+          "limit": 20,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "reference": "order-1043",
+          "refunded": false
+        }
+      },
+      "method": "payments.list",
+      "name": "payments.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/payments",
+        "pathSegments": [
+          "payments"
+        ],
+        "query": [
+          [
+            "createdAfter",
+            "2026-09-01T00:00:00+02:00"
+          ],
+          [
+            "createdBefore",
+            "2026-10-01T12:30:00.5Z"
+          ],
+          [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
+          [
+            "customerUuid",
+            "01a05cd7-2a00-7d00-8000-0000000000d1"
+          ],
+          [
+            "limit",
+            "20"
+          ],
+          [
+            "productUuid",
+            "019cadfd-8900-7c00-8000-0000000000c1"
+          ],
+          [
+            "reference",
+            "order-1043"
+          ],
+          [
+            "refunded",
+            "false"
+          ]
+        ],
+        "rawQuery": "createdAfter=2026-09-01T00%3A00%3A00%2B02%3A00&createdBefore=2026-10-01T12%3A30%3A00.5Z&cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&customerUuid=01a05cd7-2a00-7d00-8000-0000000000d1&limit=20&productUuid=019cadfd-8900-7c00-8000-0000000000c1&reference=order-1043&refunded=false",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "method": "payments.get",
+      "name": "payments.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/payments/pay@01a0f22f-9600-7000-8000-000000000008",
+        "pathSegments": [
+          "payments",
+          "pay@01a0f22f-9600-7000-8000-000000000008"
+        ],
+        "query": [
+          [
+            "includeMembers",
+            "true"
+          ]
+        ],
+        "rawQuery": "includeMembers=true",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "reference": "order-1043"
+      },
+      "method": "payments.getByReference",
+      "name": "payments.getByReference",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/payments",
+        "pathSegments": [
+          "payments"
+        ],
+        "query": [
+          [
+            "reference",
+            "order-1043"
+          ]
+        ],
+        "rawQuery": "reference=order-1043",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "refunded": true,
+          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "type": "bill"
+        }
+      },
+      "method": "transactions.list",
+      "name": "transactions.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transactions",
+        "pathSegments": [
+          "transactions"
+        ],
+        "query": [
+          [
+            "includeMembers",
+            "true"
+          ],
+          [
+            "refunded",
+            "true"
+          ],
+          [
+            "subscriptionUuid",
+            "sub@01a05cd7-2a00-7000-8000-000000000003"
+          ],
+          [
+            "type",
+            "bill"
+          ]
+        ],
+        "rawQuery": "includeMembers=true&refunded=true&subscriptionUuid=sub%4001a05cd7-2a00-7000-8000-000000000003&type=bill",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "category": "insufficientBalance",
+          "kind": "bill",
+          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "method": "failures.list",
+      "name": "failures.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/payment-failures",
+        "pathSegments": [
+          "payment-failures"
+        ],
+        "query": [
+          [
+            "category",
+            "insufficientBalance"
+          ],
+          [
+            "kind",
+            "bill"
+          ],
+          [
+            "subscriptionUuid",
+            "sub@01a05cd7-2a00-7000-8000-000000000003"
+          ],
+          [
+            "userUuid",
+            "019eca82-5680-7b00-8000-0000000000b1"
+          ]
+        ],
+        "rawQuery": "category=insufficientBalance&kind=bill&subscriptionUuid=sub%4001a05cd7-2a00-7000-8000-000000000003&userUuid=019eca82-5680-7b00-8000-0000000000b1",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "limit": 10,
+          "reference": "customer-7731",
+          "status": "pastDue"
+        }
+      },
+      "method": "subscriptions.list",
+      "name": "subscriptions.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions",
+        "pathSegments": [
+          "subscriptions"
+        ],
+        "query": [
+          [
+            "limit",
+            "10"
+          ],
+          [
+            "reference",
+            "customer-7731"
+          ],
+          [
+            "status",
+            "pastDue"
+          ]
+        ],
+        "rawQuery": "limit=10&reference=customer-7731&status=pastDue",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.get",
+      "name": "subscriptions.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003"
+        ],
+        "query": [
+          [
+            "includeMembers",
+            "true"
+          ]
+        ],
+        "rawQuery": "includeMembers=true",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "reference": "customer-7731"
+      },
+      "method": "subscriptions.getByReference",
+      "name": "subscriptions.getByReference",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions",
+        "pathSegments": [
+          "subscriptions"
+        ],
+        "query": [
+          [
+            "reference",
+            "customer-7731"
+          ]
+        ],
+        "rawQuery": "reference=customer-7731",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "coupon": "",
+            "plan": "pro-annual"
+          }
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.update",
+      "name": "subscriptions.update",
+      "request": {
+        "body": {
+          "metadata": {
+            "coupon": "",
+            "plan": "pro-annual"
+          }
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "limit": 5
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.listBills",
+      "name": "subscriptions.listBills",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/bills",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "bills"
+        ],
+        "query": [
+          [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
+          [
+            "limit",
+            "5"
+          ]
+        ],
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&limit=5",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "billUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+      },
+      "method": "subscriptions.getBill",
+      "name": "subscriptions.getBill",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/bills/sub-hist@01a0f755-f200-7000-8000-000000000005",
+        "pathSegments": [
+          "bills",
+          "sub-hist@01a0f755-f200-7000-8000-000000000005"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "immediate": false
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.cancel",
+      "name": "subscriptions.cancel",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/cancel",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "cancel"
+        ],
+        "query": [
+          [
+            "immediate",
+            "false"
+          ]
+        ],
+        "rawQuery": "immediate=false",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.testBill",
+      "name": "subscriptions.testBill",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/test-bill",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "test-bill"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "held": false,
+          "includeMembers": true,
+          "limit": 25,
+          "status": [
+            "approved",
+            "rejected"
+          ],
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "method": "refunds.list",
+      "name": "refunds.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/refunds",
+        "pathSegments": [
+          "refunds"
+        ],
+        "query": [
+          [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
+          [
+            "held",
+            "false"
+          ],
+          [
+            "includeMembers",
+            "true"
+          ],
+          [
+            "limit",
+            "25"
+          ],
+          [
+            "status",
+            "approved"
+          ],
+          [
+            "status",
+            "rejected"
+          ],
+          [
+            "txUuid",
+            "pay@01a0f22f-9600-7000-8000-000000000008"
+          ]
+        ],
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&held=false&includeMembers=true&limit=25&status=approved&status=rejected&txUuid=pay%4001a0f22f-9600-7000-8000-000000000008",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "uuid": "refund@01a0f755-f200-7000-8000-000000000007"
+      },
+      "method": "refunds.get",
+      "name": "refunds.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/refunds/refund@01a0f755-f200-7000-8000-000000000007",
+        "pathSegments": [
+          "refunds",
+          "refund@01a0f755-f200-7000-8000-000000000007"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "limit": 100
+        }
+      },
+      "method": "members.list",
+      "name": "members.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members",
+        "pathSegments": [
+          "members"
+        ],
+        "query": [
+          [
+            "limit",
+            "100"
+          ]
+        ],
+        "rawQuery": "limit=100",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "members.get",
+      "name": "members.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members/019eca82-5680-7b00-8000-0000000000b1",
+        "pathSegments": [
+          "members",
+          "019eca82-5680-7b00-8000-0000000000b1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "7.5"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "members.update",
+      "name": "members.update",
+      "request": {
+        "body": {
+          "organizationFeePercent": "7.5"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members/019eca82-5680-7b00-8000-0000000000b1",
+        "pathSegments": [
+          "members",
+          "019eca82-5680-7b00-8000-0000000000b1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "members.remove",
+      "name": "members.remove",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members/019eca82-5680-7b00-8000-0000000000b1",
+        "pathSegments": [
+          "members",
+          "019eca82-5680-7b00-8000-0000000000b1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "DELETE"
+      }
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "members.trust",
+      "name": "members.trust",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members/019eca82-5680-7b00-8000-0000000000b1/trust",
+        "pathSegments": [
+          "members",
+          "019eca82-5680-7b00-8000-0000000000b1",
+          "trust"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {},
+      "method": "members.listHeldFunds",
+      "name": "members.listHeldFunds",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members/held-funds",
+        "pathSegments": [
+          "members",
+          "held-funds"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "members.getHeldFunds",
+      "name": "members.getHeldFunds",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members/019eca82-5680-7b00-8000-0000000000b1/held-funds",
+        "pathSegments": [
+          "members",
+          "019eca82-5680-7b00-8000-0000000000b1",
+          "held-funds"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "method": "members.getOwnHeldFunds",
+      "name": "members.getOwnHeldFunds",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/held-funds",
+        "pathSegments": [
+          "held-funds"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "organizationFeePercent": "5",
+          "redirectUrl": "https://app.example.com/welcome"
+        }
+      },
+      "method": "invitations.create",
+      "name": "invitations.create",
+      "request": {
+        "body": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "organizationFeePercent": "5",
+          "redirectUrl": "https://app.example.com/welcome",
+          "role": "user"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/invitations",
+        "pathSegments": [
+          "invitations"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "status": "pending"
+        }
+      },
+      "method": "invitations.list",
+      "name": "invitations.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/invitations",
+        "pathSegments": [
+          "invitations"
+        ],
+        "query": [
+          [
+            "status",
+            "pending"
+          ]
+        ],
+        "rawQuery": "status=pending",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "uuid": "01a0f755-f200-7000-8000-00000000000a"
+      },
+      "method": "invitations.revoke",
+      "name": "invitations.revoke",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/invitations/01a0f755-f200-7000-8000-00000000000a",
+        "pathSegments": [
+          "invitations",
+          "01a0f755-f200-7000-8000-00000000000a"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "DELETE"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "withBalances": true
+        }
+      },
+      "method": "wallets.list",
+      "name": "wallets.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/wallets",
+        "pathSegments": [
+          "wallets"
+        ],
+        "query": [
+          [
+            "withBalances",
+            "true"
+          ]
+        ],
+        "rawQuery": "withBalances=true",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "wallets.listForMember",
+      "name": "wallets.listForMember",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members/019eca82-5680-7b00-8000-0000000000b1/wallets",
+        "pathSegments": [
+          "members",
+          "019eca82-5680-7b00-8000-0000000000b1",
+          "wallets"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "method": "wallets.listAcceptedCurrencies",
+      "name": "wallets.listAcceptedCurrencies",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/wallets/accepted-currencies",
+        "pathSegments": [
+          "wallets",
+          "accepted-currencies"
+        ],
+        "query": [
+          [
+            "userUuid",
+            "019eca82-5680-7b00-8000-0000000000b1"
+          ]
+        ],
+        "rawQuery": "userUuid=019eca82-5680-7b00-8000-0000000000b1",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "method": "accounting.exportJson",
+      "name": "accounting.exportJson",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/accounting/export",
+        "pathSegments": [
+          "accounting",
+          "export"
+        ],
+        "query": [
+          [
+            "format",
+            "json"
+          ],
+          [
+            "from",
+            "2026-07-01"
+          ],
+          [
+            "to",
+            "2026-09-30"
+          ]
+        ],
+        "rawQuery": "format=json&from=2026-07-01&to=2026-09-30",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "from": "2026-09-01",
+        "to": "2026-09-01"
+      },
+      "method": "accounting.exportCsv",
+      "name": "accounting.exportCsv",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "text/csv, application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/accounting/export",
+        "pathSegments": [
+          "accounting",
+          "export"
+        ],
+        "query": [
+          [
+            "format",
+            "csv"
+          ],
+          [
+            "from",
+            "2026-09-01"
+          ],
+          [
+            "to",
+            "2026-09-01"
+          ]
+        ],
+        "rawQuery": "format=csv&from=2026-09-01&to=2026-09-01",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "endpointUuid": "019eca82-5680-7b00-8000-0000000000e1",
+        "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+        "signatureHeader": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d"
+      },
+      "method": "webhooks.verifyRemote",
+      "name": "webhooks.verifyRemote",
+      "request": {
+        "body": {
+          "body": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+          "endpointUuid": "019eca82-5680-7b00-8000-0000000000e1",
+          "signature": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/verify",
+        "pathSegments": [
+          "webhooks",
+          "verify"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "limit": 10
+        }
+      },
+      "method": "webhooks.endpoints.list",
+      "name": "webhooks.endpoints.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/endpoints",
+        "pathSegments": [
+          "webhooks",
+          "endpoints"
+        ],
+        "query": [
+          [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
+          [
+            "limit",
+            "10"
+          ]
+        ],
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&limit=10",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Production hook",
+          "events": [
+            "payment.completed",
+            "subscription.billed"
+          ],
+          "includeMembers": true,
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "webhooks.endpoints.create",
+      "request": {
+        "body": {
+          "description": "Production hook",
+          "events": [
+            "payment.completed",
+            "subscription.billed"
+          ],
+          "includeMembers": true,
+          "url": "https://hooks.example.com/qbitflow"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/endpoints",
+        "pathSegments": [
+          "webhooks",
+          "endpoints"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "method": "webhooks.endpoints.get",
+      "name": "webhooks.endpoints.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/endpoints/019eca82-5680-7b00-8000-0000000000e1",
+        "pathSegments": [
+          "webhooks",
+          "endpoints",
+          "019eca82-5680-7b00-8000-0000000000e1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "description": "",
+          "enabled": false,
+          "events": []
+        },
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "method": "webhooks.endpoints.update",
+      "name": "webhooks.endpoints.update",
+      "request": {
+        "body": {
+          "description": "",
+          "enabled": false,
+          "events": []
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/endpoints/019eca82-5680-7b00-8000-0000000000e1",
+        "pathSegments": [
+          "webhooks",
+          "endpoints",
+          "019eca82-5680-7b00-8000-0000000000e1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "method": "webhooks.endpoints.delete",
+      "name": "webhooks.endpoints.delete",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/endpoints/019eca82-5680-7b00-8000-0000000000e1",
+        "pathSegments": [
+          "webhooks",
+          "endpoints",
+          "019eca82-5680-7b00-8000-0000000000e1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "DELETE"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "includeMembers": true,
+          "limit": 10,
+          "type": "payment.completed"
+        }
+      },
+      "method": "webhooks.events.list",
+      "name": "webhooks.events.list",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/events",
+        "pathSegments": [
+          "webhooks",
+          "events"
+        ],
+        "query": [
+          [
+            "cursor",
+            "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4"
+          ],
+          [
+            "includeMembers",
+            "true"
+          ],
+          [
+            "limit",
+            "10"
+          ],
+          [
+            "type",
+            "payment.completed"
+          ]
+        ],
+        "rawQuery": "cursor=djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4&includeMembers=true&limit=10&type=payment.completed",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "id": "evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f"
+      },
+      "method": "webhooks.events.get",
+      "name": "webhooks.events.get",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/events/evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f",
+        "pathSegments": [
+          "webhooks",
+          "events",
+          "evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "id": "evt_a/b"
+      },
+      "method": "webhooks.events.get",
+      "name": "path: event id with a slash",
+      "note": "a / inside a segment is escaped, never a separator",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/events/evt_a%2Fb",
+        "pathSegments": [
+          "webhooks",
+          "events",
+          "evt_a/b"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "id": "evt_x?y#z%25+1"
+      },
+      "method": "webhooks.events.get",
+      "name": "path: event id with ? # % +",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/events/evt_x%3Fy%23z%2525+1",
+        "pathSegments": [
+          "webhooks",
+          "events",
+          "evt_x?y#z%25+1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "id": "..."
+      },
+      "method": "webhooks.events.get",
+      "name": "path: event id of three dots",
+      "note": "an ordinary value; only exactly . and .. are refused (validation.json)",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/events/%2E%2E%2E",
+        "pathSegments": [
+          "webhooks",
+          "events",
+          "..."
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "uuid": "01a0f22f-9600-7000-8000-000000000008"
+      },
+      "method": "payments.get",
+      "name": "path: bare uuid on a tx id route",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/payments/01a0f22f-9600-7000-8000-000000000008",
+        "pathSegments": [
+          "payments",
+          "01a0f22f-9600-7000-8000-000000000008"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "uuid": "release@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "method": "checkoutSessions.get",
+      "name": "path: release@ id",
+      "note": "every documented prefix passes the tx id check (the API answers 404 for a wrong kind)",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/release@01a0f22f-9600-7000-8000-000000000008",
+        "pathSegments": [
+          "checkout-sessions",
+          "release@01a0f22f-9600-7000-8000-000000000008"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "reference": "Ref.A_z:0@9-x"
+      },
+      "method": "products.getByReference",
+      "name": "query: getByReference with every reference character",
+      "note": "a getByReference is the list's ?reference= filter: query-encoded, never a path segment",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [
+          [
+            "reference",
+            "Ref.A_z:0@9-x"
+          ]
+        ],
+        "rawQuery": "reference=Ref.A_z%3A0%409-x",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "reference": "..."
+      },
+      "method": "subscriptions.getByReference",
+      "name": "query: getByReference of three dots",
+      "note": "an ordinary reference, sent in the query; only exactly . and .. are refused (validation.json)",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions",
+        "pathSegments": [
+          "subscriptions"
+        ],
+        "query": [
+          [
+            "reference",
+            "..."
+          ]
+        ],
+        "rawQuery": "reference=...",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "email": "Ünïcode+tag@exämple.com"
+        }
+      },
+      "method": "customers.list",
+      "name": "query: email filter with + and non-ASCII",
+      "note": "the + is %2B in the raw query",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers",
+        "pathSegments": [
+          "customers"
+        ],
+        "query": [
+          [
+            "email",
+            "Ünïcode+tag@exämple.com"
+          ]
+        ],
+        "rawQuery": "email=%C3%9Cn%C3%AFcode%2Btag%40ex%C3%A4mple.com",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "createdAfter": "2026-09-01T08:00:00.123456+02:00",
+          "createdBefore": "2026-09-30T23:59:59-05:30",
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "method": "subscriptions.list",
+      "name": "query: times with +02:00 offset and microseconds",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions",
+        "pathSegments": [
+          "subscriptions"
+        ],
+        "query": [
+          [
+            "createdAfter",
+            "2026-09-01T08:00:00.123456+02:00"
+          ],
+          [
+            "createdBefore",
+            "2026-09-30T23:59:59-05:30"
+          ],
+          [
+            "userUuid",
+            "019eca82-5680-7b00-8000-0000000000b1"
+          ]
+        ],
+        "rawQuery": "createdAfter=2026-09-01T08%3A00%3A00.123456%2B02%3A00&createdBefore=2026-09-30T23%3A59%3A59-05%3A30&userUuid=019eca82-5680-7b00-8000-0000000000b1",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "refunded": false
+        }
+      },
+      "method": "payments.list",
+      "name": "query: false booleans are sent",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/payments",
+        "pathSegments": [
+          "payments"
+        ],
+        "query": [
+          [
+            "refunded",
+            "false"
+          ]
+        ],
+        "rawQuery": "refunded=false",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "subscription": true
+        }
+      },
+      "method": "products.list",
+      "name": "query: products.list subscription filter only",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [
+          [
+            "subscription",
+            "true"
+          ]
+        ],
+        "rawQuery": "subscription=true",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "status": [
+            "pending"
+          ]
+        }
+      },
+      "method": "refunds.list",
+      "name": "query: refunds.list one status",
+      "note": "pending: the refunds awaiting an answer",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/refunds",
+        "pathSegments": [
+          "refunds"
+        ],
+        "query": [
+          [
+            "status",
+            "pending"
+          ]
+        ],
+        "rawQuery": "status=pending",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "held": true,
+          "includeMembers": false
+        }
+      },
+      "method": "refunds.list",
+      "name": "query: refunds.list includeMembers false and held",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/refunds",
+        "pathSegments": [
+          "refunds"
+        ],
+        "query": [
+          [
+            "held",
+            "true"
+          ],
+          [
+            "includeMembers",
+            "false"
+          ]
+        ],
+        "rawQuery": "held=true&includeMembers=false",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "limit": 100,
+          "type": "payment"
+        }
+      },
+      "method": "transactions.list",
+      "name": "query: transactions.list type payment",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/transactions",
+        "pathSegments": [
+          "transactions"
+        ],
+        "query": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "type",
+            "payment"
+          ]
+        ],
+        "rawQuery": "limit=100&type=payment",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "method": "currencies.list",
+      "name": "query: currencies.list no params",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/currencies",
+        "pathSegments": [
+          "currencies"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "main": true
+        }
+      },
+      "method": "currencies.list",
+      "name": "query: currencies.list main only",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/currencies",
+        "pathSegments": [
+          "currencies"
+        ],
+        "query": [
+          [
+            "main",
+            "true"
+          ]
+        ],
+        "rawQuery": "main=true",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "method": "webhooks.endpoints.list",
+      "name": "query: endpoints.list no params",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/endpoints",
+        "pathSegments": [
+          "webhooks",
+          "endpoints"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.cancel",
+      "name": "query: cancel immediate default (no query)",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/cancel",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "cancel"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "immediate": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.cancel",
+      "name": "query: cancel immediate true",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003/cancel",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "cancel"
+        ],
+        "query": [
+          [
+            "immediate",
+            "true"
+          ]
+        ],
+        "rawQuery": "immediate=true",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {},
+      "method": "payments.list",
+      "name": "query: no params",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/payments",
+        "pathSegments": [
+          "payments"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "address": "",
+          "lastName": "",
+          "phoneNumber": ""
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "method": "customers.update",
+      "name": "body: update clears lastName, phoneNumber and address with empty strings",
+      "request": {
+        "body": {
+          "address": "",
+          "lastName": "",
+          "phoneNumber": ""
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "pathSegments": [
+          "customers",
+          "01a05cd7-2a00-7d00-8000-0000000000d1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "method": "customers.update",
+      "name": "body: empty update",
+      "request": {
+        "body": {},
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "pathSegments": [
+          "customers",
+          "01a05cd7-2a00-7d00-8000-0000000000d1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "oldKey": "",
+            "tier": "gold"
+          }
+        },
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "method": "customers.update",
+      "name": "body: customer update metadata merge (empty value deletes)",
+      "request": {
+        "body": {
+          "metadata": {
+            "oldKey": "",
+            "tier": "gold"
+          }
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers/01a05cd7-2a00-7d00-8000-0000000000d1",
+        "pathSegments": [
+          "customers",
+          "01a05cd7-2a00-7d00-8000-0000000000d1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {},
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "method": "subscriptions.update",
+      "name": "body: subscription update without metadata",
+      "note": "nothing to change: {} is sent",
+      "request": {
+        "body": {},
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/subscriptions/sub@01a05cd7-2a00-7000-8000-000000000003",
+        "pathSegments": [
+          "subscriptions",
+          "sub@01a05cd7-2a00-7000-8000-000000000003"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "removeSubscription": true
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "method": "products.update",
+      "name": "body: product update removes the subscription",
+      "request": {
+        "body": {
+          "removeSubscription": true
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
+        "pathSegments": [
+          "products",
+          "019cadfd-8900-7c00-8000-0000000000c1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "subscription": {
+            "frequency": {
+              "unit": "years",
+              "value": 1
+            },
+            "minPeriods": 0
+          }
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "method": "products.update",
+      "name": "body: product update terms",
+      "request": {
+        "body": {
+          "subscription": {
+            "frequency": {
+              "unit": "years",
+              "value": 1
+            },
+            "minPeriods": 0
+          }
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
+        "pathSegments": [
+          "products",
+          "019cadfd-8900-7c00-8000-0000000000c1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "url": "https://hooks.example.com/v2"
+        },
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "method": "webhooks.endpoints.update",
+      "name": "body: endpoint update without events omits them",
+      "request": {
+        "body": {
+          "url": "https://hooks.example.com/v2"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/endpoints/019eca82-5680-7b00-8000-0000000000e1",
+        "pathSegments": [
+          "webhooks",
+          "endpoints",
+          "019eca82-5680-7b00-8000-0000000000e1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": false
+        }
+      },
+      "method": "invitations.create",
+      "name": "body: invitation without optional fields (role user and holdFunds always sent)",
+      "request": {
+        "body": {
+          "email": "bob@example.com",
+          "holdFunds": false,
+          "role": "user"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/invitations",
+        "pathSegments": [
+          "invitations"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "sendEmail": false
+        }
+      },
+      "method": "invitations.create",
+      "name": "body: invitation without its email (sendEmail false is sent)",
+      "request": {
+        "body": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "role": "user",
+          "sendEmail": false
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/invitations",
+        "pathSegments": [
+          "invitations"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "organizationFeePercent": "0"
+        },
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "members.update",
+      "name": "body: organizationFeePercent \"0\" is sent",
+      "request": {
+        "body": {
+          "organizationFeePercent": "0"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members/019eca82-5680-7b00-8000-0000000000b1",
+        "pathSegments": [
+          "members",
+          "019eca82-5680-7b00-8000-0000000000b1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro plan",
+          "priceUsd": "12.50"
+        }
+      },
+      "method": "products.create",
+      "name": "body: money strings sent verbatim (trailing zeros kept)",
+      "request": {
+        "body": {
+          "name": "Pro plan",
+          "priceUsd": "12.50"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "customerReference": "crm-5521",
+          "productReference": "pro-plan"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: session by product reference",
+      "request": {
+        "body": {
+          "customerReference": "crm-5521",
+          "productReference": "pro-plan"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/payment",
+        "pathSegments": [
+          "checkout-sessions",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "cancelUrl": "https://shop.example.com/orders/cancel",
+          "description": "Blue, size M",
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "0.75",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ],
+            "processingFee": true
+          },
+          "priceUsd": "3.99",
+          "productName": "T-shirt",
+          "reference": "order-1044",
+          "successUrl": "https://shop.example.com/orders/success?uuid={{UUID}}"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees with a line and the processing fee",
+      "request": {
+        "body": {
+          "cancelUrl": "https://shop.example.com/orders/cancel",
+          "description": "Blue, size M",
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "0.75",
+                "description": "Standard, 3 to 5 days",
+                "label": "Shipping"
+              }
+            ],
+            "processingFee": true
+          },
+          "priceUsd": "3.99",
+          "productName": "T-shirt",
+          "reference": "order-1044",
+          "successUrl": "https://shop.example.com/orders/success?uuid={{UUID}}"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/payment",
+        "pathSegments": [
+          "checkout-sessions",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "20",
+                "label": "VAT (20%)"
+              }
+            ],
+            "processingFee": false
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees processingFee false",
+      "note": "false is sent: it turns the setting off for this checkout",
+      "request": {
+        "body": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "20",
+                "label": "VAT (20%)"
+              }
+            ],
+            "processingFee": false
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/payment",
+        "pathSegments": [
+          "checkout-sessions",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "20",
+                "label": "VAT (20%)"
+              },
+              {
+                "amountUsd": "4.5",
+                "description": "Express",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees without processingFee",
+      "note": "processingFee omitted: the space's checkout.customerPaysProcessingFee setting decides; lines keep their order; a line without description has none",
+      "request": {
+        "body": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "20",
+                "label": "VAT (20%)"
+              },
+              {
+                "amountUsd": "4.5",
+                "description": "Express",
+                "label": "Shipping"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/payment",
+        "pathSegments": [
+          "checkout-sessions",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "processingFee": true
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees processingFee only",
+      "note": "no items: items omitted",
+      "request": {
+        "body": {
+          "fees": {
+            "processingFee": true
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/payment",
+        "pathSegments": [
+          "checkout-sessions",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {},
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees empty",
+      "note": "fees given empty: sent as {} (items and processingFee omitted)",
+      "request": {
+        "body": {
+          "fees": {},
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/payment",
+        "pathSegments": [
+          "checkout-sessions",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "0.01",
+                "label": "A"
+              },
+              {
+                "amountUsd": "19.90",
+                "label": "B"
+              },
+              {
+                "amountUsd": "1000000",
+                "label": "C"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: fees amountUsd strings",
+      "note": "a money input is always sent as a JSON string, verbatim (never a number)",
+      "request": {
+        "body": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "0.01",
+                "label": "A"
+              },
+              {
+                "amountUsd": "19.90",
+                "label": "B"
+              },
+              {
+                "amountUsd": "1000000",
+                "label": "C"
+              }
+            ]
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/payment",
+        "pathSegments": [
+          "checkout-sessions",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createPayment",
+      "name": "body: session without fees",
+      "note": "fees not given: no fees key",
+      "request": {
+        "body": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/payment",
+        "pathSegments": [
+          "checkout-sessions",
+          "payment"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "2",
+                "description": "French VAT",
+                "label": "VAT (20%)"
+              }
+            ],
+            "processingFee": true
+          },
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          },
+          "priceUsd": "9.99",
+          "productName": "Pro"
+        }
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "body: subscription fees with a line and the processing fee",
+      "request": {
+        "body": {
+          "fees": {
+            "items": [
+              {
+                "amountUsd": "2",
+                "description": "French VAT",
+                "label": "VAT (20%)"
+              }
+            ],
+            "processingFee": true
+          },
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          },
+          "priceUsd": "9.99",
+          "productName": "Pro"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/subscription",
+        "pathSegments": [
+          "checkout-sessions",
+          "subscription"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "fees": {
+            "processingFee": false
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "body: subscription fees processingFee false",
+      "note": "no items: items omitted",
+      "request": {
+        "body": {
+          "fees": {
+            "processingFee": false
+          },
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/subscription",
+        "pathSegments": [
+          "checkout-sessions",
+          "subscription"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        }
+      },
+      "method": "checkoutSessions.createSubscription",
+      "name": "body: subscription without fees",
+      "note": "fees not given: no fees key",
+      "request": {
+        "body": {
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/checkout-sessions/subscription",
+        "pathSegments": [
+          "checkout-sessions",
+          "subscription"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "note": "très bien ☕"
+          },
+          "name": "Café ☕ 😀",
+          "priceUsd": "0.5"
+        }
+      },
+      "method": "products.create",
+      "name": "body: non-ASCII strings",
+      "request": {
+        "body": {
+          "metadata": {
+            "note": "très bien ☕"
+          },
+          "name": "Café ☕ 😀",
+          "priceUsd": "0.5"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "url": "http://localhost:8080/hook"
+        }
+      },
+      "method": "webhooks.endpoints.create",
+      "name": "body: endpoint create minimal",
+      "request": {
+        "body": {
+          "url": "http://localhost:8080/hook"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "<uuid-v4>",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/webhooks/endpoints",
+        "pathSegments": [
+          "webhooks",
+          "endpoints"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {},
+      "method": "payments.list",
+      "name": "options: request onBehalfOf",
+      "options": {
+        "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": "019eca82-5680-7b00-8000-0000000000b1",
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/payments",
+        "pathSegments": [
+          "payments"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "client": {
+        "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "products.list",
+      "name": "options: client onBehalfOf",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": "019eca82-5680-7b00-8000-0000000000b1",
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "client": {
+        "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "products.get",
+      "name": "options: request onBehalfOf overrides the client's",
+      "options": {
+        "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b9"
+      },
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": "019eca82-5680-7b00-8000-0000000000b9",
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
+        "pathSegments": [
+          "products",
+          "019cadfd-8900-7c00-8000-0000000000c1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "client": {
+        "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "method": "members.list",
+      "name": "options: empty request onBehalfOf forces organization level",
+      "note": "the header is omitted, never sent blank",
+      "options": {
+        "onBehalfOf": ""
+      },
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members",
+        "pathSegments": [
+          "members"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "client": {
+        "onBehalfOf": ""
+      },
+      "method": "members.list",
+      "name": "options: client onBehalfOf empty is organization level",
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/members",
+        "pathSegments": [
+          "members"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "method": "wallets.list",
+      "name": "options: uppercase onBehalfOf sent as given",
+      "options": {
+        "onBehalfOf": "019ECA82-5680-7B00-8000-0000000000B1"
+      },
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": "019ECA82-5680-7B00-8000-0000000000B1",
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/wallets",
+        "pathSegments": [
+          "wallets"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "email": "alice@example.com",
+          "firstName": "Alice"
+        }
+      },
+      "method": "customers.create",
+      "name": "options: idempotencyKey replaces the generated one",
+      "options": {
+        "idempotencyKey": "order-1043:create-customer"
+      },
+      "request": {
+        "body": {
+          "email": "alice@example.com",
+          "firstName": "Alice"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "order-1043:create-customer",
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/customers",
+        "pathSegments": [
+          "customers"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Renamed"
+        },
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "method": "products.update",
+      "name": "options: idempotencyKey on a non-idempotent method is ignored",
+      "options": {
+        "idempotencyKey": "not sent, not validated"
+      },
+      "request": {
+        "body": {
+          "name": "Renamed"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
+        "pathSegments": [
+          "products",
+          "019cadfd-8900-7c00-8000-0000000000c1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "PATCH"
+      }
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "method": "products.get",
+      "name": "options: idempotencyKey on a GET is ignored",
+      "options": {
+        "idempotencyKey": "ignored"
+      },
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": null
+        },
+        "path": "/products/019cadfd-8900-7c00-8000-0000000000c1",
+        "pathSegments": [
+          "products",
+          "019cadfd-8900-7c00-8000-0000000000c1"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {},
+      "method": "me",
+      "name": "options: requestId",
+      "options": {
+        "requestId": "req-2026.10.08_abc:1"
+      },
+      "request": {
+        "body": null,
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": null,
+          "Idempotency-Key": null,
+          "On-Behalf-Of": null,
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": "req-2026.10.08_abc:1"
+        },
+        "path": "/me",
+        "pathSegments": [
+          "me"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "GET"
+      }
+    },
+    {
+      "args": {
+        "params": {
+          "name": "Pro",
+          "priceUsd": "9.99"
+        }
+      },
+      "method": "products.create",
+      "name": "options: all three on an idempotent create",
+      "options": {
+        "idempotencyKey": "product-01a0f22f-9600-7000-8000-000000000008",
+        "onBehalfOf": "019eca82-5680-7b00-8000-0000000000b1",
+        "requestId": "trace-1"
+      },
+      "request": {
+        "body": {
+          "name": "Pro",
+          "priceUsd": "9.99"
+        },
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "product-01a0f22f-9600-7000-8000-000000000008",
+          "On-Behalf-Of": "019eca82-5680-7b00-8000-0000000000b1",
+          "X-API-Key": "sk_test_conformance",
+          "X-Request-Id": "trace-1"
+        },
+        "path": "/products",
+        "pathSegments": [
+          "products"
+        ],
+        "query": [],
+        "rawQuery": "",
+        "verb": "POST"
+      }
+    }
+  ],
+  "comment": "Request building: each call must send exactly request.",
+  "generator": "qbitflow-conformance",
+  "sdk": "qbitflow-go-sdk 3.0.0"
+}

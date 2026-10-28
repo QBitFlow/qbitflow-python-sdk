@@ -1,0 +1,4434 @@
+{
+  "cases": [
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"name\":\"Pro plan\",\"description\":\"Monthly access\",\"priceUsd\":\"9.99\",\"createdAt\":\"2026-09-01T12:00:00.123Z\",\"isActive\":true,\"reference\":\"pro-monthly\",\"metadata\":{\"sku\":\"PRO-M\"},\"subscription\":{\"frequency\":{\"value\":1,\"unit\":\"months\"},\"trialPeriod\":{\"value\":7,\"unit\":\"days\"},\"minPeriods\":3},\"paymentLink\":\"https://qbitflow.app/pay/019cadfd\",\"test\":true,\"legacyId\":42,\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\"}",
+      "expect": "ok",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product full, unknown legacyId ignored",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        {
+          "path": "name",
+          "value": "Pro plan"
+        },
+        {
+          "optional": true,
+          "path": "description",
+          "value": "Monthly access"
+        },
+        {
+          "path": "priceUsd",
+          "value": "9.99"
+        },
+        {
+          "kind": "time",
+          "path": "createdAt",
+          "value": "2026-09-01T12:00:00.123Z"
+        },
+        {
+          "path": "isActive",
+          "value": true
+        },
+        {
+          "path": "reference",
+          "value": "pro-monthly"
+        },
+        {
+          "path": "metadata",
+          "value": {
+            "sku": "PRO-M"
+          }
+        },
+        {
+          "optional": true,
+          "path": "subscription.frequency.unit",
+          "value": "months"
+        },
+        {
+          "path": "subscription.trialPeriod.value",
+          "value": 7
+        },
+        {
+          "optional": true,
+          "path": "subscription.minPeriods",
+          "value": 3
+        },
+        {
+          "path": "test",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "userUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"name\":\"Pro\",\"priceUsd\":\"9.99\",\"createdAt\":\"2026-09-01T14:00:00.123456+02:00\"}",
+      "expect": "ok",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product with +02:00 microseconds (lenient)",
+      "note": "the API sends UTC Z with at most ms; decoders still accept any RFC 3339 offset and precision",
+      "probes": [
+        {
+          "kind": "time",
+          "path": "createdAt",
+          "value": "2026-09-01T14:00:00.123456+02:00"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{}",
+      "expect": "ok",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product empty object: required fields zero",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": ""
+        },
+        {
+          "path": "name",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "description",
+          "value": ""
+        },
+        {
+          "path": "priceUsd",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "path": "createdAt",
+          "value": null
+        },
+        {
+          "path": "isActive",
+          "value": false
+        },
+        {
+          "path": "reference",
+          "value": ""
+        },
+        {
+          "path": "metadata",
+          "value": {}
+        },
+        {
+          "optional": true,
+          "path": "subscription",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "paymentLink",
+          "value": ""
+        },
+        {
+          "path": "test",
+          "value": false
+        },
+        {
+          "optional": true,
+          "path": "userUuid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"uuid\":null,\"name\":null,\"description\":null,\"priceUsd\":null,\"createdAt\":null,\"isActive\":null,\"metadata\":null,\"subscription\":null,\"test\":null}",
+      "expect": "ok",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product nulls: required fields zero",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": ""
+        },
+        {
+          "path": "name",
+          "value": ""
+        },
+        {
+          "path": "priceUsd",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "path": "createdAt",
+          "value": null
+        },
+        {
+          "path": "isActive",
+          "value": false
+        },
+        {
+          "path": "metadata",
+          "value": {}
+        },
+        {
+          "optional": true,
+          "path": "subscription",
+          "value": null
+        },
+        {
+          "path": "test",
+          "value": false
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"name\":\"Pro\",\"priceUsd\":9.99}",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product priceUsd as a number",
+      "note": "a decimal string field refuses a JSON number",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"name\":\"Pro\",\"priceUsd\":1e2}",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product priceUsd 1e2 exponent number",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"name\":\"Pro\",\"metadata\":{\"n\":1}}",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product metadata value as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"name\":\"Pro\",\"metadata\":[]}",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product metadata as a list",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"name\":42,\"priceUsd\":\"9.99\"}",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product name as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"name\":\"Pro\",\"subscription\":\"monthly\"}",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product subscription as a string",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"name\":\"Pro\",\"isActive\":1}",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product isActive as 1",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"name\":\"Pro\",\"createdAt\":1790856000}",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product createdAt as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "[{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"name\":\"Pro plan\",\"description\":\"Monthly access\",\"priceUsd\":\"9.99\",\"createdAt\":\"2026-09-01T12:00:00.123Z\",\"isActive\":true,\"reference\":\"pro-monthly\",\"metadata\":{\"sku\":\"PRO-M\"},\"subscription\":{\"frequency\":{\"value\":1,\"unit\":\"months\"},\"trialPeriod\":{\"value\":7,\"unit\":\"days\"},\"minPeriods\":3},\"paymentLink\":\"https://qbitflow.app/pay/019cadfd\",\"test\":true,\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\"}]",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product body is a list",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "\"Pro plan\"",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product body is a string",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "true",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product body is true",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "null",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product body null",
+      "note": "a JSON null body where an object is expected is a ServerError (behaviour §10.1)",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product empty body",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": " \n",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product whitespace body",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "<html>oops</html>",
+      "expect": "serverError",
+      "method": "products.get",
+      "model": "Product",
+      "name": "Product non-JSON body",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "includeHidden": true,
+          "limit": 50,
+          "reference": "pro-monthly",
+          "subscription": false
+        }
+      },
+      "body": "{\"items\":[{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"name\":\"Pro plan\",\"description\":\"Monthly access\",\"priceUsd\":\"9.99\",\"createdAt\":\"2026-09-01T12:00:00.123Z\",\"isActive\":true,\"reference\":\"pro-monthly\",\"metadata\":{\"sku\":\"PRO-M\"},\"subscription\":{\"frequency\":{\"value\":1,\"unit\":\"months\"},\"trialPeriod\":{\"value\":7,\"unit\":\"days\"},\"minPeriods\":3},\"paymentLink\":\"https://qbitflow.app/pay/019cadfd\",\"test\":true,\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\"},{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c2\",\"name\":\"Basic\",\"priceUsd\":\"1\",\"metadata\":{}}],\"hasMore\":true,\"nextCursor\":\"djF8YWJj\"}",
+      "expect": "ok",
+      "method": "products.list",
+      "model": "Page<Product>",
+      "name": "Page<Product> two items, more to come",
+      "probes": [
+        {
+          "path": "items[0].name",
+          "value": "Pro plan"
+        },
+        {
+          "path": "items[1].name",
+          "value": "Basic"
+        },
+        {
+          "optional": true,
+          "path": "items[1].subscription",
+          "value": null
+        },
+        {
+          "kind": "time",
+          "path": "items[1].createdAt",
+          "value": null
+        },
+        {
+          "path": "items[1].metadata",
+          "value": {}
+        },
+        {
+          "path": "hasMore",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": "djF8YWJj"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "includeHidden": true,
+          "limit": 50,
+          "reference": "pro-monthly",
+          "subscription": false
+        }
+      },
+      "body": "null",
+      "expect": "serverError",
+      "method": "products.list",
+      "model": "Page<Product>",
+      "name": "Page<Product> body null",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "includeHidden": true,
+          "limit": 50,
+          "reference": "pro-monthly",
+          "subscription": false
+        }
+      },
+      "body": "[]",
+      "expect": "serverError",
+      "method": "products.list",
+      "model": "Page<Product>",
+      "name": "Page<Product> list instead of a page",
+      "note": "every list is a page object: a bare array is a ServerError",
+      "status": 200
+    },
+    {
+      "args": {
+        "reference": "pro-monthly"
+      },
+      "body": "{\"items\":[{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"name\":\"Pro plan\",\"description\":\"Monthly access\",\"priceUsd\":\"9.99\",\"createdAt\":\"2026-09-01T12:00:00.123Z\",\"isActive\":true,\"reference\":\"pro-monthly\",\"metadata\":{\"sku\":\"PRO-M\"},\"subscription\":{\"frequency\":{\"value\":1,\"unit\":\"months\"},\"trialPeriod\":{\"value\":7,\"unit\":\"days\"},\"minPeriods\":3},\"paymentLink\":\"https://qbitflow.app/pay/019cadfd\",\"test\":true,\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "products.getByReference",
+      "model": "Product",
+      "name": "getByReference one item",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        {
+          "path": "reference",
+          "value": "pro-monthly"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "reference": "pro-monthly"
+      },
+      "body": "{\"items\":[],\"hasMore\":false}",
+      "expect": "notFound",
+      "method": "products.getByReference",
+      "model": "Product",
+      "name": "getByReference empty page is not found",
+      "note": "an empty page is a NotFoundError (status 404, code not_found), like a 404",
+      "status": 200
+    },
+    {
+      "args": {
+        "reference": "crm-5521"
+      },
+      "body": "{\"items\":[],\"hasMore\":false}",
+      "expect": "notFound",
+      "method": "customers.getByReference",
+      "model": "Customer",
+      "name": "getByReference customers empty page is not found",
+      "status": 200
+    },
+    {
+      "args": {
+        "reference": "pro-monthly"
+      },
+      "body": "{\"items\":[{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c2\",\"name\":\"Basic\",\"priceUsd\":\"1\",\"reference\":\"PRO-MONTHLY\",\"metadata\":{}},{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c3\",\"name\":\"Team\",\"priceUsd\":\"5\",\"reference\":\"team\",\"metadata\":{}}],\"hasMore\":false}",
+      "expect": "notFound",
+      "method": "products.getByReference",
+      "model": "Product",
+      "name": "getByReference other reference is not found",
+      "note": "a server that ignored the filter: no item has the reference asked for (compared exactly) → NotFoundError, never another resource",
+      "status": 200
+    },
+    {
+      "args": {
+        "reference": "pro-monthly"
+      },
+      "body": "{\"items\":[{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c2\",\"name\":\"Basic\",\"priceUsd\":\"1\",\"reference\":\"basic\",\"metadata\":{}},{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"name\":\"Pro plan\",\"description\":\"Monthly access\",\"priceUsd\":\"9.99\",\"createdAt\":\"2026-09-01T12:00:00.123Z\",\"isActive\":true,\"reference\":\"pro-monthly\",\"metadata\":{\"sku\":\"PRO-M\"},\"subscription\":{\"frequency\":{\"value\":1,\"unit\":\"months\"},\"trialPeriod\":{\"value\":7,\"unit\":\"days\"},\"minPeriods\":3},\"paymentLink\":\"https://qbitflow.app/pay/019cadfd\",\"test\":true,\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "products.getByReference",
+      "model": "Product",
+      "name": "getByReference picks the matching item",
+      "note": "the item whose reference equals the one asked for, wherever it is on the page",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": "019cadfd-8900-7c00-8000-0000000000c1"
+        },
+        {
+          "path": "reference",
+          "value": "pro-monthly"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "reference": "order-1043"
+      },
+      "body": "{\"items\":[{\"uuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"amount\":\"10\",\"amountMinUnits\":\"10000000\",\"amountUsd\":\"10\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"txHash\":\"0x11\",\"chain\":\"BASE\",\"test\":false,\"reference\":\"order-1043\",\"priceUsd\":\"10\",\"fees\":[],\"productName\":\"Pro plan\",\"productDescription\":\"Lifetime\",\"metadata\":{\"orderId\":\"order-1043\"},\"settlement\":{\"feePercent\":\"0.99\",\"split\":{\"platform\":{\"amount\":\"0.099\",\"amountMinUnits\":\"99000\",\"amountUsd\":\"0.099\"},\"merchant\":{\"amount\":\"9.901\",\"amountMinUnits\":\"9901000\",\"amountUsd\":\"9.901\"},\"networkFee\":{\"amount\":\"0.0042\",\"amountMinUnits\":\"4200\"}},\"transaction\":{\"blockNumber\":\"52468103\",\"blockTime\":\"2026-10-01T11:59:58Z\",\"gasUsed\":95000,\"fee\":{\"amount\":\"0.00000114\",\"amountMinUnits\":\"1140000000000\",\"amountUsd\":\"0.005144\"},\"nativePriceUsd\":\"4512.37\"}},\"confirmedAt\":\"2026-10-01T11:59:58Z\",\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundable\":true}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "payments.getByReference",
+      "model": "Payment",
+      "name": "getByReference payments one item",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": "pay@01a0f22f-9600-7000-8000-000000000008"
+        },
+        {
+          "optional": true,
+          "path": "reference",
+          "value": "order-1043"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "reference": "customer-7731"
+      },
+      "body": "{\"items\":[],\"hasMore\":false}",
+      "expect": "notFound",
+      "method": "subscriptions.getByReference",
+      "model": "Subscription",
+      "name": "getByReference subscriptions empty page is not found",
+      "status": 200
+    },
+    {
+      "args": {
+        "reference": "pro-monthly"
+      },
+      "body": "{\"uuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"name\":\"Pro plan\",\"description\":\"Monthly access\",\"priceUsd\":\"9.99\",\"createdAt\":\"2026-09-01T12:00:00.123Z\",\"isActive\":true,\"reference\":\"pro-monthly\",\"metadata\":{\"sku\":\"PRO-M\"},\"subscription\":{\"frequency\":{\"value\":1,\"unit\":\"months\"},\"trialPeriod\":{\"value\":7,\"unit\":\"days\"},\"minPeriods\":3},\"paymentLink\":\"https://qbitflow.app/pay/019cadfd\",\"test\":true,\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\"}",
+      "expect": "notFound",
+      "method": "products.getByReference",
+      "model": "Product",
+      "name": "getByReference body not a page",
+      "note": "a body without items decodes as an empty page: not found",
+      "status": 200
+    },
+    {
+      "args": {
+        "reference": "pro-monthly"
+      },
+      "body": "{\"items\":{},\"hasMore\":false}",
+      "expect": "serverError",
+      "method": "products.getByReference",
+      "model": "Product",
+      "name": "getByReference items as an object",
+      "status": 200
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "body": "{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false}",
+      "expect": "ok",
+      "method": "currencies.get",
+      "model": "Currency",
+      "name": "Currency token",
+      "probes": [
+        {
+          "path": "id",
+          "value": 8
+        },
+        {
+          "path": "code",
+          "value": "BASE:USDC"
+        },
+        {
+          "path": "symbol",
+          "value": "USDC"
+        },
+        {
+          "path": "name",
+          "value": "USD Coin"
+        },
+        {
+          "path": "chain",
+          "value": "BASE"
+        },
+        {
+          "path": "decimals",
+          "value": 6
+        },
+        {
+          "optional": true,
+          "path": "address",
+          "value": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+        },
+        {
+          "optional": true,
+          "path": "mainCurrencyId",
+          "value": 3
+        },
+        {
+          "path": "test",
+          "value": false
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "body": "{\"id\":3,\"code\":\"BASE\",\"symbol\":\"BASE\",\"name\":\"Base\",\"chain\":\"BASE\",\"decimals\":18,\"test\":false}",
+      "expect": "ok",
+      "method": "currencies.get",
+      "model": "Currency",
+      "name": "Currency native coin: address and mainCurrencyId absent",
+      "probes": [
+        {
+          "path": "id",
+          "value": 3
+        },
+        {
+          "path": "code",
+          "value": "BASE"
+        },
+        {
+          "path": "chain",
+          "value": "BASE"
+        },
+        {
+          "optional": true,
+          "path": "address",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "mainCurrencyId",
+          "value": null
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "body": "{\"id\":8,\"code\":\"BASE:USDC\",\"mainCurrencyId\":3,\"mainCurrency\":{\"id\":3}}",
+      "expect": "ok",
+      "method": "currencies.get",
+      "model": "Currency",
+      "name": "Currency nested mainCurrency ignored",
+      "note": "an unknown key (mainCurrency is never sent)",
+      "probes": [
+        {
+          "path": "id",
+          "value": 8
+        },
+        {
+          "optional": true,
+          "path": "mainCurrencyId",
+          "value": 3
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "body": "{\"id\":8.0,\"decimals\":6.00,\"mainCurrencyId\":3e0,\"name\":\"USD Coin\"}",
+      "expect": "ok",
+      "method": "currencies.get",
+      "model": "Currency",
+      "name": "Currency integral floats into integers",
+      "probes": [
+        {
+          "path": "id",
+          "value": 8
+        },
+        {
+          "path": "decimals",
+          "value": 6
+        },
+        {
+          "optional": true,
+          "path": "mainCurrencyId",
+          "value": 3
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "body": "{\"id\":8.5,\"name\":\"USD Coin\"}",
+      "expect": "serverError",
+      "method": "currencies.get",
+      "model": "Currency",
+      "name": "Currency fractional id",
+      "status": 200
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "body": "{\"id\":-1,\"name\":\"USD Coin\"}",
+      "expect": "serverError",
+      "method": "currencies.get",
+      "model": "Currency",
+      "name": "Currency negative id",
+      "status": 200
+    },
+    {
+      "args": {
+        "id": 8
+      },
+      "body": "{\"id\":\"8\",\"name\":\"USD Coin\"}",
+      "expect": "serverError",
+      "method": "currencies.get",
+      "model": "Currency",
+      "name": "Currency id as a string",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "main": true,
+          "test": true
+        }
+      },
+      "body": "{\"items\":[{\"id\":3,\"code\":\"BASE\",\"symbol\":\"BASE\",\"name\":\"Base\",\"chain\":\"BASE\",\"decimals\":18,\"test\":false},{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "currencies.list",
+      "model": "Currency[]",
+      "name": "Currency[] bounded page unwrapped",
+      "probes": [
+        {
+          "path": "[0].code",
+          "value": "BASE"
+        },
+        {
+          "optional": true,
+          "path": "[0].address",
+          "value": ""
+        },
+        {
+          "path": "[1].code",
+          "value": "BASE:USDC"
+        },
+        {
+          "optional": true,
+          "path": "[1].mainCurrencyId",
+          "value": 3
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "main": true,
+          "test": true
+        }
+      },
+      "body": "{\"items\":[],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "currencies.list",
+      "model": "Currency[]",
+      "name": "Currency[] empty page",
+      "probes": [
+        {
+          "path": "",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "main": true,
+          "test": true
+        }
+      },
+      "body": "{\"items\":null,\"hasMore\":false}",
+      "expect": "ok",
+      "method": "currencies.list",
+      "model": "Currency[]",
+      "name": "Currency[] items null",
+      "note": "absent or null items: an empty list",
+      "probes": [
+        {
+          "path": "",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "main": true,
+          "test": true
+        }
+      },
+      "body": "[{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false}]",
+      "expect": "serverError",
+      "method": "currencies.list",
+      "model": "Currency[]",
+      "name": "Currency[] bare array",
+      "note": "bounded lists are pages too",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "body": "{\"items\":[{\"uuid\":\"01a05cd7-2a00-7d00-8000-0000000000d1\",\"firstName\":\"Alice\",\"lastName\":\"Martin\",\"email\":\"alice@example.com\",\"verified\":true,\"phoneNumber\":\"+33 6 12 34 56 78\",\"reference\":\"crm-5521\",\"metadata\":{\"crm:id\":\"C-5521\"},\"createdAt\":\"2026-06-01T09:00:00Z\",\"test\":false}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "customers.list",
+      "model": "Page<Customer>",
+      "name": "Page<Customer> last page",
+      "probes": [
+        {
+          "path": "items[0].firstName",
+          "value": "Alice"
+        },
+        {
+          "path": "hasMore",
+          "value": false
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "body": "{\"items\":null,\"hasMore\":false}",
+      "expect": "ok",
+      "method": "customers.list",
+      "model": "Page<Customer>",
+      "name": "Page<Customer> items null",
+      "note": "leniency: the API never sends null",
+      "probes": [
+        {
+          "path": "items",
+          "value": []
+        },
+        {
+          "path": "hasMore",
+          "value": false
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "body": "{}",
+      "expect": "ok",
+      "method": "customers.list",
+      "model": "Page<Customer>",
+      "name": "Page<Customer> empty object",
+      "probes": [
+        {
+          "path": "items",
+          "value": []
+        },
+        {
+          "path": "hasMore",
+          "value": false
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "body": "{\"items\":[{\"uuid\":\"01a05cd7-2a00-7d00-8000-0000000000d1\",\"firstName\":\"Alice\",\"lastName\":\"Martin\",\"email\":\"alice@example.com\",\"verified\":true,\"phoneNumber\":\"+33 6 12 34 56 78\",\"reference\":\"crm-5521\",\"metadata\":{\"crm:id\":\"C-5521\"},\"createdAt\":\"2026-06-01T09:00:00Z\",\"test\":false},{\"uuid\":\"01a05cd7-2a00-7d00-8000-0000000000d2\",\"firstName\":\"Bob\",\"email\":\"bob@example.com\",\"verified\":false,\"metadata\":{},\"createdAt\":\"2026-06-02T09:00:00Z\",\"extra\":{\"x\":1}}],\"hasMore\":true,\"nextCursor\":\"djF8MDFhMDVjZDc\"}",
+      "expect": "ok",
+      "method": "customers.list",
+      "model": "Page<Customer>",
+      "name": "Page<Customer> two items and a cursor",
+      "probes": [
+        {
+          "path": "items[0].firstName",
+          "value": "Alice"
+        },
+        {
+          "optional": true,
+          "path": "items[0].lastName",
+          "value": "Martin"
+        },
+        {
+          "optional": true,
+          "path": "items[0].phoneNumber",
+          "value": "+33 6 12 34 56 78"
+        },
+        {
+          "path": "items[0].metadata",
+          "value": {
+            "crm:id": "C-5521"
+          }
+        },
+        {
+          "optional": true,
+          "path": "items[1].lastName",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "path": "items[1].createdAt",
+          "value": "2026-06-02T09:00:00Z"
+        },
+        {
+          "optional": true,
+          "path": "items[1].address",
+          "value": ""
+        },
+        {
+          "path": "hasMore",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": "djF8MDFhMDVjZDc"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "body": "{\"items\":[],\"hasMore\":true}",
+      "expect": "ok",
+      "method": "customers.list",
+      "model": "Page<Customer>",
+      "name": "Page<Customer> hasMore true without nextCursor",
+      "note": "decodes; an iterator stops on it (behaviour §10)",
+      "probes": [
+        {
+          "path": "hasMore",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "body": "{\"items\":[],\"hasMore\":false,\"nextCursor\":\"djF8eA\"}",
+      "expect": "ok",
+      "method": "customers.list",
+      "model": "Page<Customer>",
+      "name": "Page<Customer> nextCursor with hasMore false",
+      "note": "decodes; hasMore decides (an iterator stops)",
+      "probes": [
+        {
+          "path": "hasMore",
+          "value": false
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": "djF8eA"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "body": "{\"items\":[],\"hasMore\":\"true\"}",
+      "expect": "serverError",
+      "method": "customers.list",
+      "model": "Page<Customer>",
+      "name": "Page<Customer> hasMore as a string",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "body": "{\"items\":{},\"hasMore\":false}",
+      "expect": "serverError",
+      "method": "customers.list",
+      "model": "Page<Customer>",
+      "name": "Page<Customer> items is an object",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "email": "alice@example.com",
+          "limit": 50,
+          "reference": "crm-5521"
+        }
+      },
+      "body": "{\"items\":[],\"hasMore\":true,\"nextCursor\":5}",
+      "expect": "serverError",
+      "method": "customers.list",
+      "model": "Page<Customer>",
+      "name": "Page<Customer> nextCursor is a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "includeMembers": true,
+          "limit": 10,
+          "type": "payment.completed"
+        }
+      },
+      "body": "{\"items\":[{\"id\":\"evt_1\",\"type\":\"payment.completed\",\"version\":\"v2\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"test\":false,\"data\":{\"uuid\":\"pay@x\",\"amount\":\"10\"}}],\"hasMore\":true,\"nextCursor\":\"djF8ZXZ0XzE\"}",
+      "expect": "ok",
+      "method": "webhooks.events.list",
+      "model": "Page<Event>",
+      "name": "Page<Event> opaque cursor and raw data",
+      "probes": [
+        {
+          "path": "items[0].id",
+          "value": "evt_1"
+        },
+        {
+          "path": "items[0].type",
+          "value": "payment.completed"
+        },
+        {
+          "path": "items[0].data.amount",
+          "value": "10"
+        },
+        {
+          "optional": true,
+          "path": "items[0].userUuid",
+          "value": ""
+        },
+        {
+          "path": "hasMore",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": "djF8ZXZ0XzE"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "body": "{\"uuid\":\"01a05cd7-2a00-7d00-8000-0000000000d1\",\"firstName\":\"Alice\",\"email\":\"alice@example.com\",\"verified\":false,\"metadata\":{},\"createdAt\":\"2026-06-01T09:00:00Z\",\"test\":false}",
+      "expect": "ok",
+      "method": "customers.get",
+      "model": "Customer",
+      "name": "Customer optional fields absent",
+      "probes": [
+        {
+          "path": "firstName",
+          "value": "Alice"
+        },
+        {
+          "optional": true,
+          "path": "lastName",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "phoneNumber",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "address",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "reference",
+          "value": ""
+        },
+        {
+          "path": "metadata",
+          "value": {}
+        },
+        {
+          "optional": true,
+          "path": "userUuid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "body": "{\"name\":\"Alice\",\"email\":\"alice@example.com\"}",
+      "expect": "ok",
+      "method": "customers.get",
+      "model": "Customer",
+      "name": "Customer v1 name key ignored",
+      "note": "the person's first name is firstName; a name key is unknown",
+      "probes": [
+        {
+          "path": "firstName",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "body": "{\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"firstName\":\"Alice\",\"lastName\":\"Martin\",\"email\":\"alice@example.com\",\"test\":false,\"organizationFeePercent\":\"5\",\"joinedAt\":\"2026-06-15T09:00:00Z\",\"acceptedCurrencies\":[{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},{\"id\":3,\"code\":\"BASE\",\"symbol\":\"BASE\",\"name\":\"Base\",\"chain\":\"BASE\",\"decimals\":18,\"test\":false}],\"spaceUuid\":\"019eca82-5680-7b00-8000-0000000000b2\"}",
+      "expect": "ok",
+      "method": "members.get",
+      "model": "Member",
+      "name": "Member full, trustedAt absent",
+      "probes": [
+        {
+          "path": "firstName",
+          "value": "Alice"
+        },
+        {
+          "optional": true,
+          "path": "lastName",
+          "value": "Martin"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "trustedAt",
+          "value": null
+        },
+        {
+          "kind": "time",
+          "path": "joinedAt",
+          "value": "2026-06-15T09:00:00Z"
+        },
+        {
+          "path": "acceptedCurrencies[0].code",
+          "value": "BASE:USDC"
+        },
+        {
+          "optional": true,
+          "path": "acceptedCurrencies[1].address",
+          "value": ""
+        },
+        {
+          "path": "organizationFeePercent",
+          "value": "5"
+        },
+        {
+          "path": "spaceUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b2"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "body": "{\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"firstName\":\"Alice\",\"acceptedCurrencies\":null,\"trustedAt\":\"2026-07-01T00:00:00Z\"}",
+      "expect": "ok",
+      "method": "members.get",
+      "model": "Member",
+      "name": "Member acceptedCurrencies null, lastName absent",
+      "probes": [
+        {
+          "path": "acceptedCurrencies",
+          "value": []
+        },
+        {
+          "optional": true,
+          "path": "lastName",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "trustedAt",
+          "value": "2026-07-01T00:00:00Z"
+        },
+        {
+          "kind": "time",
+          "path": "joinedAt",
+          "value": null
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "body": "{\"organizationFeePercent\":5}",
+      "expect": "serverError",
+      "method": "members.get",
+      "model": "Member",
+      "name": "Member organizationFeePercent as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "body": "{\"acceptedCurrencies\":[8,2]}",
+      "expect": "serverError",
+      "method": "members.get",
+      "model": "Member",
+      "name": "Member acceptedCurrencies of ids",
+      "note": "the v1 acceptedCurrencyIds shape: numbers where objects are expected",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "limit": 100
+        }
+      },
+      "body": "{\"items\":[{\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"firstName\":\"Alice\",\"lastName\":\"Martin\",\"email\":\"alice@example.com\",\"test\":false,\"organizationFeePercent\":\"5\",\"joinedAt\":\"2026-06-15T09:00:00Z\",\"acceptedCurrencies\":[{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},{\"id\":3,\"code\":\"BASE\",\"symbol\":\"BASE\",\"name\":\"Base\",\"chain\":\"BASE\",\"decimals\":18,\"test\":false}],\"spaceUuid\":\"019eca82-5680-7b00-8000-0000000000b2\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "members.list",
+      "model": "Page<Member>",
+      "name": "Page<Member> items",
+      "probes": [
+        {
+          "path": "items[0].userUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        },
+        {
+          "path": "items[0].acceptedCurrencies[1].code",
+          "value": "BASE"
+        },
+        {
+          "path": "hasMore",
+          "value": false
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"status\":\"frozen\",\"priceUsd\":\"9.990000\",\"frequency\":{\"value\":30.0,\"unit\":\"days\"},\"actionRequired\":\"somethingNew\",\"cancellationReason\":\"\",\"currency\":null}",
+      "expect": "ok",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription decimal strings kept, unknown status kept",
+      "probes": [
+        {
+          "path": "status",
+          "value": "frozen"
+        },
+        {
+          "path": "priceUsd",
+          "value": "9.990000"
+        },
+        {
+          "path": "frequency.value",
+          "value": 30
+        },
+        {
+          "optional": true,
+          "path": "frequency.unit",
+          "value": "days"
+        },
+        {
+          "optional": true,
+          "path": "actionRequired",
+          "value": "somethingNew"
+        },
+        {
+          "optional": true,
+          "path": "cancellationReason",
+          "value": ""
+        },
+        {
+          "path": "currency",
+          "value": {
+            "chain": "",
+            "code": "",
+            "decimals": 0,
+            "id": 0,
+            "name": "",
+            "symbol": "",
+            "test": false
+          }
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "currentPeriodEnd",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "allowance",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "dunning",
+          "value": null
+        },
+        {
+          "path": "metadata",
+          "value": {}
+        },
+        {
+          "optional": true,
+          "path": "from",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "subscriptionHash",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
+      "expect": "ok",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription full",
+      "probes": [
+        {
+          "optional": true,
+          "path": "reference",
+          "value": "customer-7731"
+        },
+        {
+          "kind": "time",
+          "path": "updatedAt",
+          "value": "2026-10-01T12:00:00.5Z"
+        },
+        {
+          "path": "currency.code",
+          "value": "BASE:USDC"
+        },
+        {
+          "path": "currency.chain",
+          "value": "BASE"
+        },
+        {
+          "path": "allowance.amount",
+          "value": "9.99"
+        },
+        {
+          "optional": true,
+          "path": "allowance.amountUsd",
+          "value": "9.99"
+        },
+        {
+          "optional": true,
+          "path": "allowance.remainingPeriods",
+          "value": 0
+        },
+        {
+          "optional": true,
+          "path": "allowance.maxPerPeriod",
+          "value": "30"
+        },
+        {
+          "optional": true,
+          "path": "allowance.maxPerPeriodMinUnits",
+          "value": "30000000"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "lastBilledAt",
+          "value": "2026-10-01T12:00:00Z"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "nextBillingAt",
+          "value": "2026-11-01T12:00:00Z"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "cancellableAt",
+          "value": null
+        },
+        {
+          "path": "metadata",
+          "value": {
+            "plan": "pro"
+          }
+        },
+        {
+          "optional": true,
+          "path": "managementPageLink",
+          "value": "https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003"
+        },
+        {
+          "path": "dunning.failedAttempts",
+          "value": 0
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "dunning.failingSince",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "customer",
+          "value": null
+        },
+        {
+          "path": "fees",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"status\":\"trial\",\"to\":\"0xdef\",\"priceUsd\":\"9.99\",\"fees\":[],\"metadata\":{},\"currentPeriodEnd\":\"2026-10-08T12:00:00Z\",\"nextBillingAt\":\"2026-10-08T12:00:00Z\"}",
+      "expect": "ok",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription trial: allowance and lastBilledAt absent",
+      "probes": [
+        {
+          "optional": true,
+          "path": "allowance",
+          "value": null
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "lastBilledAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "from",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "subscriptionHash",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "productUuid",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "nextBillingAt",
+          "value": "2026-10-08T12:00:00Z"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"allowance\":{\"amount\":\"30\",\"amountMinUnits\":\"30000000\"}}",
+      "expect": "ok",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription allowance remainingPeriods absent",
+      "probes": [
+        {
+          "path": "allowance.amount",
+          "value": "30"
+        },
+        {
+          "optional": true,
+          "path": "allowance.amountUsd",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "allowance.remainingPeriods",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "allowance.maxPerPeriod",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"allowance\":\"110000000\"}",
+      "expect": "serverError",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription allowance as a string",
+      "note": "the v1 shape: the allowance was a min-units string",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"status\":\"active\",\"priceUsd\":\"9.99\",\"fees\":[{\"type\":\"custom\",\"label\":\"VAT (20%)\",\"description\":\"French VAT\",\"amountUsd\":\"2\"},{\"type\":\"processingFee\",\"label\":\"Processing fee\",\"amountUsd\":\"0.13\"}]}",
+      "expect": "ok",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription with fees",
+      "note": "priceUsd stays the price; fees are the lines every bill adds",
+      "probes": [
+        {
+          "path": "priceUsd",
+          "value": "9.99"
+        },
+        {
+          "path": "fees[0].type",
+          "value": "custom"
+        },
+        {
+          "path": "fees[0].label",
+          "value": "VAT (20%)"
+        },
+        {
+          "optional": true,
+          "path": "fees[0].description",
+          "value": "French VAT"
+        },
+        {
+          "path": "fees[0].amountUsd",
+          "value": "2"
+        },
+        {
+          "path": "fees[1].type",
+          "value": "processingFee"
+        },
+        {
+          "optional": true,
+          "path": "fees[1].description",
+          "value": ""
+        },
+        {
+          "path": "fees[1].amountUsd",
+          "value": "0.13"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"priceUsd\":\"9.99\",\"fees\":null}",
+      "expect": "ok",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription fees null",
+      "note": "leniency: absent or null fees is an empty list",
+      "probes": [
+        {
+          "path": "fees",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"fees\":{\"type\":\"custom\"}}",
+      "expect": "serverError",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription fees as an object",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"priceUsd\":9.99}",
+      "expect": "serverError",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription priceUsd as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"priceUsd\":10.0}",
+      "expect": "serverError",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription priceUsd as an integral number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"frequency\":{\"value\":1.5,\"unit\":\"months\"}}",
+      "expect": "serverError",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription frequency.value fractional",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"test\":1}",
+      "expect": "serverError",
+      "method": "subscriptions.get",
+      "model": "Subscription",
+      "name": "Subscription test as 1",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "metadata": {
+            "coupon": "",
+            "plan": "pro-annual"
+          }
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
+      "expect": "ok",
+      "method": "subscriptions.update",
+      "model": "Subscription",
+      "name": "Subscription update answers the subscription",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": "sub@01a05cd7-2a00-7000-8000-000000000003"
+        },
+        {
+          "path": "metadata",
+          "value": {
+            "plan": "pro"
+          }
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "immediate": false
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
+      "expect": "ok",
+      "method": "subscriptions.cancel",
+      "model": "SubscriptionCancellation",
+      "name": "SubscriptionCancellation 200",
+      "probes": [
+        {
+          "path": "pending",
+          "value": false
+        },
+        {
+          "path": "subscription.uuid",
+          "value": "sub@01a05cd7-2a00-7000-8000-000000000003"
+        },
+        {
+          "path": "subscription.status",
+          "value": "active"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "immediate": false
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
+      "expect": "ok",
+      "method": "subscriptions.cancel",
+      "model": "SubscriptionCancellation",
+      "name": "SubscriptionCancellation 202 pending",
+      "note": "HTTP 202: still confirming on-chain",
+      "probes": [
+        {
+          "path": "pending",
+          "value": true
+        },
+        {
+          "path": "subscription.uuid",
+          "value": "sub@01a05cd7-2a00-7000-8000-000000000003"
+        }
+      ],
+      "status": 202
+    },
+    {
+      "args": {
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"billUuid\":\"sub-hist@01a0f755-f200-7000-8000-000000000005\",\"stage\":\"warpSpeed\",\"attempts\":2.0,\"nextAttemptAt\":\"2026-10-02T12:00:00.001Z\",\"failureCode\":\"insufficient_allowance\"}",
+      "expect": "ok",
+      "method": "subscriptions.testBill",
+      "model": "TestBill",
+      "name": "TestBill unknown stage kept, integral attempts",
+      "probes": [
+        {
+          "path": "billUuid",
+          "value": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+        },
+        {
+          "path": "stage",
+          "value": "warpSpeed"
+        },
+        {
+          "optional": true,
+          "path": "outcome",
+          "value": ""
+        },
+        {
+          "path": "attempts",
+          "value": 2
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "nextAttemptAt",
+          "value": "2026-10-02T12:00:00.001Z"
+        },
+        {
+          "optional": true,
+          "path": "txHash",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "failureCode",
+          "value": "insufficient_allowance"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"billUuid\":\"sub-hist@01a0f755-f200-7000-8000-000000000005\",\"stage\":\"done\",\"outcome\":\"paid\",\"attempts\":0,\"txHash\":\"0x33\"}",
+      "expect": "ok",
+      "method": "subscriptions.testBill",
+      "model": "TestBill",
+      "name": "TestBill done and paid",
+      "probes": [
+        {
+          "path": "stage",
+          "value": "done"
+        },
+        {
+          "optional": true,
+          "path": "outcome",
+          "value": "paid"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "nextAttemptAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "txHash",
+          "value": "0x33"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"stage\":\"done\",\"attempts\":-1}",
+      "expect": "serverError",
+      "method": "subscriptions.testBill",
+      "model": "TestBill",
+      "name": "TestBill negative attempts",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "limit": 5
+        },
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"items\":[{\"uuid\":\"sub-hist@01a0f755-f200-7000-8000-000000000005\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"amount\":\"10\",\"amountMinUnits\":\"10000000\",\"amountUsd\":\"10\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"txHash\":\"0x33\",\"chain\":\"BASE\",\"test\":true,\"productName\":\"Pro plan\",\"subscriptionUuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"settlement\":{\"feePercent\":\"0.99\",\"split\":{\"platform\":{\"amount\":\"0.099\",\"amountMinUnits\":\"99000\",\"amountUsd\":\"0.099\"},\"merchant\":{\"amount\":\"9.901\",\"amountMinUnits\":\"9901000\",\"amountUsd\":\"9.901\"},\"networkFee\":{\"amount\":\"0.0042\",\"amountMinUnits\":\"4200\"}},\"transaction\":{\"blockNumber\":\"52468103\",\"blockTime\":\"2026-10-01T11:59:58Z\",\"gasUsed\":95000,\"fee\":{\"amount\":\"0.00000114\",\"amountMinUnits\":\"1140000000000\",\"amountUsd\":\"0.005144\"},\"nativePriceUsd\":\"4512.37\"}},\"periodStart\":\"2026-10-01T12:00:00Z\",\"periodEnd\":\"2026-10-31T12:00:00Z\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "subscriptions.listBills",
+      "model": "Page<Bill>",
+      "name": "Page<Bill> settlement and periods",
+      "probes": [
+        {
+          "path": "items[0].uuid",
+          "value": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+        },
+        {
+          "path": "items[0].amount",
+          "value": "10"
+        },
+        {
+          "path": "items[0].amountUsd",
+          "value": "10"
+        },
+        {
+          "path": "items[0].productName",
+          "value": "Pro plan"
+        },
+        {
+          "optional": true,
+          "path": "items[0].productDescription",
+          "value": ""
+        },
+        {
+          "path": "items[0].settlement.feePercent",
+          "value": "0.99"
+        },
+        {
+          "path": "items[0].settlement.split.merchant.amount",
+          "value": "9.901"
+        },
+        {
+          "optional": true,
+          "path": "items[0].settlement.split.networkFee.amountUsd",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "items[0].settlement.transaction.gasUsed",
+          "value": 95000
+        },
+        {
+          "optional": true,
+          "path": "items[0].customer",
+          "value": null
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "items[0].periodStart",
+          "value": "2026-10-01T12:00:00Z"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "items[0].periodEnd",
+          "value": "2026-10-31T12:00:00Z"
+        },
+        {
+          "optional": true,
+          "path": "items[0].paid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "billUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+      },
+      "body": "{\"uuid\":\"sub-hist@01a0f755-f200-7000-8000-000000000005\"}",
+      "expect": "ok",
+      "method": "subscriptions.getBill",
+      "model": "Bill",
+      "name": "Bill settlement absent: zero object",
+      "note": "settlement is required (D3): absent decodes as its zero value",
+      "probes": [
+        {
+          "path": "settlement.feePercent",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "settlement.split",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "settlement.transaction",
+          "value": null
+        },
+        {
+          "path": "currency.id",
+          "value": 0
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "billUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+      },
+      "body": "{\"uuid\":\"sub-hist@01a0f755-f200-7000-8000-000000000005\",\"periodStart\":\"2026-09-01T12:00:00Z\",\"periodEnd\":\"2026-10-01T12:00:00Z\",\"refund\":{\"uuid\":\"refund@x\",\"status\":\"approved\",\"initiatedBy\":\"merchant\",\"refundPercent\":\"100\",\"amountMinUnits\":\"1\",\"createdAt\":\"2026-10-02T00:00:00Z\"},\"refundable\":true,\"notRefundableReason\":\"somethingNew\"}",
+      "expect": "ok",
+      "method": "subscriptions.getBill",
+      "model": "Bill",
+      "name": "Bill refund summary",
+      "probes": [
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "periodStart",
+          "value": "2026-09-01T12:00:00Z"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "periodEnd",
+          "value": "2026-10-01T12:00:00Z"
+        },
+        {
+          "path": "refund.status",
+          "value": "approved"
+        },
+        {
+          "path": "refund.refundPercent",
+          "value": "100"
+        },
+        {
+          "optional": true,
+          "path": "refund.amount",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "refund.amountUsd",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "refund.respondedAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "notRefundableReason",
+          "value": "somethingNew"
+        },
+        {
+          "optional": true,
+          "path": "refundable",
+          "value": true
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "billUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+      },
+      "body": "{\"refund\":{\"uuid\":\"refund@x\",\"refundPercent\":100}}",
+      "expect": "serverError",
+      "method": "subscriptions.getBill",
+      "model": "Bill",
+      "name": "Bill refund refundPercent as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "billUuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
+      },
+      "body": "{\"settlement\":[]}",
+      "expect": "serverError",
+      "method": "subscriptions.getBill",
+      "model": "Bill",
+      "name": "Bill settlement as a list",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"uuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"amount\":\"10\",\"amountMinUnits\":\"10000000\",\"amountUsd\":\"10\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"txHash\":\"0x11\",\"chain\":\"BASE\",\"test\":false,\"reference\":\"order-1043\",\"priceUsd\":\"10\",\"fees\":[],\"productName\":\"Pro plan\",\"productDescription\":\"Lifetime\",\"metadata\":{\"orderId\":\"order-1043\"},\"settlement\":{\"feePercent\":\"0.99\",\"split\":{\"platform\":{\"amount\":\"0.099\",\"amountMinUnits\":\"99000\",\"amountUsd\":\"0.099\"},\"merchant\":{\"amount\":\"9.901\",\"amountMinUnits\":\"9901000\",\"amountUsd\":\"9.901\"},\"networkFee\":{\"amount\":\"0.0042\",\"amountMinUnits\":\"4200\"}},\"transaction\":{\"blockNumber\":\"52468103\",\"blockTime\":\"2026-10-01T11:59:58Z\",\"gasUsed\":95000,\"fee\":{\"amount\":\"0.00000114\",\"amountMinUnits\":\"1140000000000\",\"amountUsd\":\"0.005144\"},\"nativePriceUsd\":\"4512.37\"}},\"confirmedAt\":\"2026-10-01T11:59:58Z\",\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundable\":true}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment full",
+      "probes": [
+        {
+          "path": "amount",
+          "value": "10"
+        },
+        {
+          "path": "amountMinUnits",
+          "value": "10000000"
+        },
+        {
+          "path": "amountUsd",
+          "value": "10"
+        },
+        {
+          "path": "currency.code",
+          "value": "BASE:USDC"
+        },
+        {
+          "path": "priceUsd",
+          "value": "10"
+        },
+        {
+          "path": "fees",
+          "value": []
+        },
+        {
+          "path": "productName",
+          "value": "Pro plan"
+        },
+        {
+          "optional": true,
+          "path": "productDescription",
+          "value": "Lifetime"
+        },
+        {
+          "path": "metadata",
+          "value": {
+            "orderId": "order-1043"
+          }
+        },
+        {
+          "path": "settlement.feePercent",
+          "value": "0.99"
+        },
+        {
+          "path": "settlement.split.platform.amount",
+          "value": "0.099"
+        },
+        {
+          "optional": true,
+          "path": "settlement.split.merchant.amountUsd",
+          "value": "9.901"
+        },
+        {
+          "optional": true,
+          "path": "settlement.split.organization",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "settlement.split.networkFee.amountUsd",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "settlement.organizationFee",
+          "value": null
+        },
+        {
+          "path": "settlement.transaction.blockNumber",
+          "value": "52468103"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "settlement.transaction.blockTime",
+          "value": "2026-10-01T11:59:58Z"
+        },
+        {
+          "optional": true,
+          "path": "settlement.transaction.gasUsed",
+          "value": 95000
+        },
+        {
+          "path": "settlement.transaction.fee.amount",
+          "value": "0.00000114"
+        },
+        {
+          "optional": true,
+          "path": "settlement.transaction.l1Fee",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "settlement.transaction.nativePriceUsd",
+          "value": "4512.37"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "confirmedAt",
+          "value": "2026-10-01T11:59:58Z"
+        },
+        {
+          "optional": true,
+          "path": "paid",
+          "value": "10.0042"
+        },
+        {
+          "optional": true,
+          "path": "paidUsd",
+          "value": "10.0042"
+        },
+        {
+          "optional": true,
+          "path": "refundable",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "refund",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "chain",
+          "value": "BASE"
+        },
+        {
+          "optional": true,
+          "path": "customerUuid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"uuid\":\"pay@x\",\"settlement\":{\"feePercent\":\"0.99\",\"organizationFee\":{\"address\":\"0xorg\",\"feePercent\":\"10\"},\"referralFee\":{\"address\":\"0xref\",\"feePercent\":\"20\",\"deadline\":\"2027-01-01T00:00:00Z\"},\"split\":{\"platform\":{\"amount\":\"0.0792\",\"amountMinUnits\":\"79200\"},\"organization\":{\"amount\":\"0.9901\",\"amountMinUnits\":\"990100\",\"amountUsd\":\"0.9901\"},\"referral\":{\"amount\":\"0.0198\",\"amountMinUnits\":\"19800\",\"amountUsd\":\"0.0198\"},\"merchant\":{\"amount\":\"8.9109\",\"amountMinUnits\":\"8910900\",\"amountUsd\":\"8.9109\"}},\"transaction\":{\"blockNumber\":\"1\",\"fee\":{\"amount\":\"0.000005\",\"amountMinUnits\":\"5000\"},\"l1Fee\":{\"amount\":\"0.0000001\",\"amountMinUnits\":\"100000000000\"}}}}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment marketplace settlement",
+      "probes": [
+        {
+          "path": "settlement.organizationFee.address",
+          "value": "0xorg"
+        },
+        {
+          "path": "settlement.organizationFee.feePercent",
+          "value": "10"
+        },
+        {
+          "path": "settlement.referralFee.feePercent",
+          "value": "20"
+        },
+        {
+          "path": "settlement.referralFee.address",
+          "value": "0xref"
+        },
+        {
+          "optional": true,
+          "path": "settlement.split.platform.amountUsd",
+          "value": ""
+        },
+        {
+          "path": "settlement.split.organization.amount",
+          "value": "0.9901"
+        },
+        {
+          "path": "settlement.split.referral.amountMinUnits",
+          "value": "19800"
+        },
+        {
+          "optional": true,
+          "path": "settlement.split.networkFee",
+          "value": null
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "settlement.transaction.blockTime",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "settlement.transaction.gasUsed",
+          "value": null
+        },
+        {
+          "path": "settlement.transaction.l1Fee.amount",
+          "value": "0.0000001"
+        },
+        {
+          "optional": true,
+          "path": "settlement.transaction.nativePriceUsd",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"uuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"amount\":\"10\"}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment settlement absent: zero object",
+      "probes": [
+        {
+          "path": "settlement.feePercent",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "settlement.split",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "settlement.transaction",
+          "value": null
+        },
+        {
+          "path": "currency.id",
+          "value": 0
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "confirmedAt",
+          "value": null
+        },
+        {
+          "path": "metadata",
+          "value": {}
+        },
+        {
+          "path": "fees",
+          "value": []
+        },
+        {
+          "optional": true,
+          "path": "paid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"chain\":\"SOLANA_V2\",\"amount\":\"1\"}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment unknown chain kept",
+      "probes": [
+        {
+          "optional": true,
+          "path": "chain",
+          "value": "SOLANA_V2"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"refundable\":\"true\"}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment refundable as a string",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"amount\":10}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment amount as a number",
+      "note": "token amounts are decimal strings: a JSON number is a ServerError",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"amountUsd\":10.5}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment amountUsd as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"settlement\":{\"feePercent\":0.99}}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment settlement feePercent as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"settlement\":{\"split\":{\"merchant\":{\"amount\":9.9}}}}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment split amount as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"settlement\":{\"transaction\":{\"gasUsed\":1.5}}}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment gasUsed fractional",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"metadata\":{\"feePercent\":1.5}}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment v1 metadata shape",
+      "note": "the old split under metadata: an object where a string map is expected",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"uuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"amount\":\"121.83\",\"amountUsd\":\"121.83\",\"priceUsd\":\"100\",\"fees\":[{\"type\":\"custom\",\"label\":\"VAT (20%)\",\"description\":\"French VAT\",\"amountUsd\":\"20\"},{\"type\":\"processingFee\",\"label\":\"Processing fee\",\"amountUsd\":\"1.83\"}],\"productName\":\"Pro plan\"}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment with price and fees",
+      "note": "amountUsd = priceUsd + the fees' amountUsd; all decimal strings",
+      "probes": [
+        {
+          "path": "amountUsd",
+          "value": "121.83"
+        },
+        {
+          "path": "priceUsd",
+          "value": "100"
+        },
+        {
+          "path": "fees[0].type",
+          "value": "custom"
+        },
+        {
+          "path": "fees[0].label",
+          "value": "VAT (20%)"
+        },
+        {
+          "optional": true,
+          "path": "fees[0].description",
+          "value": "French VAT"
+        },
+        {
+          "path": "fees[0].amountUsd",
+          "value": "20"
+        },
+        {
+          "path": "fees[1].type",
+          "value": "processingFee"
+        },
+        {
+          "path": "fees[1].label",
+          "value": "Processing fee"
+        },
+        {
+          "optional": true,
+          "path": "fees[1].description",
+          "value": ""
+        },
+        {
+          "path": "fees[1].amountUsd",
+          "value": "1.83"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"amount\":\"10\",\"priceUsd\":\"10\",\"fees\":null}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment fees null",
+      "probes": [
+        {
+          "path": "priceUsd",
+          "value": "10"
+        },
+        {
+          "path": "fees",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"amount\":\"12\",\"priceUsd\":\"10\",\"fees\":[{\"type\":\"tip\",\"label\":\"Tip\",\"amountUsd\":\"2\"}]}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment unknown FeeLineType kept",
+      "probes": [
+        {
+          "path": "fees[0].type",
+          "value": "tip"
+        },
+        {
+          "path": "fees[0].amountUsd",
+          "value": "2"
+        },
+        {
+          "optional": true,
+          "path": "fees[0].description",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"fees\":[{\"type\":null,\"label\":null,\"description\":null,\"amountUsd\":null}]}",
+      "expect": "ok",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment fee line with nulls",
+      "probes": [
+        {
+          "path": "fees[0].type",
+          "value": ""
+        },
+        {
+          "path": "fees[0].label",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "fees[0].description",
+          "value": ""
+        },
+        {
+          "path": "fees[0].amountUsd",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"fees\":[{\"type\":\"custom\",\"label\":\"VAT\",\"amountUsd\":20}]}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment fee amountUsd as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"fees\":{\"type\":\"custom\"}}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment fees as an object",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true
+        },
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"priceUsd\":10}",
+      "expect": "serverError",
+      "method": "payments.get",
+      "model": "Payment",
+      "name": "Payment priceUsd as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "refunded": true,
+          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "type": "bill"
+        }
+      },
+      "body": "{\"items\":[{\"type\":\"bill\",\"uuid\":\"sub-hist@01a0f755-f200-7000-8000-000000000005\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"productName\":\"Pro plan\",\"priceUsd\":\"9.99\",\"fees\":[],\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"txHash\":\"0x33\",\"subscriptionUuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"subscriptionReference\":\"customer-7731\",\"periodStart\":\"2026-10-01T12:00:00Z\",\"periodEnd\":\"2026-10-31T12:00:00Z\",\"metadata\":{},\"settlement\":{\"feePercent\":\"0.99\",\"split\":{\"platform\":{\"amount\":\"0.099\",\"amountMinUnits\":\"99000\",\"amountUsd\":\"0.099\"},\"merchant\":{\"amount\":\"9.901\",\"amountMinUnits\":\"9901000\",\"amountUsd\":\"9.901\"},\"networkFee\":{\"amount\":\"0.0042\",\"amountMinUnits\":\"4200\"}},\"transaction\":{\"blockNumber\":\"52468103\",\"blockTime\":\"2026-10-01T11:59:58Z\",\"gasUsed\":95000,\"fee\":{\"amount\":\"0.00000114\",\"amountMinUnits\":\"1140000000000\",\"amountUsd\":\"0.005144\"},\"nativePriceUsd\":\"4512.37\"}},\"test\":false},{\"type\":\"refund\",\"uuid\":\"x\",\"amount\":\"1\",\"metadata\":{\"k\":\"v\"},\"createdAt\":\"2026-10-01T12:00:00Z\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "transactions.list",
+      "model": "Page<Transaction>",
+      "name": "Page<Transaction> a bill row and an unknown type",
+      "probes": [
+        {
+          "path": "items[0].type",
+          "value": "bill"
+        },
+        {
+          "optional": true,
+          "path": "items[0].subscriptionUuid",
+          "value": "sub@01a05cd7-2a00-7000-8000-000000000003"
+        },
+        {
+          "optional": true,
+          "path": "items[0].subscriptionReference",
+          "value": "customer-7731"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "items[0].periodEnd",
+          "value": "2026-10-31T12:00:00Z"
+        },
+        {
+          "optional": true,
+          "path": "items[0].reference",
+          "value": ""
+        },
+        {
+          "path": "items[0].metadata",
+          "value": {}
+        },
+        {
+          "path": "items[0].settlement.feePercent",
+          "value": "0.99"
+        },
+        {
+          "path": "items[0].currency.code",
+          "value": "BASE:USDC"
+        },
+        {
+          "path": "items[1].type",
+          "value": "refund"
+        },
+        {
+          "path": "items[1].metadata",
+          "value": {
+            "k": "v"
+          }
+        },
+        {
+          "optional": true,
+          "path": "items[1].customer",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "items[1].priceUsd",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "includeMembers": true,
+          "refunded": true,
+          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "type": "bill"
+        }
+      },
+      "body": "{\"items\":[{\"source\":\"subscriptionHistory\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "transactions.list",
+      "model": "Page<Transaction>",
+      "name": "Page<Transaction> v1 source key ignored",
+      "probes": [
+        {
+          "path": "items[0].type",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "category": "insufficientBalance",
+          "kind": "bill",
+          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "body": "{\"items\":[{\"uuid\":\"f1\",\"kind\":\"refund\",\"txUuid\":\"pay@x\",\"attempt\":3,\"code\":\"x\",\"category\":\"cosmicRay\",\"attempted\":\"1.5\",\"attemptedMinUnits\":\"1500000\",\"attemptedUsd\":\"1.5\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"from\":\"0x1\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"test\":true}],\"hasMore\":true,\"nextCursor\":\"djF8ZjE\"}",
+      "expect": "ok",
+      "method": "failures.list",
+      "model": "Page<Failure>",
+      "name": "Page<Failure> unknown kind kept",
+      "probes": [
+        {
+          "path": "items[0].kind",
+          "value": "refund"
+        },
+        {
+          "path": "items[0].category",
+          "value": "cosmicRay"
+        },
+        {
+          "path": "items[0].attempt",
+          "value": 3
+        },
+        {
+          "path": "items[0].attempted",
+          "value": "1.5"
+        },
+        {
+          "path": "items[0].attemptedUsd",
+          "value": "1.5"
+        },
+        {
+          "path": "items[0].currency.code",
+          "value": "BASE:USDC"
+        },
+        {
+          "optional": true,
+          "path": "items[0].message",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "items[0].txHash",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": "djF8ZjE"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "category": "insufficientBalance",
+          "kind": "bill",
+          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "body": "{\"items\":[{\"attempt\":\"3\"}]}",
+      "expect": "serverError",
+      "method": "failures.list",
+      "model": "Page<Failure>",
+      "name": "Page<Failure> attempt as a string",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "category": "insufficientBalance",
+          "kind": "bill",
+          "subscriptionUuid": "sub@01a05cd7-2a00-7000-8000-000000000003",
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "body": "{\"items\":[{\"attemptedUsd\":1.5}]}",
+      "expect": "serverError",
+      "method": "failures.list",
+      "model": "Page<Failure>",
+      "name": "Page<Failure> attemptedUsd as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "refund@01a0f755-f200-7000-8000-000000000007"
+      },
+      "body": "{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"txUuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"reason\":\"Damaged\",\"status\":\"pending\",\"createdAt\":\"2026-09-29T08:15:00Z\",\"test\":false,\"initiatedBy\":\"customer\",\"held\":false,\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundPercent\":\"50\",\"amount\":\"5.0021\",\"amountMinUnits\":\"5002100\",\"amountUsd\":\"5.0021\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"chain\":\"BASE\"}",
+      "expect": "ok",
+      "method": "refunds.get",
+      "model": "Refund",
+      "name": "Refund pending: optional fields absent",
+      "probes": [
+        {
+          "path": "status",
+          "value": "pending"
+        },
+        {
+          "path": "paid",
+          "value": "10.0042"
+        },
+        {
+          "optional": true,
+          "path": "paidUsd",
+          "value": "10.0042"
+        },
+        {
+          "path": "refundPercent",
+          "value": "50"
+        },
+        {
+          "path": "amount",
+          "value": "5.0021"
+        },
+        {
+          "optional": true,
+          "path": "amountUsd",
+          "value": "5.0021"
+        },
+        {
+          "path": "amountMinUnits",
+          "value": "5002100"
+        },
+        {
+          "path": "currency.code",
+          "value": "BASE:USDC"
+        },
+        {
+          "optional": true,
+          "path": "settlement",
+          "value": null
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "respondedAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "merchantMessage",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "txHash",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "approval",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "chain",
+          "value": "BASE"
+        },
+        {
+          "optional": true,
+          "path": "customerUuid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "refund@01a0f755-f200-7000-8000-000000000007"
+      },
+      "body": "{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"status\":\"approved\",\"respondedAt\":\"2026-09-30T08:15:00Z\",\"txHash\":\"0x44\",\"refundPercent\":\"100\",\"settlement\":{\"transaction\":{\"blockNumber\":\"52468200\",\"blockTime\":\"2026-09-30T08:14:58Z\",\"fee\":{\"amount\":\"0.0000012\",\"amountMinUnits\":\"1200000000000\",\"amountUsd\":\"0.0054\"},\"nativePriceUsd\":\"4512.37\"}},\"approval\":{\"status\":\"waitingConfirmation\",\"txHash\":\"0x44\"}}",
+      "expect": "ok",
+      "method": "refunds.get",
+      "model": "Refund",
+      "name": "Refund approved with settlement",
+      "probes": [
+        {
+          "path": "status",
+          "value": "approved"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "respondedAt",
+          "value": "2026-09-30T08:15:00Z"
+        },
+        {
+          "optional": true,
+          "path": "txHash",
+          "value": "0x44"
+        },
+        {
+          "path": "settlement.transaction.blockNumber",
+          "value": "52468200"
+        },
+        {
+          "optional": true,
+          "path": "settlement.transaction.fee.amountUsd",
+          "value": "0.0054"
+        },
+        {
+          "optional": true,
+          "path": "settlement.transaction.gasUsed",
+          "value": null
+        },
+        {
+          "path": "approval.status",
+          "value": "waitingConfirmation"
+        },
+        {
+          "optional": true,
+          "path": "approval.lastAttempt",
+          "value": null
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "refund@01a0f755-f200-7000-8000-000000000007"
+      },
+      "body": "{\"uuid\":\"refund@x\",\"status\":\"cancelled\"}",
+      "expect": "ok",
+      "method": "refunds.get",
+      "model": "Refund",
+      "name": "Refund unknown status kept",
+      "note": "cancelled was retired: an unknown value now, kept as given",
+      "probes": [
+        {
+          "path": "status",
+          "value": "cancelled"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "respondedAt",
+          "value": null
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "refund@01a0f755-f200-7000-8000-000000000007"
+      },
+      "body": "{\"refundPercent\":50}",
+      "expect": "serverError",
+      "method": "refunds.get",
+      "model": "Refund",
+      "name": "Refund refundPercent as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "refund@01a0f755-f200-7000-8000-000000000007"
+      },
+      "body": "{\"uuid\":\"refund@x\",\"metadata\":null}",
+      "expect": "ok",
+      "method": "refunds.get",
+      "model": "Refund",
+      "name": "Refund v1 metadata ignored",
+      "note": "an unknown key now (the transfer is under settlement)",
+      "probes": [
+        {
+          "optional": true,
+          "path": "settlement",
+          "value": null
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "held": false,
+          "includeMembers": true,
+          "limit": 25,
+          "status": [
+            "approved",
+            "rejected"
+          ],
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "body": "{\"items\":[{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"txUuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"reason\":\"Damaged\",\"status\":\"pending\",\"createdAt\":\"2026-09-29T08:15:00Z\",\"test\":false,\"initiatedBy\":\"customer\",\"held\":false,\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundPercent\":\"50\",\"amount\":\"5.0021\",\"amountMinUnits\":\"5002100\",\"amountUsd\":\"5.0021\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"chain\":\"BASE\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "refunds.list",
+      "model": "Page<Refund>",
+      "name": "Page<Refund> list",
+      "probes": [
+        {
+          "path": "items[0].uuid",
+          "value": "refund@01a0f755-f200-7000-8000-000000000007"
+        },
+        {
+          "path": "items[0].initiatedBy",
+          "value": "customer"
+        },
+        {
+          "path": "hasMore",
+          "value": false
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "held": false,
+          "includeMembers": true,
+          "limit": 25,
+          "status": [
+            "approved",
+            "rejected"
+          ],
+          "txUuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+        }
+      },
+      "body": "[{\"uuid\":\"refund@01a0f755-f200-7000-8000-000000000007\",\"txUuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"reason\":\"Damaged\",\"status\":\"pending\",\"createdAt\":\"2026-09-29T08:15:00Z\",\"test\":false,\"initiatedBy\":\"customer\",\"held\":false,\"paid\":\"10.0042\",\"paidMinUnits\":\"10004200\",\"paidUsd\":\"10.0042\",\"refundPercent\":\"50\",\"amount\":\"5.0021\",\"amountMinUnits\":\"5002100\",\"amountUsd\":\"5.0021\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"chain\":\"BASE\"}]",
+      "expect": "serverError",
+      "method": "refunds.list",
+      "model": "Page<Refund>",
+      "name": "Page<Refund> bare array",
+      "note": "the v1 active-refunds list was a bare array: a ServerError now",
+      "status": 200
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "body": "{\"ledgers\":[],\"totalUsd\":\"0\"}",
+      "expect": "ok",
+      "method": "members.getHeldFunds",
+      "model": "HeldFunds",
+      "name": "HeldFunds empty",
+      "probes": [
+        {
+          "path": "ledgers",
+          "value": []
+        },
+        {
+          "path": "totalUsd",
+          "value": "0"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "body": "{\"ledgers\":null,\"totalUsd\":\"0\"}",
+      "expect": "ok",
+      "method": "members.getHeldFunds",
+      "model": "HeldFunds",
+      "name": "HeldFunds ledgers null",
+      "probes": [
+        {
+          "path": "ledgers",
+          "value": []
+        },
+        {
+          "path": "totalUsd",
+          "value": "0"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {},
+      "body": "{\"ledgers\":[{\"txUuid\":\"pay@x\",\"type\":\"payment\",\"description\":\"Payment pay@x\",\"amountUsd\":\"10\",\"settlement\":{\"feePercent\":\"0.99\",\"split\":{\"platform\":{\"amount\":\"0.099\",\"amountMinUnits\":\"99000\",\"amountUsd\":\"0.099\"},\"merchant\":{\"amount\":\"9.901\",\"amountMinUnits\":\"9901000\",\"amountUsd\":\"9.901\"},\"networkFee\":{\"amount\":\"0.0042\",\"amountMinUnits\":\"4200\"}},\"transaction\":{\"blockNumber\":\"52468103\",\"blockTime\":\"2026-10-01T11:59:58Z\",\"gasUsed\":95000,\"fee\":{\"amount\":\"0.00000114\",\"amountMinUnits\":\"1140000000000\",\"amountUsd\":\"0.005144\"},\"nativePriceUsd\":\"4512.37\"}},\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"owed\":\"9.901\",\"owedMinUnits\":\"9901000\",\"owedUsd\":\"9.901\",\"createdAt\":\"2026-09-28T12:00:00Z\"},{\"txUuid\":\"refund@y\",\"type\":\"refund\",\"description\":\"Refund of payment pay@x\",\"refundedTxUuid\":\"pay@x\",\"amountUsd\":\"10.0042\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"owed\":\"-10.0042\",\"owedMinUnits\":\"-10004200\",\"owedUsd\":\"-10.0042\",\"createdAt\":\"2026-09-29T12:00:00Z\"},{\"txUuid\":\"sub-hist@z\",\"type\":\"bill\",\"owed\":\"1\",\"owedMinUnits\":\"1000000\",\"owedUsd\":\"1\"}],\"totalUsd\":\"-0.1032\"}",
+      "expect": "ok",
+      "method": "members.getOwnHeldFunds",
+      "model": "HeldFunds",
+      "name": "HeldFunds ledger entries",
+      "probes": [
+        {
+          "path": "ledgers[0].type",
+          "value": "payment"
+        },
+        {
+          "path": "ledgers[0].settlement.feePercent",
+          "value": "0.99"
+        },
+        {
+          "path": "ledgers[0].owed",
+          "value": "9.901"
+        },
+        {
+          "optional": true,
+          "path": "ledgers[0].refundedTxUuid",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "path": "ledgers[0].createdAt",
+          "value": "2026-09-28T12:00:00Z"
+        },
+        {
+          "path": "ledgers[0].currency.code",
+          "value": "BASE:USDC"
+        },
+        {
+          "path": "ledgers[1].type",
+          "value": "refund"
+        },
+        {
+          "optional": true,
+          "path": "ledgers[1].settlement",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "ledgers[1].refundedTxUuid",
+          "value": "pay@x"
+        },
+        {
+          "path": "ledgers[1].owedMinUnits",
+          "value": "-10004200"
+        },
+        {
+          "path": "ledgers[2].type",
+          "value": "bill"
+        },
+        {
+          "path": "totalUsd",
+          "value": "-0.1032"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "body": "{\"ledgers\":[],\"totalUsd\":98.5}",
+      "expect": "serverError",
+      "method": "members.getHeldFunds",
+      "model": "HeldFunds",
+      "name": "HeldFunds totalUsd as a number",
+      "note": "the v1 totalAmount was a number; totalUsd is a decimal string",
+      "status": 200
+    },
+    {
+      "args": {},
+      "body": "{\"items\":[{\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"totalUsd\":\"98.5\",\"count\":3.0,\"oldestAt\":\"2026-09-28T12:00:00Z\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "members.listHeldFunds",
+      "model": "MemberHeldFunds[]",
+      "name": "MemberHeldFunds[] integral count",
+      "probes": [
+        {
+          "path": "[0].totalUsd",
+          "value": "98.5"
+        },
+        {
+          "path": "[0].count",
+          "value": 3
+        },
+        {
+          "kind": "time",
+          "path": "[0].oldestAt",
+          "value": "2026-09-28T12:00:00Z"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {},
+      "body": "{\"items\":[],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "members.listHeldFunds",
+      "model": "MemberHeldFunds[]",
+      "name": "MemberHeldFunds[] empty",
+      "probes": [
+        {
+          "path": "",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "status": "pending"
+        }
+      },
+      "body": "{\"items\":[{\"uuid\":\"01a0f755-f200-7000-8000-00000000000a\",\"test\":true,\"email\":\"bob@example.com\",\"role\":\"user\",\"holdFunds\":true,\"organizationFeePercent\":\"5\",\"expiresAt\":\"2026-10-08T12:00:00Z\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"status\":\"pending\"},{\"uuid\":\"01a0f755-f200-7000-8000-00000000000b\",\"test\":false,\"email\":\"carol@example.com\",\"role\":\"user\",\"holdFunds\":false,\"organizationFeePercent\":\"0\",\"expiresAt\":\"2026-10-08T12:00:00Z\",\"revokedAt\":\"2026-10-02T12:00:00Z\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"status\":\"revoked\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "invitations.list",
+      "model": "Page<Invitation>",
+      "name": "Page<Invitation> pending and revoked member invitations",
+      "note": "an API key only lists member invitations; the role key the API still sends is not modelled",
+      "probes": [
+        {
+          "optional": true,
+          "path": "items[0].test",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "items[0].holdFunds",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "items[0].organizationFeePercent",
+          "value": "5"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "items[0].acceptedAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "items[1].test",
+          "value": false
+        },
+        {
+          "optional": true,
+          "path": "items[1].holdFunds",
+          "value": false
+        },
+        {
+          "optional": true,
+          "path": "items[1].organizationFeePercent",
+          "value": "0"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "items[1].revokedAt",
+          "value": "2026-10-02T12:00:00Z"
+        },
+        {
+          "path": "items[1].status",
+          "value": "revoked"
+        },
+        {
+          "optional": true,
+          "path": "items[1].redirectUrl",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "items[1].acceptedByUserUuid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "status": "pending"
+        }
+      },
+      "body": "{\"items\":[{\"organizationFeePercent\":0}]}",
+      "expect": "serverError",
+      "method": "invitations.list",
+      "model": "Page<Invitation>",
+      "name": "Page<Invitation> organizationFeePercent as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "organizationFeePercent": "5",
+          "redirectUrl": "https://app.example.com/welcome"
+        }
+      },
+      "body": "{\"uuid\":\"01a0f755-f200-7000-8000-00000000000a\",\"test\":true,\"email\":\"bob@example.com\",\"role\":\"user\",\"holdFunds\":true,\"organizationFeePercent\":\"5\",\"expiresAt\":\"2026-10-08T12:00:00Z\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"status\":\"pending\",\"link\":\"https://qbitflow.app/invite/abc\"}",
+      "expect": "ok",
+      "method": "invitations.create",
+      "model": "CreatedInvitation",
+      "name": "CreatedInvitation flat",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": "01a0f755-f200-7000-8000-00000000000a"
+        },
+        {
+          "optional": true,
+          "path": "holdFunds",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "test",
+          "value": true
+        },
+        {
+          "path": "status",
+          "value": "pending"
+        },
+        {
+          "path": "link",
+          "value": "https://qbitflow.app/invite/abc"
+        }
+      ],
+      "status": 201
+    },
+    {
+      "args": {
+        "params": {
+          "email": "bob@example.com",
+          "holdFunds": true,
+          "organizationFeePercent": "5",
+          "redirectUrl": "https://app.example.com/welcome"
+        }
+      },
+      "body": "{\"invitation\":{\"uuid\":\"01a0f755-f200-7000-8000-00000000000a\"},\"link\":\"https://qbitflow.app/invite/abc\"}",
+      "expect": "ok",
+      "method": "invitations.create",
+      "model": "CreatedInvitation",
+      "name": "CreatedInvitation v1 nested shape",
+      "note": "{invitation, link} is the retired shape: the invitation's fields are top-level now",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": ""
+        },
+        {
+          "path": "link",
+          "value": "https://qbitflow.app/invite/abc"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "withBalances": true
+        }
+      },
+      "body": "{\"items\":[{\"uuid\":\"w1\",\"createdAt\":\"2026-01-01T00:00:00Z\",\"address\":\"0x1\",\"test\":true,\"tokenWallets\":null,\"currency\":{\"id\":3,\"code\":\"BASE\",\"symbol\":\"BASE\",\"name\":\"Base\",\"chain\":\"BASE\",\"decimals\":18,\"test\":false}},{\"uuid\":\"w2\",\"tokenWallets\":[{\"uuid\":\"t1\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"walletUuid\":\"w2\"}]}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "wallets.list",
+      "model": "Wallet[]",
+      "name": "Wallet[] tokenWallets null, balance absent",
+      "probes": [
+        {
+          "path": "[0].address",
+          "value": "0x1"
+        },
+        {
+          "path": "[0].tokenWallets",
+          "value": []
+        },
+        {
+          "path": "[0].currency.code",
+          "value": "BASE"
+        },
+        {
+          "optional": true,
+          "path": "[1].tokenWallets[0].balance",
+          "value": null
+        },
+        {
+          "path": "[1].tokenWallets[0].currency.code",
+          "value": "BASE:USDC"
+        },
+        {
+          "path": "[1].currency.id",
+          "value": 0
+        },
+        {
+          "optional": true,
+          "path": "[1].userUuid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "withBalances": true
+        }
+      },
+      "body": "{\"items\":[{\"uuid\":\"w2\",\"address\":\"0x2\",\"tokenWallets\":[{\"uuid\":\"t1\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"walletUuid\":\"w2\",\"balance\":{\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"amount\":\"12.345678\",\"amountMinUnits\":\"12345678\",\"amountUsd\":\"12.35\"}},{\"uuid\":\"t2\",\"currency\":{\"id\":3,\"code\":\"BASE\",\"symbol\":\"BASE\",\"name\":\"Base\",\"chain\":\"BASE\",\"decimals\":18,\"test\":false},\"walletUuid\":\"w2\",\"balance\":{\"currency\":{\"id\":3,\"code\":\"BASE\",\"symbol\":\"BASE\",\"name\":\"Base\",\"chain\":\"BASE\",\"decimals\":18,\"test\":false},\"amount\":\"0.5\",\"amountMinUnits\":\"500000000000000000\"}}]}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "wallets.list",
+      "model": "Wallet[]",
+      "name": "Wallet[] with balances",
+      "probes": [
+        {
+          "path": "[0].tokenWallets[0].balance.amount",
+          "value": "12.345678"
+        },
+        {
+          "path": "[0].tokenWallets[0].balance.amountMinUnits",
+          "value": "12345678"
+        },
+        {
+          "optional": true,
+          "path": "[0].tokenWallets[0].balance.amountUsd",
+          "value": "12.35"
+        },
+        {
+          "path": "[0].tokenWallets[0].balance.currency.code",
+          "value": "BASE:USDC"
+        },
+        {
+          "path": "[0].tokenWallets[1].balance.amount",
+          "value": "0.5"
+        },
+        {
+          "optional": true,
+          "path": "[0].tokenWallets[1].balance.amountUsd",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "body": "{\"items\":[{\"uuid\":\"w3\",\"address\":\"So1\",\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"tokenWallets\":[]}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "wallets.listForMember",
+      "model": "Wallet[]",
+      "name": "Wallet[] member wallets",
+      "probes": [
+        {
+          "optional": true,
+          "path": "[0].userUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        },
+        {
+          "path": "[0].tokenWallets",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "withBalances": true
+        }
+      },
+      "body": "{\"items\":[{\"tokenWallets\":[{\"balance\":{\"currency\":\"BASE:USDC\",\"balance\":\"1\",\"balanceUsd\":1}}]}]}",
+      "expect": "serverError",
+      "method": "wallets.list",
+      "model": "Wallet[]",
+      "name": "Wallet[] v1 balance shape",
+      "note": "the old balance {currency: code string, balance, balanceUsd number}",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+        }
+      },
+      "body": "{\"items\":[{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "wallets.listAcceptedCurrencies",
+      "model": "Currency[]",
+      "name": "Currency[] accepted currencies",
+      "probes": [
+        {
+          "path": "[0].code",
+          "value": "BASE:USDC"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "body": "{\"items\":[{\"txTimeUtc\":\"2026-10-01T11:59:58Z\",\"type\":\"payment\",\"reference\":\"order-1044\",\"grossAmountUsd\":\"10.0042\",\"platformFeeUsd\":\"0.099\",\"netAmountUsd\":\"9.9052\",\"chain\":\"BASE\",\"currency\":\"USDC\",\"currencyDecimals\":6,\"currencyPriceUsd\":\"1\",\"grossAmount\":\"10.0042\",\"grossAmountMinUnits\":\"10004200\",\"platformFee\":\"0.099\",\"platformFeeMinUnits\":\"99000\",\"netAmount\":\"9.9052\",\"netAmountMinUnits\":\"9905200\",\"networkFeesPaidBy\":\"payer\",\"networkFees\":\"0.0042\",\"networkFeesMinUnits\":\"4200\",\"networkFeesCurrency\":\"USDC\",\"networkFeesCurrencyDecimals\":6,\"networkFeesCurrencyPriceUsd\":\"1\",\"networkFeesUsd\":\"0.0042\",\"platformFeePercent\":\"0.99\",\"blockNumberOrSlot\":\"52468103\",\"tokenContractOrMint\":\"0x8335\",\"txUuid\":\"pay@01a0f755-f200-7000-8000-000000000001\"},{\"txTimeUtc\":\"2026-10-01T12:00:00Z\",\"type\":\"referralFee\",\"chain\":\"BASE\",\"currency\":\"USDC\",\"currencyDecimals\":6,\"currencyPriceUsd\":\"1\",\"referralFeePercent\":\"20\",\"referralFeeUsd\":\"0.0198\",\"referralFee\":\"0.0198\",\"referralFeeMinUnits\":\"19800\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "model": "AccountingEvent[]",
+      "name": "AccountingEvent[] a payment and a referral fee",
+      "note": "amounts and rates are decimal strings; a fee that doesn't apply is absent, never \"0\"",
+      "probes": [
+        {
+          "optional": true,
+          "path": "[0].reference",
+          "value": "order-1044"
+        },
+        {
+          "optional": true,
+          "path": "[0].grossAmountUsd",
+          "value": "10.0042"
+        },
+        {
+          "optional": true,
+          "path": "[0].grossAmountMinUnits",
+          "value": "10004200"
+        },
+        {
+          "optional": true,
+          "path": "[0].platformFeePercent",
+          "value": "0.99"
+        },
+        {
+          "optional": true,
+          "path": "[0].referralFee",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "[0].referralFeeUsd",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "[0].organizationFee",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesCurrencyDecimals",
+          "value": 6
+        },
+        {
+          "optional": true,
+          "path": "[0].txUuid",
+          "value": "pay@01a0f755-f200-7000-8000-000000000001"
+        },
+        {
+          "path": "[1].type",
+          "value": "referralFee"
+        },
+        {
+          "optional": true,
+          "path": "[1].referralFeePercent",
+          "value": "20"
+        },
+        {
+          "optional": true,
+          "path": "[1].referralFeeMinUnits",
+          "value": "19800"
+        },
+        {
+          "optional": true,
+          "path": "[1].txUuid",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "[1].grossAmount",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "[1].blockNumberOrSlot",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "[1].networkFeesCurrencyDecimals",
+          "value": null
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "body": "{\"items\":[{\"txTimeUtc\":\"2026-10-02T09:00:00Z\",\"type\":\"refund\",\"relatedReference\":\"order-1044\",\"grossAmountUsd\":\"-10.0042\",\"netAmountUsd\":\"-10.0042\",\"chain\":\"BASE\",\"currency\":\"USDC\",\"currencyDecimals\":6,\"grossAmount\":\"-10.0042\",\"netAmount\":\"-10.0042\",\"networkFeesPaidBy\":\"merchant\",\"networkFees\":\"0.0000012\",\"networkFeesCurrency\":\"ETH\",\"networkFeesCurrencyDecimals\":18,\"txUuid\":\"refund@01a0f755-f200-7000-8000-000000000009\",\"relatedTxUuid\":\"pay@01a0f755-f200-7000-8000-000000000001\"},{\"type\":\"bill\",\"networkFeesPaidBy\":\"somebodyElse\",\"txTimeUtc\":\"2026-10-02T09:00:00.123456+02:00\"}],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "model": "AccountingEvent[]",
+      "name": "AccountingEvent[] a refund, network fees in the native coin",
+      "probes": [
+        {
+          "optional": true,
+          "path": "[0].relatedReference",
+          "value": "order-1044"
+        },
+        {
+          "optional": true,
+          "path": "[0].netAmount",
+          "value": "-10.0042"
+        },
+        {
+          "optional": true,
+          "path": "[0].platformFee",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesPaidBy",
+          "value": "merchant"
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesCurrency",
+          "value": "ETH"
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesCurrencyDecimals",
+          "value": 18
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesCurrencyPriceUsd",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "[0].networkFeesUsd",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "[0].relatedTxUuid",
+          "value": "pay@01a0f755-f200-7000-8000-000000000001"
+        },
+        {
+          "path": "[1].type",
+          "value": "bill"
+        },
+        {
+          "optional": true,
+          "path": "[1].networkFeesPaidBy",
+          "value": "somebodyElse"
+        },
+        {
+          "kind": "time",
+          "path": "[1].txTimeUtc",
+          "value": "2026-10-02T09:00:00.123456+02:00"
+        },
+        {
+          "path": "[1].currency",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "body": "{\"items\":[],\"hasMore\":false}",
+      "expect": "ok",
+      "method": "accounting.exportJson",
+      "model": "AccountingEvent[]",
+      "name": "AccountingEvent[] empty",
+      "probes": [
+        {
+          "path": "",
+          "value": []
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "body": "{\"items\":[{\"networkFeesCurrencyDecimals\":\"18\"}]}",
+      "expect": "serverError",
+      "method": "accounting.exportJson",
+      "model": "AccountingEvent[]",
+      "name": "AccountingEvent[] networkFeesCurrencyDecimals as a string",
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "body": "{\"items\":[{\"grossAmount\":10}]}",
+      "expect": "serverError",
+      "method": "accounting.exportJson",
+      "model": "AccountingEvent[]",
+      "name": "AccountingEvent[] grossAmount as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "body": "{\"items\":[{\"platformFeePercent\":0.99}]}",
+      "expect": "serverError",
+      "method": "accounting.exportJson",
+      "model": "AccountingEvent[]",
+      "name": "AccountingEvent[] platformFeePercent as a number",
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-07-01",
+        "to": "2026-09-30"
+      },
+      "body": "[]",
+      "expect": "serverError",
+      "method": "accounting.exportJson",
+      "model": "AccountingEvent[]",
+      "name": "AccountingEvent[] bare array",
+      "note": "the export's JSON is a bounded page",
+      "status": 200
+    },
+    {
+      "args": {
+        "from": "2026-09-01",
+        "to": "2026-09-01"
+      },
+      "body": "txTimeUtc,type\n2026-09-01T12:00:00Z,payment\n",
+      "expect": "ok",
+      "method": "accounting.exportCsv",
+      "model": "string",
+      "name": "CSV export is text",
+      "probes": [
+        {
+          "path": "",
+          "value": "txTimeUtc,type\n2026-09-01T12:00:00Z,payment\n"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "body": "{\"uuid\":\"019eca82-5680-7b00-8000-0000000000e1\",\"test\":true,\"url\":\"https://hooks.example.com\",\"events\":null,\"includeMembers\":false,\"payloadVersion\":\"v2\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"disabledAt\":\"2026-10-02T12:00:00Z\",\"disabledReason\":\"tooManyCats\"}",
+      "expect": "ok",
+      "method": "webhooks.endpoints.get",
+      "model": "WebhookEndpoint",
+      "name": "WebhookEndpoint events null, unknown disabledReason",
+      "probes": [
+        {
+          "path": "events",
+          "value": []
+        },
+        {
+          "optional": true,
+          "path": "description",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "disabledReason",
+          "value": "tooManyCats"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "disabledAt",
+          "value": "2026-10-02T12:00:00Z"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "limit": 10
+        }
+      },
+      "body": "{\"items\":[{\"uuid\":\"e1\",\"events\":[\"payment.completed\",\"future.event\"]}],\"hasMore\":true,\"nextCursor\":\"djF8ZTE\"}",
+      "expect": "ok",
+      "method": "webhooks.endpoints.list",
+      "model": "Page<WebhookEndpoint>",
+      "name": "Page<WebhookEndpoint> events listed",
+      "probes": [
+        {
+          "path": "items[0].events",
+          "value": [
+            "payment.completed",
+            "future.event"
+          ]
+        },
+        {
+          "path": "hasMore",
+          "value": true
+        },
+        {
+          "optional": true,
+          "path": "nextCursor",
+          "value": "djF8ZTE"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cursor": "djF8MDFhMGY3NTUtZjIwMC03MDAwLTgwMDAtMDAwMDAwMDAwMDA4",
+          "limit": 10
+        }
+      },
+      "body": "[]",
+      "expect": "serverError",
+      "method": "webhooks.endpoints.list",
+      "model": "Page<WebhookEndpoint>",
+      "name": "Page<WebhookEndpoint> bare array",
+      "note": "the endpoints list is paginated now",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "description": "Production hook",
+          "events": [
+            "payment.completed",
+            "subscription.billed"
+          ],
+          "includeMembers": true,
+          "url": "https://hooks.example.com/qbitflow"
+        }
+      },
+      "body": "{\"uuid\":\"019eca82-5680-7b00-8000-0000000000e1\",\"url\":\"https://hooks.example.com\",\"events\":[\"payment.completed\"],\"payloadVersion\":\"v2\",\"secret\":\"whsec_abc\"}",
+      "expect": "ok",
+      "method": "webhooks.endpoints.create",
+      "model": "WebhookEndpointCreated",
+      "name": "WebhookEndpointCreated secret",
+      "probes": [
+        {
+          "path": "secret",
+          "value": "whsec_abc"
+        },
+        {
+          "path": "uuid",
+          "value": "019eca82-5680-7b00-8000-0000000000e1"
+        },
+        {
+          "path": "events",
+          "value": [
+            "payment.completed"
+          ]
+        }
+      ],
+      "status": 201
+    },
+    {
+      "args": {
+        "id": "evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f"
+      },
+      "body": "{\"id\":\"evt_1\",\"type\":\"webhook.test\",\"version\":\"v2\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"test\":true,\"data\":{\"endpointUuid\":\"e1\",\"message\":\"hi\"},\"deliveries\":[{\"endpointUuid\":\"e1\",\"url\":\"https://hooks.example.com\",\"delivered\":false,\"attempts\":[{\"uuid\":\"a1\",\"eventId\":\"evt_1\",\"eventType\":\"webhook.test\",\"endpointUuid\":\"e1\",\"attempt\":1,\"delivered\":false,\"statusCode\":null,\"error\":\"timeout\",\"durationMs\":30000,\"attemptedAt\":\"2026-10-01T12:00:01Z\"},{\"uuid\":\"a2\",\"eventId\":\"evt_1\",\"eventType\":\"webhook.test\",\"endpointUuid\":\"e1\",\"attempt\":2,\"delivered\":false,\"skipped\":true,\"durationMs\":0,\"attemptedAt\":\"2026-10-01T12:01:01Z\"}]}]}",
+      "expect": "ok",
+      "method": "webhooks.events.get",
+      "model": "EventDetail",
+      "name": "EventDetail deliveries",
+      "probes": [
+        {
+          "path": "id",
+          "value": "evt_1"
+        },
+        {
+          "path": "type",
+          "value": "webhook.test"
+        },
+        {
+          "path": "data.message",
+          "value": "hi"
+        },
+        {
+          "optional": true,
+          "path": "deliveries[0].attempts[0].statusCode",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "deliveries[0].attempts[0].skipped",
+          "value": false
+        },
+        {
+          "path": "deliveries[0].attempts[0].durationMs",
+          "value": 30000
+        },
+        {
+          "optional": true,
+          "path": "deliveries[0].attempts[1].skipped",
+          "value": true
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "id": "evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f"
+      },
+      "body": "{\"id\":\"evt_2\",\"type\":\"unknown.type\",\"version\":\"v2\",\"data\":{\"x\":[1,2]},\"deliveries\":null}",
+      "expect": "ok",
+      "method": "webhooks.events.get",
+      "model": "EventDetail",
+      "name": "EventDetail deliveries null",
+      "probes": [
+        {
+          "path": "deliveries",
+          "value": []
+        },
+        {
+          "path": "type",
+          "value": "unknown.type"
+        },
+        {
+          "path": "data.x",
+          "value": [
+            1,
+            2
+          ]
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {},
+      "body": "{\"credential\":\"apiKey\",\"apiKeyUuid\":\"k1\",\"role\":\"superAdmin\",\"spaces\":[]}",
+      "expect": "ok",
+      "method": "me",
+      "model": "Me",
+      "name": "Me unknown role kept, space absent",
+      "probes": [
+        {
+          "optional": true,
+          "path": "role",
+          "value": "superAdmin"
+        },
+        {
+          "optional": true,
+          "path": "space",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "onBehalfOfUserUuid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {},
+      "body": "{\"credential\":\"apiKey\",\"apiKeyUuid\":\"k1\",\"role\":\"user\",\"onBehalfOfUserUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"space\":{\"uuid\":\"s1\",\"organizationUuid\":\"o1\",\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"test\":true,\"trustedAt\":\"2026-07-01T00:00:00Z\",\"createdAt\":\"2026-06-15T09:00:00Z\",\"organizationName\":\"Example Shop\",\"role\":\"owner\",\"member\":{\"userUuid\":\"019eca82-5680-7b00-8000-0000000000b1\",\"firstName\":\"Alice\",\"email\":\"alice@example.com\"},\"organizationFeePercent\":\"5\",\"staffView\":true},\"spaces\":[],\"user\":{\"ignored\":true}}",
+      "expect": "ok",
+      "method": "me",
+      "model": "Me",
+      "name": "Me member space",
+      "probes": [
+        {
+          "optional": true,
+          "path": "onBehalfOfUserUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        },
+        {
+          "path": "space.test",
+          "value": true
+        },
+        {
+          "path": "space.role",
+          "value": "owner"
+        },
+        {
+          "path": "space.member.firstName",
+          "value": "Alice"
+        },
+        {
+          "optional": true,
+          "path": "space.member.lastName",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "space.userUuid",
+          "value": "019eca82-5680-7b00-8000-0000000000b1"
+        },
+        {
+          "optional": true,
+          "path": "space.organizationFeePercent",
+          "value": "5"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "space.trustedAt",
+          "value": "2026-07-01T00:00:00Z"
+        },
+        {
+          "kind": "time",
+          "path": "space.createdAt",
+          "value": "2026-06-15T09:00:00Z"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {},
+      "body": "{\"credential\":\"apiKey\",\"apiKeyUuid\":\"k1\",\"role\":\"admin\",\"space\":{\"uuid\":\"s0\",\"organizationUuid\":\"o1\",\"test\":false,\"createdAt\":\"2026-01-01T00:00:00Z\",\"organizationName\":\"Example Shop\",\"role\":\"admin\"}}",
+      "expect": "ok",
+      "method": "me",
+      "model": "Me",
+      "name": "Me organization space",
+      "probes": [
+        {
+          "optional": true,
+          "path": "space.userUuid",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "space.member",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "space.organizationFeePercent",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "space.trustedAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "onBehalfOfUserUuid",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {},
+      "body": "{\"credential\":\"apiKey\",\"space\":\"s1\"}",
+      "expect": "serverError",
+      "method": "me",
+      "model": "Me",
+      "name": "Me space as a string",
+      "status": 200
+    },
+    {
+      "args": {
+        "params": {
+          "cancelUrl": "https://shop.example.com/cart",
+          "customerUuid": "01a05cd7-2a00-7d00-8000-0000000000d1",
+          "description": "Lifetime access",
+          "expiresInMinutes": 30,
+          "metadata": {
+            "orderId": "order-1043"
+          },
+          "priceUsd": "10",
+          "productName": "Pro plan (lifetime)",
+          "reference": "order-1043",
+          "successUrl": "https://shop.example.com/thanks?uuid={{UUID}}&type={{TRANSACTION_TYPE}}"
+        }
+      },
+      "body": "{\"link\":\"https://qbitflow.app/checkout?uuid=pay@01a0f22f-9600-7000-8000-000000000008\",\"uuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"expiresAt\":\"2026-10-01T12:30:00.999Z\"}",
+      "expect": "ok",
+      "method": "checkoutSessions.createPayment",
+      "model": "CreatedCheckoutSession",
+      "name": "CreatedCheckoutSession 201",
+      "probes": [
+        {
+          "path": "link",
+          "value": "https://qbitflow.app/checkout?uuid=pay@01a0f22f-9600-7000-8000-000000000008"
+        },
+        {
+          "path": "uuid",
+          "value": "pay@01a0f22f-9600-7000-8000-000000000008"
+        },
+        {
+          "kind": "time",
+          "path": "expiresAt",
+          "value": "2026-10-01T12:30:00.999Z"
+        }
+      ],
+      "status": 201
+    },
+    {
+      "args": {
+        "params": {
+          "customerReference": "crm-5521",
+          "frequency": {
+            "unit": "months",
+            "value": 1
+          },
+          "metadata": {
+            "plan": "pro"
+          },
+          "minPeriods": 0,
+          "productUuid": "019cadfd-8900-7c00-8000-0000000000c1",
+          "trialPeriod": {
+            "value": 0
+          }
+        }
+      },
+      "body": "{\"link\":\"https://qbitflow.app/checkout?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\"}",
+      "expect": "ok",
+      "method": "checkoutSessions.createSubscription",
+      "model": "CreatedCheckoutSession",
+      "name": "CreatedCheckoutSession expiresAt absent",
+      "note": "always sent; absent decodes as the zero time (lenient)",
+      "probes": [
+        {
+          "path": "uuid",
+          "value": "sub@01a05cd7-2a00-7000-8000-000000000003"
+        },
+        {
+          "kind": "time",
+          "path": "expiresAt",
+          "value": null
+        }
+      ],
+      "status": 201
+    },
+    {
+      "args": {
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"uuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"status\":\"refunded\",\"lastAttempt\":{\"status\":\"failed\",\"code\":\"reverted\",\"at\":\"2026-10-01T12:00:00Z\"},\"expiresAt\":\"2026-10-01T12:30:00Z\"}",
+      "expect": "ok",
+      "method": "checkoutSessions.get",
+      "model": "CheckoutSessionStatus",
+      "name": "CheckoutSessionStatus unknown status, last attempt",
+      "probes": [
+        {
+          "path": "status",
+          "value": "refunded"
+        },
+        {
+          "kind": "time",
+          "path": "lastAttempt.at",
+          "value": "2026-10-01T12:00:00Z"
+        },
+        {
+          "optional": true,
+          "path": "lastAttempt.txHash",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "txHash",
+          "value": ""
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "expiresAt",
+          "value": "2026-10-01T12:30:00Z"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "pay@01a0f22f-9600-7000-8000-000000000008"
+      },
+      "body": "{\"uuid\":\"pay@01a0f22f-9600-7000-8000-000000000008\",\"status\":\"completed\",\"txHash\":\"0x11\"}",
+      "expect": "ok",
+      "method": "checkoutSessions.get",
+      "model": "CheckoutSessionStatus",
+      "name": "CheckoutSessionStatus completed: expiresAt absent",
+      "probes": [
+        {
+          "path": "status",
+          "value": "completed"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "expiresAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "lastAttempt",
+          "value": null
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"status\":\"expired\",\"expiresAt\":\"2026-10-01T12:05:00Z\"}",
+      "expect": "ok",
+      "method": "checkoutSessions.expire",
+      "model": "CheckoutSessionStatus",
+      "name": "CheckoutSessionStatus expire answer",
+      "probes": [
+        {
+          "path": "status",
+          "value": "expired"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "expiresAt",
+          "value": "2026-10-01T12:05:00Z"
+        }
+      ],
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
+      },
+      "body": "{\"status\":\"expired\",\"lastAttempt\":[]}",
+      "expect": "serverError",
+      "method": "checkoutSessions.expire",
+      "model": "CheckoutSessionStatus",
+      "name": "CheckoutSessionStatus lastAttempt as a list",
+      "status": 200
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "",
+      "expect": "ok",
+      "method": "products.delete",
+      "model": "void",
+      "name": "products.delete 204 no body",
+      "status": 204
+    },
+    {
+      "args": {
+        "uuid": "01a05cd7-2a00-7d00-8000-0000000000d1"
+      },
+      "body": "",
+      "expect": "ok",
+      "method": "customers.delete",
+      "model": "void",
+      "name": "customers.delete 204 no body",
+      "status": 204
+    },
+    {
+      "args": {
+        "userUuid": "019eca82-5680-7b00-8000-0000000000b1"
+      },
+      "body": "",
+      "expect": "ok",
+      "method": "members.remove",
+      "model": "void",
+      "name": "members.remove 204 no body",
+      "status": 204
+    },
+    {
+      "args": {
+        "uuid": "01a0f755-f200-7000-8000-00000000000a"
+      },
+      "body": "",
+      "expect": "ok",
+      "method": "invitations.revoke",
+      "model": "void",
+      "name": "invitations.revoke 204 no body",
+      "status": 204
+    },
+    {
+      "args": {
+        "uuid": "019eca82-5680-7b00-8000-0000000000e1"
+      },
+      "body": "",
+      "expect": "ok",
+      "method": "webhooks.endpoints.delete",
+      "model": "void",
+      "name": "webhooks.endpoints.delete 204 no body",
+      "status": 204
+    },
+    {
+      "args": {
+        "uuid": "019cadfd-8900-7c00-8000-0000000000c1"
+      },
+      "body": "{\"message\":\"deleted\"}",
+      "expect": "ok",
+      "method": "products.delete",
+      "model": "void",
+      "name": "products.delete 200 with a body",
+      "note": "any 2xx is success; a void method never reads the body",
+      "status": 200
+    },
+    {
+      "args": {
+        "endpointUuid": "019eca82-5680-7b00-8000-0000000000e1",
+        "rawBody": "{\"createdAt\":\"2026-10-01T12:00:00Z\",\"data\":{},\"id\":\"evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f\",\"test\":false,\"type\":\"webhook.test\",\"version\":\"v2\"}",
+        "signatureHeader": "t=1790856000,v1=4a158046f55556e922bdec376a917c3ac338ba575b495f825427541a60bd2f4d"
+      },
+      "body": "{\"message\":\"valid\"}",
+      "expect": "ok",
+      "method": "webhooks.verifyRemote",
+      "model": "void",
+      "name": "webhooks.verifyRemote 200 message",
+      "note": "the body (JSONMessage) is not read",
+      "status": 200
+    }
+  ],
+  "comment": "Response decoding: calling method with args against a server answering status + body must decode (\"ok\", each probe matching), raise a ServerError (\"serverError\"), or, for a getByReference on an empty page, a NotFoundError with status 404 and code not_found (\"notFound\").",
+  "generator": "qbitflow-conformance",
+  "sdk": "qbitflow-go-sdk 3.0.0"
+}

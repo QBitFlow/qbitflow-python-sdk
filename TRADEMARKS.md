@@ -30,10 +30,10 @@ This policy governs use of QBitFlow names, logos, and other brand assets
 
 4. **Compatibility and “Official” Badges**
 
-    QBitFlow may publish conformance tests. Only builds that (a) are produced and
-    signed by QBitFlow, or (b) pass the conformance tests and receive written
-    authorization from QBitFlow, may use phrases like “official,” “QBitFlow
-    certified,” or “compatible with QBitFlow” in marketing.
+    The official builds of this SDK are the ones QBitFlow publishes from this
+    repository to PyPI as `qbitflow`. Only those builds, or builds that receive
+    written authorization from QBitFlow, may use phrases like “official,”
+    “QBitFlow certified,” or “compatible with QBitFlow” in marketing.
 
 5. **Permissions**
    To request permission for broader mark usage, contact QBitFlow at the address
