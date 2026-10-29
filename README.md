@@ -346,7 +346,8 @@ print("Send the customer to", session.link)
 ```
 <!-- /docs:snippet -->
 
-`reference` is your order id, unique per space. `customer_reference` is kept on the payment,
+`reference` is your order id, unique per space. `customer_reference` is kept on the payment
+(**no receipt without a QBitFlow customer**: see [Products and customers](#products-and-customers)),
 `expires_in_minutes` (10 to 1440) sets the checkout's lifetime, and `metadata` is copied onto the
 payment or the subscription and into their webhooks (`payment.completed`, `subscription.*`,
 `checkout.expired`). The answer is a `CreatedCheckoutSession`: `link`, `uuid` and `expires_at`,
@@ -583,8 +584,14 @@ print(customer.uuid == by_reference.uuid)
 `customers.get`, `list` / `iterate` (by `email` or `reference`) and `delete` (`204`) complete
 the set. A checkout given `customer_uuid` or `customer_reference` asks the customer
 nothing (`customer_reference` is kept on the payment, and links your customer with that reference
-if there is one); without either, the checkout asks what your `checkout.customerDetails` setting
-says (the full details by default).
+if there is one; none is created); without either, the checkout asks what your
+`checkout.customerDetails` setting says (the full details by default).
+
+**Without a QBitFlow customer, the buyer gets no receipt and no other customer email** (a
+subscription's billing emails included): QBitFlow has no address for them. To have them, create
+the customer with that reference and their email first
+(`customers.create(reference="crm-42", first_name="Ada", email="ada@example.com")`). That works
+even after the checkout was created, as long as it is before the payment is recorded.
 
 The clearable update fields (`customers.update`'s `last_name`, `phone_number` and `address`,
 `products.update`'s and `webhooks.endpoints.update`'s `description`) default to `NOT_GIVEN`:
@@ -1202,6 +1209,12 @@ for every 400 and 500 (`event` is `None` when the body could not be parsed), to 
 - **Answer 2xx fast**, within 30 seconds, **including to the types you ignore** (the router does):
   anything else is retried (for 3 days in live mode), and an endpoint failing for 3 days is
   disabled. For slow work, store the event in a handler and process it in the background.
+- **Order is per publication, never per subscription.** The events published together (a
+  `subscription.created` and its first `subscription.billed`) reach an endpoint in that order,
+  each once the previous one is delivered or abandoned; meanwhile the event log shows the waiting
+  one `pending` with `waiting_for` the earlier event ([The event log](#the-event-log)). Nothing
+  waits across publications: a renewal's `subscription.billed` never waits for an earlier event
+  your endpoint is failing. Order those by `created_at` and the resources' own timestamps.
 - **Secret rotation** needs nothing on your side: for 24 hours after a rotation the header
   carries two `v1=` signatures, the new secret's and the previous one's, and either secret
   verifies. Switch your secret within the day.
@@ -1318,10 +1331,31 @@ if page.has_more:
 ```python
 detail = client.webhooks.events.get(event_id)
 for d in detail.deliveries:
-    print(detail.event.id, d.url, d.delivered, len(d.attempts))
-    for attempt in d.attempts:  # oldest first
+    if d.delivered:
+        print(d.url, f"delivered after {len(d.attempts)} attempts")
+    elif d.next_attempt_at:
+        print(d.url, f"failed, retried at {d.next_attempt_at.isoformat()}")
+    elif d.waiting_for:
+        print(d.url, f"queued behind {d.waiting_for}")  # no attempt yet
+    elif d.pending:
+        print(d.url, "about to start")  # no attempt yet
+    else:
+        print(d.url, f"not delivered, gave up after {len(d.attempts)} attempts")
+    for attempt in d.attempts:  # oldest first; empty while queued or about to start
         print(attempt.attempt, attempt.status_code, attempt.skipped, attempt.error)
 ```
+
+`pending` is true while QBitFlow still attempts the event on its own: `next_attempt_at` is set while
+it is retried after a failed attempt, `waiting_for` (an `evt_…`) while it is queued behind an
+earlier event of the same publication, and neither while its delivery is about to start (within a
+minute). **A queued or starting delivery has no `attempts` yet**: `d.attempts[-1]` would raise
+`IndexError`, so check the list first. Once `pending` is false nothing more happens on its own, and
+`delivered=False` means it was abandoned after its retries (3 days in live mode, 3 hours in test
+mode) or the endpoint was disabled or deleted. If QBitFlow can't read a delivery's progress at that
+moment, `pending` comes from the attempts: true while the retry schedule still attempts the event
+again (a delivery being retried never reads as abandoned), without `next_attempt_at`; a delivery
+queued with no attempt yet isn't listed until its progress can be read: read the event again a
+moment later.
 
 An attempt's `status_code` is `None` when the endpoint didn't answer, and on a **skipped**
 attempt (`skipped=True`): a member's endpoint while the organization's `members.webhooks` policy
@@ -1547,7 +1581,7 @@ keyword arguments are the constructor's and win over the environment.
 A bad argument makes `QBitFlow(...)` raise a `ValidationError`. A client's configuration never
 changes; `client.on_behalf_of(...)` derives clients that share it. Use the client as a context
 manager, or call `client.close()`, to close the connections the SDK opened. Every request sends
-`User-Agent: qbitflow-python/3.0.0` (`qbitflow.__version__`). The SDK is synchronous; a client is
+`User-Agent: qbitflow-python/3.1.0` (`qbitflow.__version__`). The SDK is synchronous; a client is
 safe to share between threads.
 
 ## Migrating from 2.x

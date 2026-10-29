@@ -36,6 +36,7 @@ from qbitflow import (
     RefundRejectedEvent,
     RefundRequestedEvent,
     RefundStatus,
+    ServerError,
     Subscription,
     SubscriptionActionRequiredChanged,
     SubscriptionActionRequiredChangedEvent,
@@ -468,6 +469,46 @@ def test_event_detail_decoding() -> None:
     assert len(attempts) == 2 and attempts[0].status_code == 500
     assert attempts[1].status_code is None and attempts[1].duration_ms == 30000
     assert attempts[0].skipped is False and attempts[1].skipped is True
+
+
+def _detail(deliveries: str) -> EventDetail:
+    body = '{"id":"evt_2","type":"subscription.billed","version":"v2","data":{},"deliveries":['
+    return decode(EventDetail, Response(200, httpx.Headers(), (body + deliveries + "]}").encode()))
+
+
+def test_event_detail_deliveries_in_progress() -> None:
+    attempt = (
+        '{"uuid":"a1","attempt":1,"delivered":%s,"statusCode":%d,"durationMs":40,'
+        '"attemptedAt":"2026-10-01T12:00:01Z"}'
+    )
+    detail = _detail(
+        '{"endpointUuid":"e1","url":"https://x.io","delivered":false,"attempts":['
+        + attempt % ("false", 503)
+        + '],"pending":true,"nextAttemptAt":"2026-10-01T12:05:01Z"},'
+        '{"endpointUuid":"e2","url":"https://y.io","delivered":false,"attempts":[],'
+        '"pending":true,"waitingFor":"evt_1"},'
+        '{"endpointUuid":"e3","url":"https://z.io","delivered":false,"attempts":[],"pending":true},'
+        '{"endpointUuid":"e4","url":"https://w.io","delivered":true,"attempts":['
+        + attempt % ("true", 200)
+        + '],"pending":false},'
+        '{"endpointUuid":"e5","url":"https://v.io","delivered":false,"attempts":null}'
+    )
+    progress = [
+        (d.pending, d.next_attempt_at, d.waiting_for, len(d.attempts)) for d in detail.deliveries
+    ]
+    assert progress == [
+        (True, datetime(2026, 10, 1, 12, 5, 1, tzinfo=timezone.utc), None, 1),  # retried
+        (True, None, "evt_1", 0),  # queued behind an earlier event of its publication
+        (True, None, None, 0),  # about to start
+        (False, None, None, 1),  # delivered
+        (False, None, None, 0),  # no pending: a server before it
+    ]
+
+
+@pytest.mark.parametrize("field", ['"pending":"true"', '"nextAttemptAt":"soon"', '"waitingFor":1'])
+def test_event_detail_delivery_wrong_type(field: str) -> None:
+    with pytest.raises(ServerError):
+        _detail('{"endpointUuid":"e1",' + field + "}")
 
 
 def test_all_event_classes_listed() -> None:

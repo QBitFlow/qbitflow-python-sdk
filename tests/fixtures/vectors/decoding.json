@@ -4046,6 +4046,74 @@
       "status": 200
     },
     {
+      "args": {
+        "id": "evt_3f1c2d4e-5a6b-5c7d-8e9f-0a1b2c3d4e5f"
+      },
+      "body": "{\"id\":\"evt_3\",\"type\":\"subscription.billed\",\"version\":\"v2\",\"createdAt\":\"2026-10-01T12:00:00Z\",\"test\":false,\"data\":{},\"deliveries\":[{\"endpointUuid\":\"e1\",\"url\":\"https://hooks.example.com\",\"delivered\":false,\"attempts\":[{\"uuid\":\"a1\",\"eventId\":\"evt_3\",\"eventType\":\"subscription.billed\",\"endpointUuid\":\"e1\",\"attempt\":1,\"delivered\":false,\"statusCode\":503,\"durationMs\":40,\"attemptedAt\":\"2026-10-01T12:00:01Z\"}],\"pending\":true,\"nextAttemptAt\":\"2026-10-01T12:05:01Z\"},{\"endpointUuid\":\"e2\",\"url\":\"https://b.example.com\",\"delivered\":false,\"attempts\":[],\"pending\":true,\"waitingFor\":\"evt_2\"},{\"endpointUuid\":\"e3\",\"url\":\"https://c.example.com\",\"delivered\":false,\"attempts\":[]}]}",
+      "expect": "ok",
+      "method": "webhooks.events.get",
+      "model": "EventDetail",
+      "name": "EventDetail pending deliveries",
+      "note": "retried (nextAttemptAt), queued behind an earlier event of its publication (waitingFor, no attempt yet), and pending absent (false)",
+      "probes": [
+        {
+          "path": "deliveries[0].pending",
+          "value": true
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "deliveries[0].nextAttemptAt",
+          "value": "2026-10-01T12:05:01Z"
+        },
+        {
+          "optional": true,
+          "path": "deliveries[0].waitingFor",
+          "value": ""
+        },
+        {
+          "optional": true,
+          "path": "deliveries[0].attempts[0].statusCode",
+          "value": 503
+        },
+        {
+          "path": "deliveries[1].pending",
+          "value": true
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "deliveries[1].nextAttemptAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "deliveries[1].waitingFor",
+          "value": "evt_2"
+        },
+        {
+          "path": "deliveries[1].attempts",
+          "value": []
+        },
+        {
+          "path": "deliveries[2].pending",
+          "value": false
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "deliveries[2].nextAttemptAt",
+          "value": null
+        },
+        {
+          "optional": true,
+          "path": "deliveries[2].waitingFor",
+          "value": ""
+        }
+      ],
+      "status": 200
+    },
+    {
       "args": {},
       "body": "{\"credential\":\"apiKey\",\"apiKeyUuid\":\"k1\",\"role\":\"superAdmin\",\"spaces\":[]}",
       "expect": "ok",
@@ -4430,5 +4498,5 @@
   ],
   "comment": "Response decoding: calling method with args against a server answering status + body must decode (\"ok\", each probe matching), raise a ServerError (\"serverError\"), or, for a getByReference on an empty page, a NotFoundError with status 404 and code not_found (\"notFound\").",
   "generator": "qbitflow-conformance",
-  "sdk": "qbitflow-go-sdk 3.0.0"
+  "sdk": "qbitflow-go-sdk 3.1.0"
 }

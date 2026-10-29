@@ -76,7 +76,7 @@ def test_defaults() -> None:
     ):
         assert getattr(client, name) is not None, name
     assert client.webhooks.endpoints is not None and client.webhooks.events is not None
-    assert qbitflow.__version__ == "3.0.0"
+    assert qbitflow.__version__ == "3.1.0"
 
 
 @pytest.mark.parametrize(
@@ -180,7 +180,7 @@ def test_headers() -> None:
     get, post = server.requests
     for r in server.requests:
         assert r.headers["X-API-Key"] == TEST_API_KEY
-        assert r.headers["User-Agent"] == "qbitflow-python/3.0.0"
+        assert r.headers["User-Agent"] == "qbitflow-python/3.1.0"
         assert r.headers["Accept"] == "application/json"
         assert "On-Behalf-Of" not in r.headers
     assert get.method == "GET" and get.path == "/me"
