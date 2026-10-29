@@ -674,6 +674,38 @@ def test_has_access() -> None:
     assert event.data.has_access(end - timedelta(days=1))  # type: ignore[union-attr]
 
 
+def test_has_access_reads_access_until() -> None:
+    end = datetime(2026, 11, 1, 12, tzinfo=timezone.utc)
+    until = end + timedelta(hours=1)
+    # An active subscription between current_period_end and access_until: its renewal is on its way.
+    active = Subscription.model_validate(
+        {
+            "status": "active",
+            "currentPeriodEnd": "2026-11-01T12:00:00Z",
+            "accessUntil": "2026-11-01T13:00:00Z",
+        }
+    )
+    assert active.access_until == until
+    assert active.has_access(end - timedelta(microseconds=1))
+    assert active.has_access(end)
+    assert active.has_access(end + timedelta(minutes=30))
+    assert active.has_access(until - timedelta(microseconds=1))
+    assert not active.has_access(until)  # equal: no access
+    assert not active.has_access(until + timedelta(microseconds=1))
+    # access_until decides when set, even before current_period_end.
+    early = Subscription(current_period_end=end, access_until=end - timedelta(hours=1))
+    assert not early.has_access(end - timedelta(minutes=30))
+    assert Subscription(access_until=until).has_access(end)
+    # Absent (a subscription stored before the API sent it): current_period_end decides.
+    stored = Subscription.model_validate(
+        {"status": "active", "currentPeriodEnd": "2026-11-01T12:00:00Z"}
+    )
+    assert stored.access_until is None
+    assert stored.has_access(end - timedelta(microseconds=1))
+    assert not stored.has_access(end)
+    assert not stored.has_access(end + timedelta(minutes=30))
+
+
 # ── H5: amounts ──────────────────────────────────────────────────────────────
 
 

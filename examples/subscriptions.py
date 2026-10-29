@@ -40,7 +40,8 @@ def show_subscription(client: qbitflow.QBitFlow, subscription_uuid: str) -> None
 def check_access(client: qbitflow.QBitFlow, subscription_uuid: str) -> None:
     # docs:start has-access
     subscription = client.subscriptions.get(subscription_uuid)
-    # current_period_end is set and now is before it, whatever the status.
+    # now is before access_until, whatever the status: the end of the period paid for, plus an
+    # hour for an active subscription while its renewal is billed.
     if subscription.has_access():
         print("grant access")
     else:

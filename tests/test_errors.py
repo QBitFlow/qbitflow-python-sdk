@@ -58,6 +58,7 @@ def mapped(status: int, body: str, headers: Optional[Dict[str, str]] = None) -> 
         (409, "tx_already_sent", ConflictError),
         (409, "merchant_not_ready", ConflictError),
         (409, "held_funds_pending", ConflictError),
+        (409, "member_has_no_wallet", ConflictError),
         (409, "idempotency_key_in_use", ConflictError),
         (410, "merchant_closed", GoneError),
         (422, "idempotency_key_reused", IdempotencyError),

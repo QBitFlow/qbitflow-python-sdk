@@ -312,6 +312,7 @@ def test_optional_fields() -> None:
     assert sub.allowance is None and sub.last_billed_at is None and sub.next_billing_at is None
     assert sub.cancellable_at is None and sub.dunning is None and sub.action_required is None
     assert sub.current_period_end is not None and sub.management_page_link is None
+    assert sub.access_until is None
 
     pay = Payment.model_validate_json(
         '{"uuid":"pay@1","amount":"10","priceUsd":"10","fees":[],"metadata":{},'

@@ -53,8 +53,9 @@ class CheckoutSessionStatus(Model):
     #: the order on it; wait for ``completed`` (``payment.completed``, ``subscription.created``)
     #: or ``expired`` (``checkout.expired``).
     last_attempt: Optional[Attempt] = Field(default=None, alias="lastAttempt")
-    #: When the checkout can no longer be paid, while it is open (on ``expire``'s answer: when it
-    #: was expired); ``None`` once completed, or expired at its time.
+    #: When the checkout can no longer be paid, while it is open (on ``expire``'s first answer:
+    #: when it was expired); ``None`` once completed, expired at its time, or on a repeated
+    #: ``expire``.
     expires_at: Optional[Time] = Field(default=None, alias="expiresAt")
 
 

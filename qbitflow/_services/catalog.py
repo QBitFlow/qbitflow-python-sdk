@@ -1006,7 +1006,8 @@ class CheckoutSessionsService(Service):
     ) -> CheckoutSessionStatus:
         """End a checkout session now (``POST /checkout-sessions/:uuid/expire``) and return its
         status, ``expired``, with ``expires_at`` the time it was expired (``checkout.expired``
-        follows). Not retried.
+        follows). Expiring an expired session answers ``expired`` again, without ``expires_at``
+        (only the first answer has it). Not retried.
 
         Raises:
             ConflictError: 409 ``tx_already_sent`` once the customer paid or is paying.

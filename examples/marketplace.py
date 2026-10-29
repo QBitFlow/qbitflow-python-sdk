@@ -25,7 +25,8 @@ def invite(client: qbitflow.QBitFlow) -> None:
     )
     # The seller exists once they accept: wait for the member.joined webhook.
     # created.uuid is what member.joined's invitation_uuid names; its user_uuid is the seller.
-    print("invitation", created.uuid, "link:", created.link)  # also emailed
+    # QBitFlow also emails them a link of their own.
+    print("invitation", created.uuid, "link:", created.link)
     # docs:end members-invite
 
 
@@ -108,10 +109,15 @@ def update_fee(client: qbitflow.QBitFlow, member_uuid: str) -> None:
 
 def trust(client: qbitflow.QBitFlow, member_uuid: str) -> None:
     # docs:start members-trust
-    # Their new payments go to their own wallets from now on. What is held stays held until you
-    # release it from the dashboard (heldFunds.released tells you).
-    member = client.members.trust(member_uuid)
-    print("trusted since", member.trusted_at)
+    # Their new payments go to their own wallets from now on (one-way). What is held stays held
+    # until you release it from the dashboard (heldFunds.released tells you).
+    try:
+        member = client.members.trust(member_uuid)
+        print("trusted since", member.trusted_at)
+    except qbitflow.ConflictError as exc:
+        if exc.code != "member_has_no_wallet":
+            raise
+        print("not trusted: their own wallets accept none of your currencies yet")
     # docs:end members-trust
 
 

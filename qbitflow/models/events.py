@@ -241,7 +241,7 @@ class PaymentCompletedEvent(BaseEvent):
 class SubscriptionCreatedEvent(BaseEvent):
     """``subscription.created``: a subscription started (status ``active``, or ``trial``). Its
     data is the subscription, as ``subscriptions.get`` returns it, its ``management_page_link``
-    included: grant access until ``current_period_end``."""
+    included: grant access until ``access_until`` (:meth:`Subscription.has_access`)."""
 
     type: Literal["subscription.created"] = "subscription.created"
     data: Subscription = Field(default_factory=Subscription)

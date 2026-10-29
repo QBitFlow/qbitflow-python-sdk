@@ -5,6 +5,58 @@ All notable changes to the QBitFlow Python SDK are documented in this file.
 The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-10-29
+
+Subscriptions tell when access ends (`access_until`), and the event log which deliveries are
+still in progress. No signature changes.
+
+### Added
+
+-   **`Subscription.access_until`** (`accessUntil` on the wire): when access ends.
+    `current_period_end` (the paid-through date), plus 1 hour for an `active` subscription:
+    QBitFlow bills a renewal within minutes of its due date, so the rule "grant access while now <
+    `current_period_end`" cut every subscriber off for those minutes at each renewal. **The access
+    rule is now "grant access while now < `access_until`, whatever the status".** On every read and
+    every `subscription.*` event; `None` on a subscription stored before the API sent it.
+-   **`EndpointDelivery.pending`, `next_attempt_at` and `waiting_for`**
+    (`webhooks.events.get`). `pending` is true while QBitFlow still attempts the event on its own;
+    `next_attempt_at` is set while it is retried after a failed attempt, and `waiting_for` (an
+    `evt_…`) while it is queued behind an earlier event of the same publication. A delivery that
+    is queued, or about to start, is now listed with **no `attempts`** instead of not being listed
+    at all: code that reads `attempts[-1]` must check the list first. A response without `pending`
+    (an older server) decodes as `pending=False`.
+
+### Changed
+
+-   **`Subscription.has_access()` reads `access_until`**, and `current_period_end` only when
+    `access_until` is `None` (a subscription stored before it existed). An `active` subscription
+    now has access for the hour after `current_period_end`, while its renewal is billed; keep
+    `current_period_end` for display ("paid through").
+-   **`members.trust` can raise a `ConflictError` `member_has_no_wallet`** (409) when the member's
+    own wallets accept none of your currencies: nothing changes (they stay held, their checkouts
+    keep working). Trust is one-way and narrows the member's currencies to their own wallets';
+    trust them once they've added a wallet.
+-   **README: integration notes.** `subscription.upcomingBill` follows the dashboard's
+    `subscriptions.upcomingBillDays` (3 days by default, 0 = never), is checked daily, and isn't
+    sent for a subscription whose period (a trial: the trial) is no longer than that. A
+    development server lowers the live frequency minimum to 1 minute. A member's deliveries to
+    your endpoints show from the organization (`include_members=True`, then `get`).
+    `allowance.remaining_periods` counts bills before network fees, so it is usually higher than
+    the checkout's "N payments". The organization fee is `(amount − QBitFlow's fee) ×
+    organization_fee_percent / 100`, rounded down. Money strings come back canonical (`"12.50"` →
+    `"12.5"`): compare them as decimals. A subscription checkout's inline product creates a hidden
+    product, reused by checkouts with the same name, description and price; a payment checkout of
+    a subscription product sells it once; a subscription checkout of a one-time product needs
+    `frequency`. A second `expire` answers without `expires_at`. `held_funds_pending` is released
+    from the dashboard. The link QBitFlow emails with an invitation has its own token: it differs
+    from `CreatedInvitation.link`.
+-   **README: webhook order is per publication, never per subscription.** The events published
+    together (a `subscription.created` and its first `subscription.billed`) reach an endpoint in
+    order; nothing waits across publications.
+-   **README: a checkout's `customer_reference` without a QBitFlow customer means no receipt**
+    and no other customer email. Create the customer with that reference and their email first
+    (even after the checkout was created, before the payment is recorded) to have them.
+
 ## [3.0.0] - 2026-10-28
 
 The SDK for **QBitFlow API v2**. A major release, written for the API's new REST routes: the

@@ -403,8 +403,9 @@ class CreatedInvitation(Invitation):
     """An invitation just created (``invitations.create``): the invitation's fields and its
     ``link``, only returned here."""
 
-    #: The link to accept it, also emailed to the person unless ``send_email`` was False: share it
-    #: in your own onboarding if you prefer.
+    #: A link to accept it, to share in your own onboarding if you prefer (with ``send_email``
+    #: False, the only one). Signing up through it emails the person a confirmation first. The
+    #: link QBitFlow emails has its own token, never returned: it differs from this one.
     link: Str = ""
 
 
@@ -681,7 +682,15 @@ class DeliveryAttempt(Model):
 
 
 class EndpointDelivery(Model):
-    """An event's deliveries to one endpoint."""
+    """An event's deliveries to one endpoint, and whether they go on.
+
+    While ``pending``, QBitFlow still attempts the event on its own: ``next_attempt_at`` is set
+    when it is retried after a failed attempt, ``waiting_for`` when it is queued behind an earlier
+    event of the same publication, and neither when its delivery is about to start (the last two
+    have no ``attempts`` yet). Once ``pending`` is false nothing more happens on its own, and
+    ``delivered`` tells how it ended (false: abandoned after its retries, or the endpoint was
+    disabled or deleted).
+    """
 
     #: The endpoint.
     endpoint_uuid: Str = Field(default="", alias="endpointUuid")
@@ -689,5 +698,20 @@ class EndpointDelivery(Model):
     url: Str = ""
     #: True when one attempt was answered with a 2xx.
     delivered: Bool = False
-    #: Its attempts, oldest first.
+    #: Its attempts, oldest first. Empty while the event waits for its first attempt
+    #: (``pending``): check the length before reading the last one.
     attempts: List[DeliveryAttempt] = Field(default_factory=list)
+    #: True while QBitFlow still attempts the event on its own. False once delivered, abandoned
+    #: after its retries (3 days in live mode, 3 hours in test mode), or when the endpoint was
+    #: disabled or deleted. When QBitFlow can't read a delivery's progress, ``pending`` comes
+    #: from the attempts: true while the retry schedule still attempts the event again (a
+    #: delivery being retried never reads as abandoned), without ``next_attempt_at``; a delivery
+    #: queued with no attempt yet isn't listed until its progress can be read: read the event
+    #: again a moment later.
+    pending: Bool = False
+    #: While ``pending`` after a failed attempt: when the next attempt comes.
+    next_attempt_at: Optional[Time] = Field(default=None, alias="nextAttemptAt")
+    #: While ``pending`` behind an earlier event of the same publication: that event's id
+    #: (``evt_…``). An endpoint gets a publication's events in order, each once the previous one
+    #: is delivered or abandoned.
+    waiting_for: Optional[Str] = Field(default=None, alias="waitingFor")

@@ -3899,5 +3899,5 @@
   ],
   "comment": "Request building: each call must send exactly request.",
   "generator": "qbitflow-conformance",
-  "sdk": "qbitflow-go-sdk 3.0.0"
+  "sdk": "qbitflow-go-sdk 3.1.0"
 }

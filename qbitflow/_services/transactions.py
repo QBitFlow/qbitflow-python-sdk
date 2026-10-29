@@ -381,7 +381,7 @@ class FailuresService(Service):
 class SubscriptionsService(Service):
     """Subscriptions and their bills (``client.subscriptions``): read them, update their
     metadata, cancel them, and run a test bill. Grant access while
-    ``now < current_period_end``, whatever the status (:meth:`Subscription.has_access`)."""
+    ``now < access_until``, whatever the status (:meth:`Subscription.has_access`)."""
 
     def list(
         self,

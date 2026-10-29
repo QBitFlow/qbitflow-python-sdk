@@ -1,6 +1,7 @@
 {
   "createdAt": "2026-10-01T12:00:00Z",
   "data": {
+    "accessUntil": "2026-10-31T13:00:00Z",
     "actionRequired": "topUpAllowance",
     "allowance": {
       "amount": "1.5",

@@ -1193,7 +1193,17 @@
             "durationMs": 120,
             "attemptedAt": "2026-10-01T12:00:01Z"
           }
-        ]
+        ],
+        "pending": true,
+        "nextAttemptAt": "2026-10-01T12:05:01Z"
+      },
+      {
+        "endpointUuid": "e-2",
+        "url": "https://y.io/hook",
+        "delivered": false,
+        "attempts": [],
+        "pending": true,
+        "waitingFor": "evt_0"
       }
     ]
   },

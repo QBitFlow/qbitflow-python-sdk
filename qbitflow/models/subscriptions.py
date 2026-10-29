@@ -63,9 +63,9 @@ class DunningStatus(Model):
 
 
 class Subscription(Model):
-    """A subscription (``sub@…``). **Grant access while** ``now < current_period_end``, whatever
-    the status (:meth:`has_access`): the status says why, ``action_required`` what its customer
-    must do."""
+    """A subscription (``sub@…``). **Grant access while** ``now < access_until``, whatever the
+    status (:meth:`has_access`): the status says why, ``action_required`` what its customer must
+    do."""
 
     #: The subscription's id (``sub@…``), its checkout session's for life.
     uuid: Str = ""
@@ -97,11 +97,19 @@ class Subscription(Model):
     #: What its customer must do (topUpAllowance, raiseMaximum, confirmTrial); ``None`` for
     #: nothing. Every change sends ``subscription.actionRequiredChanged``.
     action_required: Optional[ActionRequiredT] = Field(default=None, alias="actionRequired")
-    #: The paid-through date: grant access while now < ``current_period_end``, whatever the
-    #: status. A trial: its end; active, paused, stopped: the end of the period paid for; pastDue:
-    #: the start of the unpaid period (past); cancelled: when it was cancelled, or the end of its
-    #: last paid period if that came first. ``None`` when absent.
+    #: The paid-through date, to display ("paid through"). A trial: its end; active, paused,
+    #: stopped: the end of the period paid for; pastDue: the start of the unpaid period (past);
+    #: cancelled: when it was cancelled, or the end of its last paid period if that came first.
+    #: For access, read ``access_until``: an active subscription is renewed a few minutes after
+    #: this date. ``None`` when absent.
     current_period_end: Optional[Time] = Field(default=None, alias="currentPeriodEnd")
+    #: When access ends: grant it while now < ``access_until``, whatever the status
+    #: (:meth:`has_access`). An active subscription: ``current_period_end`` plus 1 hour, since its
+    #: renewal is billed within minutes of its due date (a subscriber whose bill is on its way
+    #: keeps access; a failed bill makes it pastDue). Every other status: ``current_period_end``.
+    #: ``None`` on a subscription stored before the API sent it (:meth:`has_access` then reads
+    #: ``current_period_end``).
+    access_until: Optional[Time] = Field(default=None, alias="accessUntil")
     #: The price per period the customer subscribed at, in USD (a decimal string, ``"9.99"``),
     #: locked at signup (a free trial's too); never ``"0"``. Every bill charges it plus ``fees``,
     #: converted to the token at the bill's price.
@@ -148,9 +156,11 @@ class Subscription(Model):
     dunning: Optional[DunningStatus] = None
 
     def has_access(self, at: Optional[datetime] = None) -> bool:
-        """Whether the subscriber has access at ``at`` (default: now): ``current_period_end`` is
-        set and ``at`` is before it, whatever the status (a cancelled subscription keeps access
-        until the end of the period paid for).
+        """Whether the subscriber has access at ``at`` (default: now): ``at`` is before
+        ``access_until``, whatever the status (a cancelled subscription keeps access until the end
+        of the period paid for; an active one an hour past ``current_period_end``, while its
+        renewal is billed). Without ``access_until`` (a subscription stored before the API sent
+        it), it reads ``current_period_end``. False when neither is set.
 
         Args:
             at: The moment to check; a naive datetime is taken as UTC.
@@ -164,7 +174,7 @@ class Subscription(Model):
             raise field_error("at", "must be a datetime")
         elif at.tzinfo is None:
             at = at.replace(tzinfo=timezone.utc)
-        end = self.current_period_end
+        end = self.access_until if self.access_until is not None else self.current_period_end
         return end is not None and at < end
 
 

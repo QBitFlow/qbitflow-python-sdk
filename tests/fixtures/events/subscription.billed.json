@@ -69,6 +69,7 @@
       "uuid": "sub-hist@01a0f755-f200-7000-8000-000000000005"
     },
     "subscription": {
+      "accessUntil": "2026-10-31T13:00:00Z",
       "allowance": {
         "amount": "110",
         "amountMinUnits": "110000000",
