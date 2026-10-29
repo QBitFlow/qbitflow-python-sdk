@@ -1408,6 +1408,12 @@
           "value": null
         },
         {
+          "kind": "time",
+          "optional": true,
+          "path": "accessUntil",
+          "value": null
+        },
+        {
           "optional": true,
           "path": "allowance",
           "value": null
@@ -1441,7 +1447,7 @@
         },
         "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
       },
-      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"accessUntil\":\"2026-11-01T13:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
       "expect": "ok",
       "method": "subscriptions.get",
       "model": "Subscription",
@@ -1456,6 +1462,18 @@
           "kind": "time",
           "path": "updatedAt",
           "value": "2026-10-01T12:00:00.5Z"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "currentPeriodEnd",
+          "value": "2026-11-01T12:00:00Z"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "accessUntil",
+          "value": "2026-11-01T13:00:00Z"
         },
         {
           "path": "currency.code",
@@ -1584,6 +1602,18 @@
           "optional": true,
           "path": "nextBillingAt",
           "value": "2026-10-08T12:00:00Z"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "currentPeriodEnd",
+          "value": "2026-10-08T12:00:00Z"
+        },
+        {
+          "kind": "time",
+          "optional": true,
+          "path": "accessUntil",
+          "value": null
         }
       ],
       "status": 200
@@ -1790,7 +1820,7 @@
         },
         "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
       },
-      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"accessUntil\":\"2026-11-01T13:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
       "expect": "ok",
       "method": "subscriptions.update",
       "model": "Subscription",
@@ -1816,7 +1846,7 @@
         },
         "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
       },
-      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"accessUntil\":\"2026-11-01T13:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
       "expect": "ok",
       "method": "subscriptions.cancel",
       "model": "SubscriptionCancellation",
@@ -1844,7 +1874,7 @@
         },
         "uuid": "sub@01a05cd7-2a00-7000-8000-000000000003"
       },
-      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
+      "body": "{\"uuid\":\"sub@01a05cd7-2a00-7000-8000-000000000003\",\"reference\":\"customer-7731\",\"createdAt\":\"2026-09-01T12:00:00Z\",\"updatedAt\":\"2026-10-01T12:00:00.5Z\",\"from\":\"0xabc\",\"to\":\"0xdef\",\"productUuid\":\"019cadfd-8900-7c00-8000-0000000000c1\",\"subscriptionHash\":\"0x22\",\"currency\":{\"id\":8,\"code\":\"BASE:USDC\",\"symbol\":\"USDC\",\"name\":\"USD Coin\",\"chain\":\"BASE\",\"decimals\":6,\"address\":\"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913\",\"mainCurrencyId\":3,\"test\":false},\"frequency\":{\"value\":1,\"unit\":\"months\"},\"status\":\"active\",\"actionRequired\":\"topUpAllowance\",\"currentPeriodEnd\":\"2026-11-01T12:00:00Z\",\"accessUntil\":\"2026-11-01T13:00:00Z\",\"priceUsd\":\"9.99\",\"fees\":[],\"allowance\":{\"amount\":\"9.99\",\"amountMinUnits\":\"9990000\",\"amountUsd\":\"9.99\",\"remainingPeriods\":0,\"maxPerPeriod\":\"30\",\"maxPerPeriodMinUnits\":\"30000000\"},\"lastBilledAt\":\"2026-10-01T12:00:00Z\",\"nextBillingAt\":\"2026-11-01T12:00:00Z\",\"metadata\":{\"plan\":\"pro\"},\"managementPageLink\":\"https://qbitflow.app/user/s1/manage?uuid=sub@01a05cd7-2a00-7000-8000-000000000003\",\"test\":true,\"dunning\":{\"failedAttempts\":0,\"remainingAttempts\":5}}",
       "expect": "ok",
       "method": "subscriptions.cancel",
       "model": "SubscriptionCancellation",

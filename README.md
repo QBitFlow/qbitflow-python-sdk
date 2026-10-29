@@ -135,7 +135,8 @@ Then fulfil the order when the [`payment.completed` webhook](#webhooks) arrives 
   `decimal.Decimal` (sent as `str(value)`); a `float` or an `int` is a `ValidationError`, because
   a float cannot carry `0.1` exactly and the API refuses a JSON number. Inputs are checked before
   sending: at most 2 decimals, no sign or exponent (`"12.50"` is fine). Compute with `Decimal`, or
-  `format_amount` / `parse_amount`.
+  `format_amount` / `parse_amount`. They come back canonical (`"12.50"` reads back `"12.5"`,
+  `"12.00"` as `"12"`): compare amounts as decimals, never as strings.
 - **Metadata:** products, customers, checkouts and subscriptions carry `metadata`, your own
   `dict[str, str]` (an order id, a CRM key): at most 50 keys of 1 to 40 characters among
   `A-Z a-z 0-9 _ - . :`, values of at most 500 characters without control or bidirectional
@@ -225,10 +226,16 @@ else:
 
 ### Access control
 
+Grant access while `now < access_until`, whatever the subscription's status: the end of the period
+paid for, plus an hour for an `active` one, since its renewal is billed within minutes of its due
+date. `has_access()` does exactly that, reading `current_period_end` for a subscription you stored
+before the API sent `access_until`:
+
 <!-- docs:snippet has-access -->
 ```python
 subscription = client.subscriptions.get(subscription_uuid)
-# current_period_end is set and now is before it, whatever the status.
+# now is before access_until, whatever the status: the end of the period paid for, plus an
+# hour for an active subscription while its renewal is billed.
 if subscription.has_access():
     print("grant access")
 else:
@@ -345,6 +352,13 @@ session = client.checkout_sessions.create_payment(
 print("Send the customer to", session.link)
 ```
 <!-- /docs:snippet -->
+
+A payment checkout of a subscription product sells it **once**, at its price (its terms are
+ignored, nothing recurs). A subscription checkout of a one-time product needs `frequency`, else a
+`ValidationError` on `frequency` naming the product. An inline product of a **subscription**
+checkout creates a hidden product (`is_active` False), reused by the next checkouts with the same
+name, description and price (`products.list(include_hidden=True)` shows it); a payment's inline
+product creates none.
 
 `reference` is your order id, unique per space. `customer_reference` is kept on the payment
 (**no receipt without a QBitFlow customer**: see [Products and customers](#products-and-customers)),
@@ -496,7 +510,9 @@ to fulfil orders. The code is in the
 ### Expire
 
 End a session early (an order cancelled on your side). It answers its status (`expired`,
-`expires_at` the time you expired it), and `checkout.expired` follows. Once the customer paid or is paying it is a `409 tx_already_sent`.
+`expires_at` the time you expired it), and `checkout.expired` follows. Expiring it again answers
+`expired` too, without `expires_at` (only the first answer has it). Once the customer paid or is
+paying it is a `409 tx_already_sent`.
 
 <!-- docs:snippet checkout-expire -->
 ```python
@@ -508,8 +524,9 @@ print(expired.status)  # expired; checkout.expired follows
 
 ## Products and customers
 
-Products are optional (a checkout can name an inline product) and give you a reusable catalog
-with payment links. The `reference` is generated when left out.
+Products are optional for payments (a payment checkout can name an inline product; a
+subscription checkout's inline product becomes a hidden product: [Checkout sessions](#checkout-sessions))
+and give you a reusable catalog with payment links. The `reference` is generated when left out.
 
 <!-- docs:snippet products-create -->
 ```python
@@ -702,9 +719,13 @@ the free trial. It keeps the checkout's `sub@…` id for life.
 | `stopped` | Cancelled during its period: never billed again, `cancelled` at `next_billing_at` |
 | `cancelled` | Over (`cancellation_reason` says why). Final |
 
-**Access rule: grant access while `now < current_period_end`, whatever the status.** A `stopped`
-or `paused` subscription has paid for its period; a `pastDue` one's period has ended.
-`subscription.has_access()` applies it ([access control](#access-control));
+**Access rule: grant access while `now < access_until`, whatever the status.** `access_until` is
+`current_period_end` (the paid-through date), plus 1 hour for an `active` subscription: QBitFlow
+bills a renewal within minutes of its due date, so checking `current_period_end` would cut every
+subscriber off for those minutes at each renewal (show it as "paid through", don't gate on it). A
+`stopped` or `paused` subscription has paid for its period; a `pastDue` one's period has ended.
+`subscription.has_access()` applies it, reading `current_period_end` for a subscription stored
+before `access_until` existed ([access control](#access-control));
 `has_access(at)` checks at a given `datetime` (a naive one is UTC). Every subscription model has
 it, the subscription webhooks' data included.
 
@@ -721,7 +742,9 @@ print(subscription.status, "paid until", subscription.current_period_end)
 A subscription's price is locked at signup: `price_usd` plus its `fees` lines, every bill. Its
 `allowance` (`None` during a trial) is what the subscriber's wallet still lets QBitFlow bill
 (`amount`, `amount_min_units`, `amount_usd`), how many bills that covers (`remaining_periods`) and
-the most one bill may charge (`max_per_period`). `last_billed_at`, `next_billing_at` and
+the most one bill may charge (`max_per_period`). `remaining_periods` counts bills before each
+bill's network fee, so it is usually higher than the checkout's "N payments" (an estimate that kept
+room for network fees). `last_billed_at`, `next_billing_at` and
 `cancellable_at` are `None` when they don't apply.
 
 ```python
@@ -866,14 +889,17 @@ created = client.invitations.create(
 )
 # The seller exists once they accept: wait for the member.joined webhook.
 # created.uuid is what member.joined's invitation_uuid names; its user_uuid is the seller.
-print("invitation", created.uuid, "link:", created.link)  # also emailed
+# QBitFlow also emails them a link of their own.
+print("invitation", created.uuid, "link:", created.link)
 ```
 <!-- /docs:snippet -->
 
 `hold_funds` is required (always sent); the commission is a percent string from `"0"` to `"50"`
 with at most 2 decimals. The answer is a `CreatedInvitation`: the invitation's fields and its
-`link` (only here). `send_email=False` creates the invitation without emailing it: share `link`
-in your own onboarding (signing up through it still emails the person a confirmation). Inviting a
+`link` (only here). QBitFlow emails the person a link of their own (another token, never
+returned), so don't compare it with `link`. `send_email=False` creates the invitation without
+emailing it: share `link` in your own onboarding (signing up through it still emails the person a
+confirmation). Inviting a
 member is a `ConflictError` (409 `already_joined`), and more than 50 invitations an hour, emailed
 or not, a `RateLimitError` (raised at once).
 
@@ -911,8 +937,10 @@ subscription checkout in their space answers `409 merchant_not_ready` with `deta
 **4. Hear of every sale.** An organization webhook endpoint receives every seller's events by
 default; the event's `user_uuid` names the seller. Use it as `on_behalf_of` for follow-up reads.
 
-**5. Commission and held funds.** Each payment records your fee in `settlement.organization_fee`
-and `settlement.split.organization`. While you hold a seller's funds (`hold_funds` True,
+**5. Commission and held funds.** Your commission is taken on what remains after QBitFlow's fee:
+`(amount − QBitFlow's fee) × organization_fee_percent / 100`, rounded down, the seller getting the
+rest (on $7.50 at 0.5 % and 10 %: QBitFlow 0.0375, you 0.74625, the seller 6.71625). Each payment
+records it in `settlement.organization_fee` and `settlement.split.organization`. While you hold a seller's funds (`hold_funds` True,
 `Member.trusted_at` None), their payments go to your wallet and the net is owed to them
 (`HeldFunds.total_usd`, each `LedgerEntry` with what it counts for: `owed`, `owed_min_units`,
 `owed_usd`, negative on a refund line):
@@ -939,14 +967,21 @@ print(f"held for me: {held.total_usd} USD over {len(held.ledgers)} lines")
 ```
 <!-- /docs:snippet -->
 
-Trust them once you no longer want to hold their funds:
+Trust them once you no longer want to hold their funds. Trust is one-way and narrows the seller's
+currencies to their own wallets': a seller whose wallets accept none of yours is a `ConflictError`
+(409 `member_has_no_wallet`; nothing changes, trust them once they've added one):
 
 <!-- docs:snippet members-trust -->
 ```python
-# Their new payments go to their own wallets from now on. What is held stays held until you
-# release it from the dashboard (heldFunds.released tells you).
-member = client.members.trust(member_uuid)
-print("trusted since", member.trusted_at)
+# Their new payments go to their own wallets from now on (one-way). What is held stays held
+# until you release it from the dashboard (heldFunds.released tells you).
+try:
+    member = client.members.trust(member_uuid)
+    print("trusted since", member.trusted_at)
+except qbitflow.ConflictError as exc:
+    if exc.code != "member_has_no_wallet":
+        raise
+    print("not trusted: their own wallets accept none of your currencies yet")
 ```
 <!-- /docs:snippet -->
 
@@ -993,7 +1028,7 @@ for wallet in client.wallets.list_for_member(member_uuid):
 
 `members.remove` ends a seller's membership in the key's mode (`204`): their keys stop working
 and their checkouts close. It is a `409 held_funds_pending` while you hold their live funds:
-release them first.
+release them from the dashboard first.
 
 <!-- docs:snippet members-remove -->
 ```python
@@ -1293,7 +1328,7 @@ then `client.webhooks.parse_event(raw_body)` parses the body. `client.webhooks.v
 | `subscription.statusChanged` | `SubscriptionStatusChangedEvent` | `SubscriptionStatusChanged`: the `Subscription` + `previous_status` |
 | `subscription.actionRequiredChanged` | `SubscriptionActionRequiredChangedEvent` | the `Subscription` + `previous_action_required` |
 | `subscription.billingFailed` | `SubscriptionBillingFailedEvent` | the `Subscription` + `reason`, `bill_uuid`, `amount_usd` (a string), `failure_code`, `attempt`, `remaining_attempts`, `next_attempt_at` |
-| `subscription.upcomingBill` | `SubscriptionUpcomingBillEvent` | the `Subscription` + `billing_at`, `amount_usd` (a string), `trial_ending`, `balance_sufficient`, `allowance_sufficient` |
+| `subscription.upcomingBill` | `SubscriptionUpcomingBillEvent` | the `Subscription` + `billing_at`, `amount_usd` (a string), `trial_ending`, `balance_sufficient`, `allowance_sufficient`. Sent the dashboard's `subscriptions.upcomingBillDays` before the bill (3 days by default, 0 = never), checked daily; not for a subscription whose period (a trial: the trial) is no longer than that |
 | `refund.requested` / `.approved` / `.rejected` | `RefundRequestedEvent` / `RefundApprovedEvent` / `RefundRejectedEvent` | the `Refund` (`refund.approved` and `refund.rejected` were `refund.completed` and `refund.denied`) |
 | `member.joined` | `MemberJoinedEvent` | `MemberJoined`: the `Member` + `invitation_uuid` |
 | `member.removed` | `MemberRemovedEvent` | the `Member` |
@@ -1356,6 +1391,10 @@ moment, `pending` comes from the attempts: true while the retry schedule still a
 again (a delivery being retried never reads as abandoned), without `next_attempt_at`; a delivery
 queued with no attempt yet isn't listed until its progress can be read: read the event again a
 moment later.
+
+A member's deliveries to your organization's endpoints show from the organization:
+`webhooks.events.list(include_members=True)`, then `get`. Read on behalf of the member, the event
+lists only the member's own endpoints (`deliveries == []` without any).
 
 An attempt's `status_code` is `None` when the endpoint didn't answer, and on a **skipped**
 attempt (`skipped=True`): a member's endpoint while the organization's `members.webhooks` policy
@@ -1440,7 +1479,7 @@ fields every error has; catch the most specific class you can act on:
 | `AuthenticationError` | 401 | a missing, unknown, expired or revoked key (a removed member's keys too) |
 | `PermissionDeniedError` | 403 | `forbidden` (a role or another space's resource; no details), `policy_disabled`: a member's key doing what its organization's policy doesn't allow members (`details["policy"]` names the policy; `details["field"]` the request field it governs, e.g. a checkout's `successUrl` / `cancelUrl` under `members.checkoutRedirects`) |
 | `NotFoundError` | 404 | unknown, deleted, or outside the request's space; also a `get_by_reference` that found nothing (code `not_found`, the list's `request_id`) |
-| `ConflictError` | 409 | `unique_violation` (`details["field"]`), `tx_already_sent`, `merchant_not_ready` (`details["reason"]`), `held_funds_pending`, `already_joined`, `payment_not_due`, `subscription_already_stopped_or_inactive`, `idempotency_key_in_use`, `conflict` |
+| `ConflictError` | 409 | `unique_violation` (`details["field"]`), `tx_already_sent`, `merchant_not_ready` (`details["reason"]`), `held_funds_pending`, `member_has_no_wallet`, `already_joined`, `payment_not_due`, `subscription_already_stopped_or_inactive`, `idempotency_key_in_use`, `conflict` |
 | `GoneError` | 410 | `merchant_closed`: a removed member's or a closed organization's space |
 | `IdempotencyError` | 422 `idempotency_key_reused` | an `Idempotency-Key` reused for another request: a bug, never retried |
 | `RateLimitError` | 429 | `retry_after` (seconds), `limit`, `period_seconds` |
@@ -1489,7 +1528,8 @@ characters), the checkout's product choice, the enum filters (refund `status`, t
 (a float where money is expected included). A failure is a `ValidationError` with `status` None,
 `code` `""`, and nothing is sent. What depends on the key's mode or on stored data is left to the
 API: the `"5"` USD test-mode cap, `https`-only live URLs, the live subscription minimum
-(`"0.25"`), the frequency minimum (1 hour live, 5 minutes test), the 92-day export window, the
+(`"0.25"`), the frequency minimum (1 hour live, 5 minutes test; a development server lowers the
+live one to 1 minute, production never does), the 92-day export window, the
 50-key cap on merged metadata, uniqueness.
 
 ## Retries and idempotency

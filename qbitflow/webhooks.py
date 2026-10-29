@@ -449,7 +449,7 @@ class WebhookRouter:
 
         ``data`` is the type's model: ``payment.completed`` → :class:`~qbitflow.PaymentCompleted`;
         ``subscription.created`` → :class:`~qbitflow.Subscription` (grant access until
-        ``current_period_end``); ``subscription.billed`` → :class:`~qbitflow.SubscriptionBilled`
+        ``access_until``); ``subscription.billed`` → :class:`~qbitflow.SubscriptionBilled`
         (``data.bill``, ``data.subscription``); ``subscription.statusChanged``,
         ``.actionRequiredChanged``, ``.billingFailed``, ``.upcomingBill`` → the subscription and
         the change (``SubscriptionStatusChanged``, …); ``refund.requested``, ``refund.approved``

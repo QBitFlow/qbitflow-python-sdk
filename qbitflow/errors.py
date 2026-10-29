@@ -154,8 +154,9 @@ class NotFoundError(ApiError):
 
 class ConflictError(ApiError):
     """A 409 (``unique_violation`` with ``details["field"]``, ``tx_already_sent``,
-    ``merchant_not_ready`` with ``details["reason"]``, ``held_funds_pending``, ``already_joined``,
-    ``payment_not_due``, ``conflict``, ``idempotency_key_in_use``, …)."""
+    ``merchant_not_ready`` with ``details["reason"]``, ``held_funds_pending``,
+    ``member_has_no_wallet``, ``already_joined``, ``payment_not_due``, ``conflict``,
+    ``idempotency_key_in_use``, …)."""
 
 
 class GoneError(ApiError):

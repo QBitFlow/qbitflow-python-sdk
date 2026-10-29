@@ -109,7 +109,7 @@ class MembersService(Service):
 
         Raises:
             ConflictError: 409 ``held_funds_pending`` while the organization holds live funds for
-                them (release them in the dashboard first).
+                them (release them from the dashboard first).
         """
         check_path_uuid("userUuid", user_uuid)
         self._send(Endpoint("DELETE", pathf("/members/{}", user_uuid)), options)
@@ -118,7 +118,16 @@ class MembersService(Service):
         """Make a member's new payments in the key's mode go to their own wallets
         (``POST /members/:userUuid/trust``) and return the member with ``trusted_at`` set. What
         the organization already holds for them stays held until released (in the dashboard).
-        Not retried."""
+        Not retried.
+
+        Trust is one-way (there is no untrust) and narrows the member's ``accepted_currencies`` to
+        their own wallets' (within the organization's). Trusting a trusted member changes nothing.
+
+        Raises:
+            ConflictError: 409 ``member_has_no_wallet`` when the member's own wallets accept none
+                of the organization's currencies: nothing changes (they stay held, their
+                checkouts keep working); trust them once they've added a wallet.
+        """
         check_path_uuid("userUuid", user_uuid)
         endpoint = Endpoint("POST", pathf("/members/{}/trust", user_uuid))
         return self._call(Member, endpoint, options)
@@ -161,11 +170,12 @@ class InvitationsService(Service):
         options: Optional[RequestOptions] = None,
     ) -> CreatedInvitation:
         """Invite someone to join the organization as a member in the key's mode
-        (``POST /invitations``, 201) and return the invitation with its ``link`` (also emailed,
-        unless ``send_email`` is False). The SDK always sends ``role: user``: the team is invited
-        from the dashboard. Sends an ``Idempotency-Key``; retried on transient failures. Rate
-        limited (50 an hour per organization, emailed or not: beyond, a
-        :class:`~qbitflow.RateLimitError` at once, the wait being over the SDK's 60 s retry cap).
+        (``POST /invitations``, 201) and return the invitation with its ``link`` (QBitFlow also
+        emails the person a link of their own, unless ``send_email`` is False). The SDK always
+        sends ``role: user``: the team is invited from the dashboard. Sends an
+        ``Idempotency-Key``; retried on transient failures. Rate limited (50 an hour per
+        organization, emailed or not: beyond, a :class:`~qbitflow.RateLimitError` at once, the
+        wait being over the SDK's 60 s retry cap).
 
         The person exists in the organization once they accepted: act on the ``member.joined``
         webhook (:attr:`MemberJoined.invitation_uuid`).
@@ -179,9 +189,10 @@ class InvitationsService(Service):
             redirect_url: Where the person goes once they accepted (with
                 ``?invitationUuid=<uuid>``): a convenience, confirm with the ``member.joined``
                 event.
-            send_email: Whether QBitFlow emails the link to the person (``None``: True). False
-                sends no invitation email: share the returned ``link`` yourself. Signing up
-                through the link still emails the person a confirmation.
+            send_email: Whether QBitFlow emails the person a link of their own (``None``: True;
+                signing up through it needs no confirmation: it proves the inbox). False sends no
+                invitation email: share the returned ``link`` yourself (signing up through it
+                emails the person a confirmation first).
 
         Raises:
             ConflictError: 409 ``already_joined`` for someone already a member in that mode.

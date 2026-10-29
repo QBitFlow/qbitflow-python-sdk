@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Type
 
 import httpx
@@ -192,8 +192,12 @@ def test_subscriptions() -> None:
     a = created.allowance
     assert a is not None and a.amount == "110" and a.remaining_periods == 11
     assert a.max_per_period_min_units == "30000000" and created.dunning is None
+    # Active: access runs to access_until, an hour past current_period_end (the renewal on its way).
+    assert created.current_period_end and created.access_until
+    assert created.access_until - created.current_period_end == timedelta(hours=1)
     assert created.has_access(datetime(2026, 10, 30, tzinfo=timezone.utc))
-    assert not created.has_access(created.current_period_end)
+    assert created.has_access(created.current_period_end)
+    assert not created.has_access(created.access_until)
 
     billed = load("subscription.billed").data
     assert isinstance(billed.bill, Bill) and isinstance(billed.subscription, Subscription)

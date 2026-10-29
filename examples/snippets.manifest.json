@@ -1,6 +1,6 @@
 {
   "sdk": "python",
-  "catalog": "854ff97d5071499a81d73033392c05135cc09f5d",
+  "catalog": "7d03dd5f87dfbe8bd15c22a84eb7f781bd61d29b",
   "snippets": {
     "client-init": "examples/client_setup.py",
     "client-on-behalf-of": "examples/marketplace.py",

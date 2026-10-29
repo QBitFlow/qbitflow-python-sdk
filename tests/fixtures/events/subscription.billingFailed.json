@@ -1,6 +1,7 @@
 {
   "createdAt": "2026-10-01T12:00:00Z",
   "data": {
+    "accessUntil": "2026-10-01T12:00:00Z",
     "allowance": {
       "amount": "110",
       "amountMinUnits": "110000000",
