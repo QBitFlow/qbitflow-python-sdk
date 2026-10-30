@@ -30,3 +30,5 @@ AGENTS.md
 # Build output
 build/
 *.egg-info/
+
+run-tests.local.sh
