@@ -689,7 +689,8 @@ class EndpointDelivery(Model):
     event of the same publication, and neither when its delivery is about to start (the last two
     have no ``attempts`` yet). Once ``pending`` is false nothing more happens on its own, and
     ``delivered`` tells how it ended (false: abandoned after its retries, or the endpoint was
-    disabled or deleted).
+    disabled). A deleted endpoint's deliveries are deleted with it and no longer listed; disable an
+    endpoint to keep them.
     """
 
     #: The endpoint.
@@ -703,7 +704,8 @@ class EndpointDelivery(Model):
     attempts: List[DeliveryAttempt] = Field(default_factory=list)
     #: True while QBitFlow still attempts the event on its own. False once delivered, abandoned
     #: after its retries (3 days in live mode, 3 hours in test mode), or when the endpoint was
-    #: disabled or deleted. When QBitFlow can't read a delivery's progress, ``pending`` comes
+    #: disabled (a deleted endpoint's deliveries are deleted with it: no longer listed). When
+    #: QBitFlow can't read a delivery's progress, ``pending`` comes
     #: from the attempts: true while the retry schedule still attempts the event again (a
     #: delivery being retried never reads as abandoned), without ``next_attempt_at``; a delivery
     #: queued with no attempt yet isn't listed until its progress can be read: read the event

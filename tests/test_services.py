@@ -1307,9 +1307,12 @@ def test_errors_typed() -> None:
         client2.subscriptions.test_bill(SUB_ID)
     assert bad.value.code == "test_mode_only"
 
+    # Another space's subscription (or none) is still a 404.
     client3, _, _ = make_client(static(404, '{"error":"not found","code":"not_found"}'))
     with pytest.raises(NotFoundError):
         client3.subscriptions.cancel(SUB_ID)
+    with pytest.raises(NotFoundError):
+        client3.subscriptions.test_bill(SUB_ID)
     with pytest.raises(NotFoundError):
         client3.products.delete(UUID_A)
     with pytest.raises(NotFoundError):
@@ -1323,6 +1326,33 @@ def test_errors_typed() -> None:
     with pytest.raises(ValidationError) as window:
         client4.accounting.export_csv("2026-01-01", "2026-09-30")
     assert window.value.status == 400 and window.value.details == {"max": 92}
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda c: c.subscriptions.cancel(SUB_ID),
+        lambda c: c.subscriptions.cancel(SUB_ID, immediate=False),
+        lambda c: c.subscriptions.test_bill(SUB_ID),
+    ],
+    ids=["cancel", "cancel-at-period-end", "test_bill"],
+)
+def test_cancelled_subscription_is_a_conflict(call: Callable[[Any], Any]) -> None:
+    """A cancelled subscription's cancel and test bill answer 409, not 404."""
+    client, server, _ = make_client(
+        static(
+            409,
+            '{"error":"subscription already stopped or inactive",'
+            '"code":"subscription_already_stopped_or_inactive","requestId":"r-5"}',
+        )
+    )
+    with pytest.raises(ConflictError) as info:
+        call(client)
+    assert not isinstance(info.value, NotFoundError)
+    assert info.value.status == 409
+    assert info.value.code == "subscription_already_stopped_or_inactive"
+    assert info.value.request_id == "r-5"
+    assert len(server.requests) == 1  # never retried
 
 
 def test_cancel_without_body() -> None:

@@ -4528,5 +4528,5 @@
   ],
   "comment": "Response decoding: calling method with args against a server answering status + body must decode (\"ok\", each probe matching), raise a ServerError (\"serverError\"), or, for a getByReference on an empty page, a NotFoundError with status 404 and code not_found (\"notFound\").",
   "generator": "qbitflow-conformance",
-  "sdk": "qbitflow-go-sdk 3.1.0"
+  "sdk": "qbitflow-go-sdk 3.1.1"
 }

@@ -795,8 +795,9 @@ else:
 
 `cancel` answers 200 when done and 202 (`pending`) while confirming on-chain: the status is not
 updated yet, but the cancellation goes on regardless. It is never retried automatically. A
-subscription already stopped is a `ConflictError` (409
-`subscription_already_stopped_or_inactive`); a cancelled one a `NotFoundError`. A trial is
+subscription cancelled already, or stopped already with `immediate=False`, is a `ConflictError`
+(409 `subscription_already_stopped_or_inactive`); a `NotFoundError` only means it isn't in your
+space (or doesn't exist). A trial is
 cancelled immediately only (`immediate=False` on a trial: a `ValidationError`, 400
 `validation_failed` on `immediate`).
 
@@ -804,7 +805,9 @@ cancelled immediately only (`immediate=False` on a trial: a `ValidationError`, 4
 
 In test mode a subscription is billed only when you ask, with live's statuses and webhooks.
 `test_bill` answers once the attempt settled: a `TestBill` with the bill's `sub-hist@…` id, its
-`stage` and, once done, its `outcome`:
+`stage` and, once done, its `outcome` (a live subscription: a `BadRequestError` `test_mode_only`; a
+bill not due: a `ConflictError` `payment_not_due`; a cancelled subscription: a `ConflictError`
+`subscription_already_stopped_or_inactive`):
 
 <!-- docs:snippet subscriptions-test-bill -->
 ```python
@@ -1151,7 +1154,9 @@ Up to 10 endpoints per space and mode; live endpoints need `https` and a public 
 organization endpoint also receives its members' events unless created with
 `include_members=False`. `endpoints.list` / `iterate` (paginated), `get`, `update` (`PATCH`:
 `enabled=False` pauses it, `True` enables it again, `description=""` clears it, `events=[]`
-receives every type) and `delete` (`204`) manage them. An endpoint's secret is shown and rotated
+receives every type) and `delete` (`204`) manage them. `delete` also deletes the endpoint's
+delivery history: `events.get` no longer lists its deliveries. To keep it, disable the endpoint
+instead. An endpoint's secret is shown and rotated
 in the dashboard only. A replay of the create's `Idempotency-Key` within 24 hours returns the same
 endpoint and secret.
 
@@ -1386,7 +1391,9 @@ earlier event of the same publication, and neither while its delivery is about t
 minute). **A queued or starting delivery has no `attempts` yet**: `d.attempts[-1]` would raise
 `IndexError`, so check the list first. Once `pending` is false nothing more happens on its own, and
 `delivered=False` means it was abandoned after its retries (3 days in live mode, 3 hours in test
-mode) or the endpoint was disabled or deleted. If QBitFlow can't read a delivery's progress at that
+mode) or the endpoint was disabled. **A deleted endpoint's deliveries aren't listed at all**: they
+are deleted with it, the successful ones included. To keep an endpoint's history, disable it
+(`enabled=False`) rather than delete it. If QBitFlow can't read a delivery's progress at that
 moment, `pending` comes from the attempts: true while the retry schedule still attempts the event
 again (a delivery being retried never reads as abandoned), without `next_attempt_at`; a delivery
 queued with no attempt yet isn't listed until its progress can be read: read the event again a
@@ -1621,7 +1628,7 @@ keyword arguments are the constructor's and win over the environment.
 A bad argument makes `QBitFlow(...)` raise a `ValidationError`. A client's configuration never
 changes; `client.on_behalf_of(...)` derives clients that share it. Use the client as a context
 manager, or call `client.close()`, to close the connections the SDK opened. Every request sends
-`User-Agent: qbitflow-python/3.1.0` (`qbitflow.__version__`). The SDK is synchronous; a client is
+`User-Agent: qbitflow-python/3.1.1` (`qbitflow.__version__`). The SDK is synchronous; a client is
 safe to share between threads.
 
 ## Migrating from 2.x

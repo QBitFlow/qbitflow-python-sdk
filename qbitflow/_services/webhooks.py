@@ -151,7 +151,9 @@ class WebhookEndpointsService(Service):
 
     def delete(self, uuid: str, *, options: Optional[RequestOptions] = None) -> None:
         """Delete a webhook endpoint (``DELETE /webhooks/endpoints/:uuid``, 204): it receives
-        nothing more. Not retried."""
+        nothing more, pending retries included. Its delivery history is deleted with it:
+        ``events.get`` no longer lists its deliveries, successful ones included. To keep that
+        history, disable the endpoint instead (``update(uuid, enabled=False)``). Not retried."""
         check_path_uuid("uuid", uuid)
         self._send(Endpoint("DELETE", pathf("/webhooks/endpoints/{}", uuid)), options)
 

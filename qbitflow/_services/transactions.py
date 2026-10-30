@@ -610,9 +610,10 @@ class SubscriptionsService(Service):
             whatever happens).
 
         Raises:
-            NotFoundError: a cancelled or another space's subscription.
-            ConflictError: 409 ``subscription_already_stopped_or_inactive`` (``immediate=False``
-                on a stopped one); 409 ``tx_already_sent`` while a cancellation runs.
+            ConflictError: 409 ``subscription_already_stopped_or_inactive`` for a cancelled one
+                (nothing left to cancel), and for a stopped one with ``immediate=False``; 409
+                ``tx_already_sent`` while a cancellation runs.
+            NotFoundError: another space's subscription (or none), whatever its status.
             ValidationError: ``immediate=False`` on a trial (400 ``validation_failed``, field
                 ``immediate``).
         """
@@ -636,7 +637,10 @@ class SubscriptionsService(Service):
 
         Raises:
             BadRequestError: a live subscription (400 ``test_mode_only``: test mode only).
-            ConflictError: 409 ``payment_not_due``, a bill not due yet.
+            ConflictError: 409 ``payment_not_due``, a bill not due yet; 409
+                ``subscription_already_stopped_or_inactive``, a cancelled subscription (nothing
+                left to bill).
+            NotFoundError: another space's subscription (or none).
         """
         check_path_tx_id("uuid", uuid)
         endpoint = Endpoint("POST", pathf("/subscriptions/{}/test-bill", uuid))

@@ -1665,5 +1665,5 @@
   ],
   "comment": "Webhook event parsing: parseEvent(rawBody), then the typed data of its type.",
   "generator": "qbitflow-conformance",
-  "sdk": "qbitflow-go-sdk 3.1.0"
+  "sdk": "qbitflow-go-sdk 3.1.1"
 }

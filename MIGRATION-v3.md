@@ -484,7 +484,7 @@ except qbitflow.ApiError as exc:  # the base of every SDK error
 | `subscriptions.get(uuid)` | `subscriptions.get(uuid)` | cancelled subscriptions are returned too |
 | `subscriptions.get_by_reference(reference)` | `subscriptions.get_by_reference(reference)` | `NotFoundError` when none |
 | `subscriptions.get_payment_history(uuid)` | `subscriptions.list_bills(uuid)` / `iterate_bills(uuid)` | paginated `Bill`s |
-| `subscriptions.force_cancel(uuid)` → `SuccessResponse` | `subscriptions.cancel(uuid, immediate=None)` → `SubscriptionCancellation` | immediate by default; `immediate=False` cancels at the end of the paid period; `pending` on HTTP 202 |
+| `subscriptions.force_cancel(uuid)` → `SuccessResponse` | `subscriptions.cancel(uuid, immediate=None)` → `SubscriptionCancellation` | immediate by default; `immediate=False` cancels at the end of the paid period; `pending` on HTTP 202; one cancelled already raises a `ConflictError` (`subscription_already_stopped_or_inactive`), a `NotFoundError` only another space's |
 | `subscriptions.execute_test_billing_cycle(uuid)` → `StatusLinkResponse` | `subscriptions.test_bill(uuid)` → `TestBill` | test mode only; answers once the attempt settled |
 | — | `subscriptions.list` / `iterate`, `update(uuid, metadata=…)`, `get_bill(bill_uuid)` | new |
 

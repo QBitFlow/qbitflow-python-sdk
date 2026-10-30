@@ -9557,5 +9557,5 @@
   ],
   "comment": "Client-side validation: each call must be sent (\"ok\") or fail locally with a ValidationError naming exactly expect.fields (wire names, compared as a set of distinct names), without sending anything.",
   "generator": "qbitflow-conformance",
-  "sdk": "qbitflow-go-sdk 3.1.0"
+  "sdk": "qbitflow-go-sdk 3.1.1"
 }
